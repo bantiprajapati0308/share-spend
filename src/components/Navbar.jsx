@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import Logo from '../assets/images/logo.png'
 function NavigationBar() {
     return (
-        <Navbar sticky="top" className='shadow' bg="dark" variant="dark" expand="lg">
+        <Navbar sticky="top" className='shadow' bg="light" variant="light" expand="lg">
             <Navbar.Brand className='ms-3' as={NavLink} to="/"> Share<img src={Logo} alt="" />Spend</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">

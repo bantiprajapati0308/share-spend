@@ -1,0 +1,30 @@
+.footer {
+  position: fixed; /* Stick to the bottom */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem;
+  background-color: #f5f5f5; /* Light gray background */
+  text-align: center; /* Center content horizontally */
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Center content vertically and horizontally on mobile */
+  gap: 0.5rem; /* Add a small gap between paragraphs */
+}
+
+.contact,
+.copyright {
+  font-size: 0.8rem; /* Base font size for smaller screens */
+  margin: 0; /* Remove default margin */
+}
+
+@media (min-width: 768px) { /* Adjust breakpoint as needed */
+  .contact,
+  .copyright {
+    font-size: 1rem; /* Increase font size for larger screens */
+  }
+}

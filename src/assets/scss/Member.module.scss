@@ -1,0 +1,51 @@
+@import './variable';
+
+
+.container {
+  padding: 20px;
+  // background-color: $primary-color;
+padding-bottom: 120px;
+  .form-group {
+    margin-bottom: 1rem;
+
+    .form-label {
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+      margin-bottom: 1rem;
+    }
+
+    .submit-button {
+      margin-top: 1rem;
+    }
+  }
+
+  .list-group {
+    margin-top: 1.5rem;
+
+    .list-group-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+
+      .index {
+        margin-right: 1rem;
+      }
+    }
+  }
+      .buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+  .no-members {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .next-button {
+    margin-top: 1.5rem;
+  }
+}
