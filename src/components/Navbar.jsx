@@ -9,10 +9,10 @@ function NavigationBar() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                    <Nav.Link as={NavLink} to="/trip">Trip</Nav.Link>
-                    <Nav.Link as={NavLink} to="/members">Members</Nav.Link>
-                    <Nav.Link as={NavLink} to="/expenses">Expenses</Nav.Link>
-                    <Nav.Link as={NavLink} to="/report">Report</Nav.Link>
+                    <Nav.Link as={NavLink} to="/share-spend">Trip</Nav.Link>
+                    <Nav.Link as={NavLink} to="/share-spend/members">Members</Nav.Link>
+                    <Nav.Link as={NavLink} to="/share-spend/expenses">Expenses</Nav.Link>
+                    <Nav.Link as={NavLink} to="/share-spend/report">Report</Nav.Link>
                 </Nav>
             </Navbar.Collapse>
         </Navbar>

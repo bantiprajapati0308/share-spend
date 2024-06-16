@@ -12,10 +12,10 @@ function App() {
     <div>
       <NavigationBar />
       <Routes>
-        <Route path="/trip" element={<Trip />} />
-        <Route path="/members" element={<Member />} />
-        <Route path="/expenses" element={<Expense />} />
-        <Route path="/report" element={<Report />} />
+        <Route path="/share-spend" element={<Trip />} />
+        <Route path="/share-spend/members" element={<Member />} />
+        <Route path="/share-spend/expenses" element={<Expense />} />
+        <Route path="/share-spend/report" element={<Report />} />
       </Routes>
       <Footer />
     </div>
