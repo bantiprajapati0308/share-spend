@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, ListGroup } from 'react-bootstrap';
 import { addExpense, removeExpense } from '../redux/tripSlice';
+import { useNavigate } from 'react-router-dom';
 
 function Expense() {
     const [expenseName, setExpenseName] = useState('');
@@ -15,7 +16,7 @@ function Expense() {
     const members = useSelector((state) => state.trip.members);
     const expenses = useSelector((state) => state.trip.expenses);
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
     const handleAddExpense = (e) => {
         e.preventDefault();
         if (editMode) {
@@ -77,9 +78,11 @@ function Expense() {
             setParticipants([]);
         }
     };
-
+    const handleNext = () => {
+        navigate('/share-spend/report');
+    }
     return (
-        <Container>
+        <Container className=' margin-bttom'>
             <Row className="justify-content-center mt-4">
                 <Col md="8">
                     <Card>
@@ -205,6 +208,11 @@ function Expense() {
                                     </ListGroup.Item>
                                 ))}
                             </ListGroup>
+                            {expenses.length > 0 ? (
+                                <Button variant="success" className="float-end mt-2" onClick={handleNext}>
+                                    Next
+                                </Button>
+                            ) : <p className='text-center'>No expenses added yet.</p>}
                         </Card.Body>
                     </Card>
                 </Col>

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { addMember, editMember, removeMember } from '../redux/tripSlice';
 import { PencilSquare, Trash } from 'react-bootstrap-icons';
+import { useNavigate } from 'react-router-dom';
 
 function Member() {
     const [memberName, setMemberName] = useState('');
@@ -10,7 +11,7 @@ function Member() {
     const members = useSelector((state) => state.trip.members);
     const [validated, setValidated] = useState(false);
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
     const handleAddMember = (e) => {
 
         e.preventDefault();
@@ -40,7 +41,9 @@ function Member() {
     const handleDelete = (mebmer) => {
         dispatch(removeMember(mebmer));
     };
-
+    const handleNext = () => {
+        navigate('/share-spend/expenses');
+    }
     return (
         <Container>
             <Row className="justify-content-md-center">
@@ -81,6 +84,8 @@ function Member() {
                             </li>
                         ))}
                     </ul>
+                    {members.length === 0 ? <p className='text-center'>No members added yet.</p> :
+                        <Button variant='success' onClick={handleNext} className='mt-3 float-end'>Next</Button>}
                 </Col>
             </Row>
         </Container>

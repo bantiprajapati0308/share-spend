@@ -1,0 +1,11 @@
+@import './mixin';
+
+.margin-bttom {
+    margin-bottom: 175px;
+}
+.display-center {
+    @include flex-center;
+}
+.display-space-between {
+    @include display-space-between;
+}

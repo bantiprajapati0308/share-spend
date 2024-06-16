@@ -100,7 +100,7 @@ function Report() {
     };
 
     return (
-        <Container fluid>
+        <Container fluid className="margin-bttom">
             <Row>
                 <Col>
                     <h2 className="mt-3 mb-3">Expense Report</h2>
