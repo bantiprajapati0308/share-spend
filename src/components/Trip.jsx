@@ -20,6 +20,11 @@ function Trip() {
     };
     const handleNext = () => {
         navigate('members');
+        e.preventDefault();
+        dispatch(setTrip({ name: tripName, description, organizer }));
+        setTripName('');
+        setDescription('');
+        setOrganizer('');
     }
 
     return (
