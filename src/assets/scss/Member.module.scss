@@ -1,23 +1,27 @@
 @import './variable';
+@import './mixin';
 
 
 .container {
   padding: 20px;
   // background-color: $primary-color;
 padding-bottom: 120px;
+.header {
+  @include display-space-between()
+}
   .form-group {
     margin-bottom: 1rem;
 
     .form-label {
       margin-bottom: 0.5rem;
     }
-
-    .form-control {
-      margin-bottom: 1rem;
-    }
-
+    .form-div {
+      display: flex;
+      align-items: center;
     .submit-button {
-      margin-top: 1rem;
+      margin-left: 0.5rem;
+      white-space: nowrap;
+    }
     }
   }
 
@@ -47,5 +51,6 @@ padding-bottom: 120px;
 
   .next-button {
     margin-top: 1.5rem;
+    float: right;
   }
 }

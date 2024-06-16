@@ -4,6 +4,7 @@ import { Form, Button, Container, Row, Col, Card, ListGroup } from 'react-bootst
 import { addExpense, removeExpense } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
 import { getCurrencySymbol } from '../Util';
+import styles from '../assets/scss/Expense.module.scss'; // Import custom styles
 
 function Expense() {
     const [expenseName, setExpenseName] = useState('');
@@ -17,6 +18,7 @@ function Expense() {
     const { members, expenses, currency } = useSelector((state) => state.trip);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
     const handleAddExpense = (e) => {
         e.preventDefault();
         if (editMode) {
@@ -78,20 +80,33 @@ function Expense() {
             setParticipants([]);
         }
     };
+
     const handleNext = () => {
         navigate('/share-spend/report');
-    }
+    };
+
+    const handleBack = () => {
+        navigate('/share-spend/members');
+    };
+
     return (
-        <Container className=' margin-bttom'>
+        <Container className={styles['expense-container']}>
             <Row className="justify-content-center mt-4">
                 <Col md="8">
-                    <Card>
-                        <Card.Header className="bg-primary text-white">
-                            <h2 className="mb-0">{editMode ? 'Edit Expense' : 'Add Expense'}</h2>
+                    <Card className={styles['expense-card']}>
+                        <Card.Header className={styles['card-header']}>
+                            <Row className="align-items-center">
+                                <Col>
+                                    <h2 className={styles['card-title']}>{editMode ? 'Edit Expense' : 'Add Expense'}</h2>
+                                </Col>
+                                <Col xs="auto">
+                                    <Button variant="outline-primary" onClick={handleBack}>Back</Button>
+                                </Col>
+                            </Row>
                         </Card.Header>
                         <Card.Body>
                             <Form onSubmit={handleAddExpense}>
-                                <Row>
+                                <Row className="mb-3">
                                     <Col md="6">
                                         <Form.Group controlId="expenseName">
                                             <Form.Label>Expense Name</Form.Label>
@@ -101,17 +116,6 @@ function Expense() {
                                                 value={expenseName}
                                                 onChange={(e) => setExpenseName(e.target.value)}
                                                 required
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md="6">
-                                        <Form.Group controlId="description">
-                                            <Form.Label>Description</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Enter description"
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
                                             />
                                         </Form.Group>
                                     </Col>
@@ -127,6 +131,8 @@ function Expense() {
                                             />
                                         </Form.Group>
                                     </Col>
+                                </Row>
+                                <Row className="mb-3">
                                     <Col md="6">
                                         <Form.Group controlId="paidBy">
                                             <Form.Label>Paid By</Form.Label>
@@ -145,9 +151,19 @@ function Expense() {
                                             </Form.Control>
                                         </Form.Group>
                                     </Col>
+                                    <Col md="6">
+                                        <Form.Group controlId="description">
+                                            <Form.Label>Description</Form.Label>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="Enter description"
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
                                 </Row>
-
-                                <Form.Group controlId="participants">
+                                <Form.Group controlId="participants" className={styles['participant-checkboxes']}>
                                     <Form.Label>Participants</Form.Label>
                                     <Form.Check
                                         type="checkbox"
@@ -172,11 +188,11 @@ function Expense() {
                                     ))}
                                 </Form.Group>
 
-                                <Button variant="primary" type="submit">
+                                <Button variant="primary" type="submit" className={styles['submit-button']}>
                                     {editMode ? 'Update Expense' : 'Add Expense'}
                                 </Button>
                                 {editMode && (
-                                    <Button variant="secondary" className="ml-2" onClick={() => { resetForm(); setEditMode(false); }}>
+                                    <Button variant="secondary" className={styles['cancel-button']} onClick={() => { resetForm(); setEditMode(false); }}>
                                         Cancel
                                     </Button>
                                 )}
@@ -188,31 +204,42 @@ function Expense() {
 
             <Row className="justify-content-center mt-4">
                 <Col md="8">
-                    <Card>
-                        <Card.Header className="bg-primary text-white">
-                            <h2 className="mb-0">Expense List</h2>
+                    <Card className={styles['expense-list-card']}>
+                        <Card.Header className={styles['card-header']}>
+                            <h2 className={styles['card-title']}>Expense List</h2>
                         </Card.Header>
                         <Card.Body>
-                            <ListGroup>
-                                {expenses.map((expense, index) => (
-                                    <ListGroup.Item key={index}>
-                                        <strong>{expense.name}</strong> - {getCurrencySymbol(currency)}{expense.amount.toFixed(2)} - Paid by {expense.paidBy} - Participants: {expense.participants.join(', ')}
-                                        <div className="float-right">
-                                            <Button variant="warning" size="sm" className="mr-2" onClick={() => handleEditExpense(index)}>
-                                                Edit
-                                            </Button>
-                                            <Button variant="danger" size="sm" onClick={() => handleDeleteExpense(expense.name)}>
-                                                Delete
-                                            </Button>
-                                        </div>
+                            <ListGroup variant="flush">
+                                {expenses.length > 0 ? (
+                                    expenses.map((expense, index) => (
+                                        <ListGroup.Item key={index} className={styles['expense-list-item']}>
+                                            <div className={styles['expense-details']}>
+                                                <strong>{expense.name}</strong>
+                                                <span>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</span>
+                                                <span>Paid by {expense.paidBy}</span>
+                                                <span>Participants: {expense.participants.join(', ')}</span>
+                                            </div>
+                                            <div className={styles['action-buttons']}>
+                                                <Button variant="warning" size="sm" onClick={() => handleEditExpense(index)}>
+                                                    Edit
+                                                </Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDeleteExpense(expense.name)}>
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </ListGroup.Item>
+                                    ))
+                                ) : (
+                                    <ListGroup.Item className={styles['no-expenses-message']}>
+                                        No expenses added yet.
                                     </ListGroup.Item>
-                                ))}
+                                )}
                             </ListGroup>
-                            {expenses.length > 0 ? (
-                                <Button variant="success" className="float-end mt-2" onClick={handleNext}>
+                            {expenses.length > 0 && (
+                                <Button variant="success" className={styles['next-button']} onClick={handleNext}>
                                     Next
                                 </Button>
-                            ) : <p className='text-center'>No expenses added yet.</p>}
+                            )}
                         </Card.Body>
                     </Card>
                 </Col>

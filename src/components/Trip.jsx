@@ -1,35 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { selectCurrency, setTrip } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY_ARRAY } from '../Util';
+import ConfirmationModal from './common/ConfirmationModal';
+import { persistor } from '../redux/store';
 function Trip() {
     const [tripName, setTripName] = useState('');
     const [description, setDescription] = useState('');
     const [organizer, setOrganizer] = useState('');
     const [currency, setCurrency] = useState('');
+    const [showModal, setShowModal] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { trip, currency: tripCurrency } = useSelector((state) => state.trip);
+    console.log('trip: ', trip);
 
-    console.log('currency: ', currency);
     const handleSubmit = (e) => {
         e.preventDefault();
+        navigate('members');
         dispatch(setTrip({ name: tripName, description, organizer }));
         dispatch(currency(currency));
         setTripName('');
         setDescription('');
         setOrganizer('');
     };
-    const handleNext = (e) => {
-        navigate('members');
-        e.preventDefault();
-        dispatch(setTrip({ name: tripName, description, organizer }));
-        dispatch(selectCurrency(currency));
-        setTripName('');
-        setDescription('');
-        setOrganizer('');
-    }
+    useEffect(() => {
+        setTripName(trip.name);
+        setDescription(trip.description);
+        setCurrency(tripCurrency);
+    }, [])
+
+    const handleClearData = () => {
+        persistor.purge(); // Clear persisted data
+        window.location.reload(); // Optional: reload the page to reset the app state
+    };
+
+    const handleShowModal = () => setShowModal(true);
+    const handleCloseModal = () => setShowModal(false);
+    const handleConfirmClear = () => {
+        handleClearData();
+        handleCloseModal();
+    };
 
     return (
         <Container>
@@ -73,14 +86,16 @@ function Trip() {
                             </Form.Control>
                         </Form.Group>
                         <div className='display-space-between'>
-                            <Button variant="primary" className='mt-2' type="submit">
-                                Create Trip
-                            </Button>
-                            <Button variant="success" className='mt-2' type="button" disabled={!tripName} onClick={handleNext}>
+                            <Button variant='danger' onClick={handleShowModal} className='mt-2 float-start'>Clear Data</Button>
+                            <Button variant="success" className='mt-2' type="submit" disabled={!tripName}>
                                 Next
                             </Button>
                         </div>
-
+                        <ConfirmationModal
+                            show={showModal}
+                            handleClose={handleCloseModal}
+                            handleConfirm={handleConfirmClear}
+                        />
                     </Form>
                 </Col>
             </Row>

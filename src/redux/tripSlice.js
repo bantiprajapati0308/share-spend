@@ -8,7 +8,7 @@ const initialState = {
     },
     members: [],
     expenses: [],
-    currency: 'USD',
+    currency: '',
 };
 
 const tripSlice = createSlice({
@@ -37,7 +37,6 @@ const tripSlice = createSlice({
             state.expenses = state.expenses.filter((expense) => expense.name !== action.payload);
         },
         selectCurrency(state, action) {
-            console.log('action: ', action.payload);
             state.currency = action.payload;
         }
     }
