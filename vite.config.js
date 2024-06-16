@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/expense-management/', // Ensure this is set correctly based on your deployment environment
+  base: '/', // Ensure this is set correctly based on your deployment environment
 
   // Configure the build output directory
   build: {
