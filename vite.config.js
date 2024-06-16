@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/share-spend', // Ensure this is set correctly based on your deployment environment
+  base: '/share-spend/', // Ensure this is set correctly based on your deployment environment
 
   // Configure the build output directory
   build: {
