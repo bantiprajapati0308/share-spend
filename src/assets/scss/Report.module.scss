@@ -1,0 +1,9 @@
+@import './mixin';
+@import './variable';
+
+.positive {
+@include apply-status-styles($positive-color, $positive-background)
+}
+.negative {
+@include apply-status-styles($negative-color, $negative-background)
+}

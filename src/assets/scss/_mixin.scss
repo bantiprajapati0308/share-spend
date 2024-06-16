@@ -1,3 +1,4 @@
+
 @mixin flex-center {
   display: flex;
   justify-content: center;
@@ -8,3 +9,19 @@
   justify-content: space-between;
   align-items: center;
 }
+
+@function set-status-styles($text-color, $background-color) {
+  @return (
+    color: $text-color,
+    background-color: $background-color,
+    font-weight: 500,
+    border:1px solid $background-color
+  );
+}
+@mixin apply-status-styles($text-color, $background-color) {
+  $styles: set-status-styles($text-color, $background-color);
+  @each $property, $value in $styles {
+    #{$property}: #{$value} !important;
+  }
+}
+

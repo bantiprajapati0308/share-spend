@@ -3,10 +3,12 @@ import { useSelector } from 'react-redux';
 import { Button, Container, Row, Col, Table } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import { utils, writeFile } from 'xlsx';
-
+import { getCurrencySymbol } from '../Util';
+import styles from '../assets/scss/Report.module.scss';
 function Report() {
     const members = useSelector((state) => state.trip.members);
     const expenses = useSelector((state) => state.trip.expenses);
+    const currency = useSelector((state) => state.trip.currency);
 
     const calculateBalances = () => {
         const balances = {};
@@ -37,12 +39,12 @@ function Report() {
         const doc = new jsPDF();
         doc.text('Expense Report', 20, 20);
 
-        doc.text(`Total Expense: $${totalExpense.toFixed(2)}`, 20, 30);
+        doc.text(`Total Expense: ${getCurrencySymbol(currency)}${totalExpense.toFixed(2)}`, 20, 30);
 
         doc.text('Expenses:', 20, 40);
         expenses.forEach((expense, index) => {
             doc.text(
-                `${index + 1}. ${expense.name} - $${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.join(', ')}`,
+                `${index + 1}. ${expense.name} -${getCurrencySymbol(currency)}${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.join(', ')}`,
                 20,
                 50 + index * 10
             );
@@ -51,13 +53,13 @@ function Report() {
         doc.addPage();
         doc.text('Spent Amounts:', 20, 20);
         Object.keys(spentAmounts).forEach((member, index) => {
-            doc.text(`${member}: $${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
+            doc.text(`${member}: ${getCurrencySymbol(currency)}${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
         });
 
         doc.addPage();
         doc.text('Balances:', 20, 20);
         Object.keys(balances).forEach((member, index) => {
-            doc.text(`${member}: $${balances[member].toFixed(2)}`, 20, 30 + index * 10);
+            doc.text(`${member}: ${getCurrencySymbol(currency)}${balances[member].toFixed(2)}`, 20, 30 + index * 10);
         });
 
         doc.save('report.pdf');
@@ -104,7 +106,7 @@ function Report() {
             <Row>
                 <Col>
                     <h2 className="mt-3 mb-3">Expense Report</h2>
-                    <p>Total Expense: ${totalExpense.toFixed(2)}</p>
+                    <p>Total Expense: {getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</p>
                     <Button variant="primary" onClick={generatePDF}>Export as PDF</Button>
                     <Button variant="success" className="ml-2" onClick={generateExcel}>Export as Excel</Button>
                 </Col>
@@ -127,7 +129,7 @@ function Report() {
                                 <tr key={index}>
                                     <td>{index + 1}</td>
                                     <td>{expense.name}</td>
-                                    <td>${expense.amount.toFixed(2)}</td>
+                                    <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
                                     <td>{expense.paidBy}</td>
                                     <td>{expense.participants.join(', ')}</td>
                                 </tr>
@@ -150,12 +152,12 @@ function Report() {
                             {Object.keys(spentAmounts).map((member, index) => (
                                 <tr key={index}>
                                     <td>{member}</td>
-                                    <td>${spentAmounts[member].toFixed(2)}</td>
+                                    <td>{getCurrencySymbol(currency)}{spentAmounts[member].toFixed(2)}</td>
                                 </tr>
                             ))}
                             <tr className='table-dark'>
                                 <td>Total Expense</td>
-                                <td>${totalExpense.toFixed(2)}</td>
+                                <td>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</td>
                             </tr>
                         </tbody>
                     </Table>
@@ -174,8 +176,8 @@ function Report() {
                         <tbody>
                             {Object.keys(balances).map((member, index) => (
                                 <tr key={index}>
-                                    <td>{member}</td>
-                                    <td>${balances[member].toFixed(2)}</td>
+                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{member}</td>
+                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{getCurrencySymbol(currency)}{balances[member].toFixed(2)}</td>
                                 </tr>
                             ))}
                         </tbody>

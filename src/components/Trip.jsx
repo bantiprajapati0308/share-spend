@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
-import { setTrip } from '../redux/tripSlice';
+import { selectCurrency, setTrip } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
-
+import { CURRENCY_ARRAY } from '../Util';
 function Trip() {
     const [tripName, setTripName] = useState('');
     const [description, setDescription] = useState('');
     const [organizer, setOrganizer] = useState('');
+    const [currency, setCurrency] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    console.log('currency: ', currency);
     const handleSubmit = (e) => {
         e.preventDefault();
         dispatch(setTrip({ name: tripName, description, organizer }));
+        dispatch(currency(currency));
         setTripName('');
         setDescription('');
         setOrganizer('');
     };
-    const handleNext = () => {
+    const handleNext = (e) => {
         navigate('members');
         e.preventDefault();
         dispatch(setTrip({ name: tripName, description, organizer }));
+        dispatch(selectCurrency(currency));
         setTripName('');
         setDescription('');
         setOrganizer('');
@@ -51,6 +55,22 @@ function Trip() {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
+                        </Form.Group>
+                        <Form.Group controlId="currencyType">
+                            <Form.Label>Currency</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={currency}
+                                onChange={(e) => setCurrency(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Currency</option>
+                                {CURRENCY_ARRAY.map((item, index) => (
+                                    <option key={index} value={item.value}>
+                                        {item.value} ({item.label})
+                                    </option>
+                                ))}
+                            </Form.Control>
                         </Form.Group>
                         <div className='display-space-between'>
                             <Button variant="primary" className='mt-2' type="submit">
