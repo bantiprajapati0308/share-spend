@@ -9,6 +9,7 @@ function Report() {
     const members = useSelector((state) => state.trip.members);
     const expenses = useSelector((state) => state.trip.expenses);
     const currency = useSelector((state) => state.trip.currency);
+    const currencyIcon = String(getCurrencySymbol(currency))
 
     const calculateBalances = () => {
         const balances = {};
@@ -39,12 +40,12 @@ function Report() {
         const doc = new jsPDF();
         doc.text('Expense Report', 20, 20);
 
-        doc.text(`Total Expense: ${getCurrencySymbol(currency)}${totalExpense.toFixed(2)}`, 20, 30);
+        doc.text(`Total Expense: ${currencyIcon} ${totalExpense.toFixed(2)}`, 20, 30);
 
         doc.text('Expenses:', 20, 40);
         expenses.forEach((expense, index) => {
             doc.text(
-                `${index + 1}. ${expense.name} -${getCurrencySymbol(currency)}${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.join(', ')}`,
+                `${index + 1}. ${expense.name} - ${currencyIcon} ${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.join(', ')}`,
                 20,
                 50 + index * 10
             );
@@ -53,13 +54,13 @@ function Report() {
         doc.addPage();
         doc.text('Spent Amounts:', 20, 20);
         Object.keys(spentAmounts).forEach((member, index) => {
-            doc.text(`${member}: ${getCurrencySymbol(currency)}${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
+            doc.text(`${member}: ${currencyIcon} ${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
         });
 
         doc.addPage();
         doc.text('Balances:', 20, 20);
         Object.keys(balances).forEach((member, index) => {
-            doc.text(`${member}: ${getCurrencySymbol(currency)}${balances[member].toFixed(2)}`, 20, 30 + index * 10);
+            doc.text(`${member}: ${currencyIcon} ${balances[member].toFixed(2)}`, 20, 30 + index * 10);
         });
 
         doc.save('report.pdf');
@@ -106,7 +107,7 @@ function Report() {
             <Row>
                 <Col>
                     <h2 className="mt-3 mb-3">Expense Report</h2>
-                    <p>Total Expense: {getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</p>
+                    <h5>Total Expense: <strong>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</strong></h5>
                     <Button variant="primary" onClick={generatePDF}>Export as PDF</Button>
                     <Button variant="success" className="ml-2" onClick={generateExcel}>Export as Excel</Button>
                 </Col>

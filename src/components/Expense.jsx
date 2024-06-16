@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, ListGroup } from 'react-bootstrap';
 import { addExpense, removeExpense } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
+import { getCurrencySymbol } from '../Util';
 
 function Expense() {
     const [expenseName, setExpenseName] = useState('');
@@ -13,8 +14,7 @@ function Expense() {
     const [editMode, setEditMode] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
 
-    const members = useSelector((state) => state.trip.members);
-    const expenses = useSelector((state) => state.trip.expenses);
+    const { members, expenses, currency } = useSelector((state) => state.trip);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleAddExpense = (e) => {
@@ -196,7 +196,7 @@ function Expense() {
                             <ListGroup>
                                 {expenses.map((expense, index) => (
                                     <ListGroup.Item key={index}>
-                                        <strong>{expense.name}</strong> - ${expense.amount.toFixed(2)} - Paid by {expense.paidBy} - Participants: {expense.participants.join(', ')}
+                                        <strong>{expense.name}</strong> - {getCurrencySymbol(currency)}{expense.amount.toFixed(2)} - Paid by {expense.paidBy} - Participants: {expense.participants.join(', ')}
                                         <div className="float-right">
                                             <Button variant="warning" size="sm" className="mr-2" onClick={() => handleEditExpense(index)}>
                                                 Edit
