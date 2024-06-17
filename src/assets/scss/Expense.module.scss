@@ -1,11 +1,13 @@
 @import './variable';
+@import './mixin';
 
 .expense-container {
     padding: 20px;
+    margin-bottom: 5rem;
 }
 
 .expense-card {
-    background-color: $light-color;
+    background-color: $light-color !important;
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -43,9 +45,7 @@
 }
 
 .expense-list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+   @include display-space-between;
     border-bottom: 1px solid #ddd;
 }
 
@@ -54,7 +54,9 @@
 }
 
 .action-buttons {
+    display: flex;
     flex-shrink: 0;
+    grid-gap: 0.5rem;
 }
 
 .next-button {
