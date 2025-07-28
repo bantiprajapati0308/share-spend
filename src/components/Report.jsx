@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Button, Container, Row, Col, Table } from 'react-bootstrap';
+import { Button, Container, Row, Col, Table, Accordion } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import { utils, writeFile } from 'xlsx';
 import { getCurrencySymbol } from '../Util';
 import styles from '../assets/scss/Report.module.scss';
+import { PeopleFill, FileEarmarkArrowDown, FileEarmarkExcel, PiggyBank, CashStack } from 'react-bootstrap-icons';
+import { useNavigate } from 'react-router-dom';
+
 function Report() {
     const members = useSelector((state) => state.trip.members);
     const expenses = useSelector((state) => state.trip.expenses);
     const currency = useSelector((state) => state.trip.currency);
     const currencyIcon = String(getCurrencySymbol(currency))
+    const [showParticipants, setShowParticipants] = useState(false);
+    const [currentParticipants, setCurrentParticipants] = useState([]);
+    const navigate = useNavigate();
 
     const calculateBalances = () => {
         const balances = {};
@@ -102,89 +108,161 @@ function Report() {
         writeFile(wb, 'report.xlsx');
     };
 
+    const handleShowParticipants = (participants) => {
+        setCurrentParticipants(participants);
+        setShowParticipants(true);
+    };
+    const handleCloseParticipants = () => setShowParticipants(false);
+
     return (
         <Container fluid className="margin-bttom">
             <Row>
-                <Col>
-                    <h2 className="mt-3 mb-3">Expense Report</h2>
-                    <h5>Total Expense: <strong>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</strong></h5>
-                    <Button variant="primary" onClick={generatePDF}>Export as PDF</Button>
-                    <Button variant="success" className="ml-2" onClick={generateExcel}>Export as Excel</Button>
+                <Col className="d-flex align-items-center mb-2 justify-content-between">
+                    <h2 className="mt-3 mb-3 text-primary fw-bold" style={{ letterSpacing: 1 }}>Expense Report</h2>
+                    <Button variant="outline-primary" className="fw-semibold" style={{ borderRadius: 8 }} onClick={() => navigate('/share-spend/expenses')}>
+                        Back
+                    </Button>
                 </Col>
             </Row>
             <Row>
                 <Col>
-                    <h3 className="mt-4 mb-3">Expenses</h3>
-                    <Table responsive bordered hover>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Name</th>
-                                <th>Amount</th>
-                                <th>Paid By</th>
-                                <th>Participants</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {expenses.map((expense, index) => (
-                                <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{expense.name}</td>
-                                    <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
-                                    <td>{expense.paidBy}</td>
-                                    <td>{expense.participants.join(', ')}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+                    <h5 className="mb-4">Total Expense: <strong className="text-success">{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</strong></h5>
+                    <div className="d-flex gap-2 mb-4 flex-wrap">
+                        <Button variant="info" className="d-flex align-items-center gap-2 fw-semibold shadow-sm px-3 py-2" onClick={generatePDF} style={{ borderRadius: 8 }}>
+                            <FileEarmarkArrowDown size={18} /> Export as PDF
+                        </Button>
+                        <Button variant="success" className="d-flex align-items-center gap-2 fw-semibold shadow-sm px-3 py-2" onClick={generateExcel} style={{ borderRadius: 8 }}>
+                            <FileEarmarkExcel size={18} /> Export as Excel
+                        </Button>
+                    </div>
                 </Col>
             </Row>
-            <Row>
-                <Col>
-                    <h3 className="mt-4 mb-3">Spent Amounts</h3>
-                    <Table responsive bordered hover>
-                        <thead>
-                            <tr>
-                                <th>Member</th>
-                                <th>Spent Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(spentAmounts).map((member, index) => (
-                                <tr key={index}>
-                                    <td>{member}</td>
-                                    <td>{getCurrencySymbol(currency)}{spentAmounts[member].toFixed(2)}</td>
-                                </tr>
-                            ))}
-                            <tr className='table-dark'>
-                                <td>Total Expense</td>
-                                <td>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </Table>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <h3 className="mt-4 mb-3">Balances including Total Expense</h3>
-                    <Table responsive bordered hover>
-                        <thead>
-                            <tr>
-                                <th>Member</th>
-                                <th>Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(balances).map((member, index) => (
-                                <tr key={index}>
-                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{member}</td>
-                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{getCurrencySymbol(currency)}{balances[member].toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </Col>
-            </Row>
+            <Accordion defaultActiveKey="0" alwaysOpen >
+                <Accordion.Item eventKey="0" className={styles.accordionItem}>
+                    <Accordion.Header><PiggyBank className="me-2 mb-1" size={22} />Expenses</Accordion.Header>
+                    <Accordion.Body className='px-2'>
+                        <div style={{ maxHeight: '340px', overflowY: 'auto', overflowX: 'auto', borderRadius: '10px', boxShadow: '0 2px 8px #2196f322', border: '1px solid #e3e3e3', background: '#f8fafc' }}>
+                            <Table responsive bordered hover className="mb-0 align-middle text-nowrap">
+                                <thead className="table-primary sticky-top">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Name</th>
+                                        <th>Amount</th>
+                                        <th>Paid By</th>
+                                        <th>Participants</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {expenses.map((expense, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{expense.name}</td>
+                                            <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
+                                            <td>{expense.paidBy}</td>
+                                            <td style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                <span>{expense.participants.slice(0, 2).join(', ')}{expense.participants.length > 2 ? '' : ''}</span>
+                                                {expense.participants.length > 2 && (
+                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
+                                                        <PeopleFill size={16} />
+                                                    </Button>
+                                                )}
+                                                {expense.participants.length > 0 && expense.participants.length <= 2 && (
+                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
+                                                        <PeopleFill size={16} />
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                        {/* Participants Modal */}
+                        {showParticipants && (
+                            <div className="modal fade show" style={{ display: 'block', background: 'rgba(33,150,243,0.15)' }} tabIndex="-1">
+                                <div className="modal-dialog">
+                                    <div className="modal-content" style={{ borderRadius: 16, border: '2px solid #1de9b6', boxShadow: '0 4px 24px #2196f355' }}>
+                                        <div className="modal-header" style={{ background: 'linear-gradient(90deg, #1de9b6 0%, #2196f3 100%)', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+                                            <h5 className="modal-title"><PeopleFill className="me-2" />Participants</h5>
+                                            <button type="button" className="btn-close btn-close-white" onClick={handleCloseParticipants}></button>
+                                        </div>
+                                        <div className="modal-body" style={{ background: '#f4f8ff' }}>
+                                            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                                {currentParticipants.map((p, i) => (
+                                                    <li key={i} style={{ padding: '0.5rem 0', borderBottom: '1px solid #e3f0ff', color: '#1769aa', fontWeight: 500 }}>
+                                                        <PeopleFill className="me-2" style={{ color: '#1de9b6' }} />{p}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="modal-footer" style={{ background: '#e3f0ff', borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+                                            <Button variant="success" onClick={handleCloseParticipants} style={{ borderRadius: 8, fontWeight: 600 }}>Close</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1" className={styles.accordionItem}>
+                    <Accordion.Header><CashStack className="me-2 mb-1" size={20} />Spent Amounts</Accordion.Header>
+                    <Accordion.Body className='px-2'>
+                        <Row>
+                            <Col>
+                                <div className="bg-white">
+                                    <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
+                                        <thead className="table-info">
+                                            <tr>
+                                                <th>Member</th>
+                                                <th>Spent Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.keys(spentAmounts).map((member, index) => (
+                                                <tr key={index}>
+                                                    <td>{member}</td>
+                                                    <td>{getCurrencySymbol(currency)}{spentAmounts[member].toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                            <tr className='table-dark'>
+                                                <td>Total Expense</td>
+                                                <td>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2" className={styles.accordionItem}>
+                    <Accordion.Header><PiggyBank className="me-2 mb-1" size={20} />Balances including Total Expense</Accordion.Header>
+                    <Accordion.Body className='px-2'>
+                        <Row>
+                            <Col>
+                                <div className="bg-white">
+                                    <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
+                                        <thead className="table-success">
+                                            <tr>
+                                                <th className='p-2'>Member</th>
+                                                <th className='p-2'>Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.keys(balances).map((member, index) => (
+                                                <tr key={index}>
+                                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{member}</td>
+                                                    <td className={balances[member] > 0 ? styles.positive : styles.negative}>{getCurrencySymbol(currency)}{balances[member].toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
         </Container>
     );
 }

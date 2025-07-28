@@ -1,0 +1,75 @@
+// Modern, mobile-friendly styles for Trip section
+.container {
+    padding-top: 2.5rem;
+}
+
+.tripCard {
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 24px rgba(30, 98, 208, 0.08);
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    background: #fff;
+    margin-bottom: 2rem;
+}
+
+.tripHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.tripTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e62d0;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.organizerRow {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1.2rem;
+}
+
+.organizerIcon {
+    color: #6c63ff;
+}
+
+.formLabel {
+    font-weight: 600;
+    color: #1e62d0;
+}
+
+.display-space-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+@media (max-width: 600px) {
+    .tripCard {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+    }
+
+    .tripTitle {
+        font-size: 1.3rem;
+    }
+
+    .organizerRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .display-space-between {
+        flex-direction: column;
+        gap: 0.7rem;
+        align-items: stretch;
+    }
+}
+
+// Add more styles as needed

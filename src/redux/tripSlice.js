@@ -33,8 +33,15 @@ const tripSlice = createSlice({
         addExpense(state, action) {
             state.expenses.push(action.payload);
         },
+        updateExpense(state, action) {
+            const updated = action.payload;
+            const idx = state.expenses.findIndex(exp => exp.id === updated.id);
+            if (idx !== -1) {
+                state.expenses[idx] = updated;
+            }
+        },
         removeExpense(state, action) {
-            state.expenses = state.expenses.filter((expense) => expense.name !== action.payload);
+            state.expenses = state.expenses.filter((expense) => expense.id !== action.payload);
         },
         selectCurrency(state, action) {
             state.currency = action.payload;
@@ -42,5 +49,5 @@ const tripSlice = createSlice({
     }
 });
 
-export const { setTrip, addMember, editMember, addExpense, removeMember, removeExpense, selectCurrency } = tripSlice.actions;
+export const { setTrip, addMember, editMember, addExpense, updateExpense, removeMember, removeExpense, selectCurrency } = tripSlice.actions;
 export default tripSlice.reducer;

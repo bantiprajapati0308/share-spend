@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, Button, Container, Row, Col, Card, ListGroup } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Card, ListGroup, Accordion } from 'react-bootstrap';
 import { addExpense, removeExpense } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
 import { getCurrencySymbol } from '../Util';
 import styles from '../assets/scss/Expense.module.scss'; // Import custom styles
-import { PencilSquare, Trash } from 'react-bootstrap-icons';
+import { PencilSquare, Trash, PlusCircle, CheckCircle, XCircle, PeopleFill, ListUl, Pencil, Trash3, Save2 } from 'react-bootstrap-icons';
+
+
 
 function Expense() {
     const [expenseName, setExpenseName] = useState('');
@@ -14,7 +17,9 @@ function Expense() {
     const [participants, setParticipants] = useState([]);
     const [description, setDescription] = useState('');
     const [editMode, setEditMode] = useState(false);
-    const [editIndex, setEditIndex] = useState(null);
+    const [editId, setEditId] = useState(null);
+    const [activeAccordion, setActiveAccordion] = useState('add');
+    const [formError, setFormError] = useState('');
 
     const { members, expenses, currency } = useSelector((state) => state.trip);
     const dispatch = useDispatch();
@@ -22,46 +27,61 @@ function Expense() {
 
     const handleAddExpense = (e) => {
         e.preventDefault();
+        setFormError('');
+        if (participants.length === 0) {
+            setFormError('Please select at least one participant.');
+            return;
+        }
         if (editMode) {
-            dispatch(updateExpense(editIndex));
+            dispatch(updateExpense(editId));
         } else {
-            dispatch(addExpense({
+            const newExpense = {
+                id: uuidv4(),
                 name: expenseName,
                 amount: parseFloat(amount),
                 paidBy,
                 participants,
                 description
-            }));
+            };
+            dispatch(addExpense(newExpense));
         }
         resetForm();
     };
 
-    const handleEditExpense = (index) => {
-        const expense = expenses[index];
+    const handleEditExpense = (id) => {
+        const expense = expenses.find((exp) => exp.id === id);
+        if (!expense) return;
         setExpenseName(expense.name);
         setAmount(expense.amount.toString());
         setPaidBy(expense.paidBy);
         setParticipants(expense.participants);
         setDescription(expense.description);
         setEditMode(true);
-        setEditIndex(index);
+        setEditId(id);
+        setActiveAccordion('add');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const updateExpense = (index) => {
-        dispatch(addExpense({
+    const updateExpense = (id) => {
+        // Find the original expense
+        const original = expenses.find((exp) => exp.id === id);
+        if (!original) return;
+        const updatedExpense = {
+            ...original,
             name: expenseName,
             amount: parseFloat(amount),
             paidBy,
             participants,
             description
-        }, index));
+        };
+        dispatch({ type: 'trip/updateExpense', payload: updatedExpense });
         resetForm();
         setEditMode(false);
-        setEditIndex(null);
+        setEditId(null);
     };
 
-    const handleDeleteExpense = (name) => {
-        dispatch(removeExpense(name));
+    const handleDeleteExpense = (id) => {
+        dispatch(removeExpense(id));
     };
 
     const resetForm = () => {
@@ -71,7 +91,7 @@ function Expense() {
         setParticipants([]);
         setDescription('');
         setEditMode(false);
-        setEditIndex(null);
+        setEditId(null);
     };
 
     const handleSelectAll = (e) => {
@@ -81,6 +101,9 @@ function Expense() {
             setParticipants([]);
         }
     };
+
+    // Helper to determine if all members are selected
+    const isAllSelected = members.length > 0 && participants.length === members.length;
 
     const handleNext = () => {
         navigate('/share-spend/report');
@@ -92,157 +115,237 @@ function Expense() {
 
     return (
         <Container className={styles.expenseContainer}>
-            <Row className="justify-content-center mt-4">
+            <Row className="justify-content-center mt-0">
                 <Col md="8">
-                    <Card className={styles.expenseCard}>
-                        <Card.Header className={styles.cardHeader}>
-                            <Row className="align-items-center">
-                                <Col>
-                                    <h2 className={styles.cardTitle}>{editMode ? 'Edit Expense' : 'Add Expense'}</h2>
-                                </Col>
-                                <Col xs="auto">
-                                    <Button variant="outline-primary" onClick={handleBack}>Back</Button>
-                                </Col>
-                            </Row>
-                        </Card.Header>
-                        <Card.Body>
-                            <Form onSubmit={handleAddExpense}>
-                                <Row>
-                                    <Col md="6">
-                                        <Form.Group controlId="expenseName">
-                                            <Form.Label>Expense Name</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Enter expense name"
-                                                value={expenseName}
-                                                onChange={(e) => setExpenseName(e.target.value)}
-                                                required
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md="6">
-                                        <Form.Group controlId="amount">
-                                            <Form.Label>Amount</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                placeholder="Enter amount"
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                                required
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                                <Row className="mb-3">
-                                    <Col md="6">
-                                        <Form.Group controlId="paidBy">
-                                            <Form.Label>Paid By</Form.Label>
-                                            <Form.Control
-                                                as="select"
-                                                value={paidBy}
-                                                onChange={(e) => setPaidBy(e.target.value)}
-                                                required
-                                            >
-                                                <option value="">Select member</option>
-                                                {members.map((member, index) => (
-                                                    <option key={index} value={member}>
-                                                        {member}
-                                                    </option>
-                                                ))}
-                                            </Form.Control>
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md="6">
-                                        <Form.Group controlId="description">
-                                            <Form.Label>Description</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Enter description"
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                                <Form.Group controlId="participants" className={styles.participantCheckboxes}>
-                                    <Form.Label>Participants</Form.Label>
-                                    <Form.Check
-                                        type="checkbox"
-                                        label="Select All"
-                                        onChange={handleSelectAll}
-                                    />
-                                    {members.map((member, index) => (
-                                        <Form.Check
-                                            key={index}
-                                            type="checkbox"
-                                            label={member}
-                                            value={member}
-                                            checked={participants.includes(member)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setParticipants([...participants, member]);
-                                                } else {
-                                                    setParticipants(participants.filter((p) => p !== member));
-                                                }
-                                            }}
-                                        />
-                                    ))}
-                                </Form.Group>
-
-                                <Button variant="primary" type="submit" className={styles.submitButton}>
-                                    {editMode ? 'Update Expense' : 'Add Expense'}
-                                </Button>
-                                {editMode && (
-                                    <Button variant="secondary" className={styles.cancelButton} onClick={() => { resetForm(); setEditMode(false); }}>
-                                        Cancel
-                                    </Button>
-                                )}
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row className="justify-content-center mt-4">
-                <Col md="8">
-                    <Card className={styles.expenseListCard}>
-                        <Card.Header className={styles.cardHeader}>
-                            <h2 className={styles.cardTitle}>Expense List</h2>
-                        </Card.Header>
-                        <Card.Body className='p-0'>
-                            <ListGroup variant="flush">
-                                {expenses.length > 0 ? (
-                                    expenses.map((expense, index) => (
-                                        <ListGroup.Item key={index} className={styles.expenseListItem}>
-                                            <div className={styles.expenseDetails}>
-                                                <strong>{expense.name}</strong>
-                                                <span>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</span>
-                                                <span>Paid by {expense.paidBy}</span>
-                                                <span>Participants: {expense.participants.join(', ')}</span>
-                                            </div>
-                                            <div className={styles.actionButtons}>
-                                                <Button variant="outline-warning" size="sm" onClick={() => handleEditExpense(index)}>
-                                                    <PencilSquare />
-                                                </Button>
-                                                <Button variant="outline-danger" size="sm" onClick={() => handleDeleteExpense(expense.name)}>
-                                                    <Trash />
-                                                </Button>
-                                            </div>
-                                        </ListGroup.Item>
-                                    ))
-                                ) : (
-                                    <ListGroup.Item className={styles.noExpensesMessage}>
-                                        No expenses added yet.
-                                    </ListGroup.Item>
-                                )}
-                            </ListGroup>
-                        </Card.Body>
-                    </Card>
-                    {expenses.length > 0 && (
-                        <Button variant="success" className={styles.nextButton} onClick={handleNext}>
-                            Next
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <Button variant="outline-secondary" className={styles.backBtn} onClick={handleBack} title="Back to Add Members">
+                            <PeopleFill className="me-2" size={20} />
+                            <span className="fw-semibold">Back to Add Members</span>
                         </Button>
-                    )}
+                    </div>
+                    <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} alwaysOpen className={styles.expenseAccordion}>
+                        <Accordion.Item eventKey="add">
+                            <Accordion.Header>
+                                <PlusCircle className="me-2 text-primary" size={22} />
+                                <span className={styles.cardTitle}>{editMode ? 'Edit Expense' : 'Add Expense'}</span>
+                            </Accordion.Header>
+                            <Accordion.Body>
+                                <Form onSubmit={handleAddExpense}>
+                                    {formError && (
+                                        <div className="alert alert-danger py-1 px-2 mb-2" style={{ fontSize: '0.97rem' }}>{formError}</div>
+                                    )}
+                                    <Row className="gy-2 gx-2 align-items-center mb-2">
+                                        <Col xs={6} md={3} className="p-1">
+                                            <Form.Group controlId="amount" className={styles.inlineFormGroup}>
+                                                <Form.Label className={styles.inlineLabel}>Amount</Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder="Amount"
+                                                    value={amount}
+                                                    onChange={(e) => setAmount(e.target.value)}
+                                                    required
+                                                    size="sm"
+                                                    className={styles.inlineInput}
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col xs={6} md={3} className="p-1">
+                                            <Form.Group controlId="expenseName" className={styles.inlineFormGroup}>
+                                                <Form.Label className={styles.inlineLabel}>Name</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Expense name"
+                                                    value={expenseName}
+                                                    onChange={(e) => setExpenseName(e.target.value)}
+                                                    required
+                                                    size="sm"
+                                                    className={styles.inlineInput}
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col xs={6} md={3} className="p-1">
+                                            <Form.Group controlId="paidBy" className={styles.inlineFormGroup}>
+                                                <Form.Label className={styles.inlineLabel}>Paid By</Form.Label>
+                                                <Form.Control
+                                                    as="select"
+                                                    value={paidBy}
+                                                    onChange={(e) => setPaidBy(e.target.value)}
+                                                    required
+                                                    size="sm"
+                                                    className={styles.inlineInput}
+                                                >
+                                                    <option value="">Select</option>
+                                                    {members.map((member, index) => (
+                                                        <option key={index} value={member}>
+                                                            {member}
+                                                        </option>
+                                                    ))}
+                                                </Form.Control>
+                                            </Form.Group>
+                                        </Col>
+                                        <Col xs={6} md={3} className="p-1">
+                                            <Form.Group controlId="description" className={styles.inlineFormGroup}>
+                                                <Form.Label className={styles.inlineLabel}>Desc</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Description"
+                                                    value={description}
+                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    size="sm"
+                                                    className={styles.inlineInput}
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group controlId="participants" className={styles.participantCheckboxes}>
+                                        <div className={styles.participantHeader}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <PeopleFill className="me-2 text-info" size={24} />
+                                                <span className={styles.participantHeading}>Participants</span>
+                                            </div>
+                                            <div className={styles.formActionBtns}>
+                                                {!editMode && (
+                                                    <Button variant="success" type="submit" className={styles.iconBtn} title="Add Expense" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
+                                                        <PlusCircle size={22} className="me-1" />Add
+                                                    </Button>
+                                                )}
+                                                {editMode && (
+                                                    <>
+                                                        <Button variant="info" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
+                                                            <Save2 size={22} className="me-1" />Update
+                                                        </Button>
+                                                        <Button variant="outline-secondary" className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
+                                                            <XCircle size={22} className="me-1" />Cancel
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className={styles.participantGrid}>
+                                            {/* Select All button */}
+                                            <div
+                                                className={`${styles.participantBtn} ${isAllSelected ? styles.selected : ''}`}
+                                                onClick={() => {
+                                                    if (isAllSelected) {
+                                                        setParticipants([]);
+                                                    } else {
+                                                        setParticipants([...members]);
+                                                    }
+                                                }}
+                                                tabIndex={0}
+                                                role="button"
+                                            >
+                                                <div className={styles.avatar} style={{ background: '#adb5bd' }}>ALL</div>
+                                                <div className={styles.name}>All</div>
+                                                {isAllSelected && <span className={styles.checkmark}>✓</span>}
+                                            </div>
+                                            {members.map((member, index) => {
+                                                const selected = participants.includes(member);
+                                                const initials = member.split(' ').map(n => n[0]).join('').toUpperCase();
+                                                // Style: checked = dark bg, light text; unchecked = light bg, dark text
+                                                const btnStyle = selected
+                                                    ? {
+                                                        background: 'linear-gradient(135deg, #0d223a 0%, #1e62d0 100%)',
+                                                        border: '2.5px solid #1e62d0',
+                                                        color: '#f3f6fa',
+                                                    }
+                                                    : {
+                                                        background: '#f6f8fa',
+                                                        border: '2.5px solid #e3e8ee',
+                                                        color: '#232946',
+                                                    };
+                                                // Avatar: use a lighter, unique color for contrast
+                                                let avatarBg = '#e3e8ee';
+                                                let avatarColor = '#232946';
+                                                if (member.length > 0) {
+                                                    const code = member.charCodeAt(0) + member.length * 13;
+                                                    const hue = (code * 13) % 360;
+                                                    avatarBg = selected
+                                                        ? `hsl(${hue}, 80%, 82%)`
+                                                        : `hsl(${hue}, 40%, 92%)`;
+                                                    avatarColor = selected ? '#1e223a' : '#232946';
+                                                }
+                                                return (
+                                                    <div
+                                                        key={index}
+                                                        className={`${styles.participantBtn} ${selected ? styles.selected : ''}`}
+                                                        style={btnStyle}
+                                                        onClick={() => {
+                                                            if (selected) {
+                                                                setParticipants(participants.filter((p) => p !== member));
+                                                            } else {
+                                                                setParticipants([...participants, member]);
+                                                            }
+                                                        }}
+                                                        tabIndex={0}
+                                                        role="button"
+                                                    >
+                                                        <div className={styles.avatar} style={{ background: avatarBg, color: avatarColor }}>{initials}</div>
+                                                        <div className={styles.name} style={{ color: btnStyle.color, fontWeight: 700 }}>{member}</div>
+                                                        {selected && <span className={styles.checkmark}>✓</span>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </Form.Group>
+                                </Form>
+                            </Accordion.Body>
+                        </Accordion.Item>
+                        <Accordion.Item eventKey="list">
+                            <Accordion.Header>
+                                <ListUl className="me-2 text-success" size={22} />
+                                <span className={styles.cardTitle}>Expense List</span>
+                            </Accordion.Header>
+                            <Accordion.Body className="p-0">
+                                <div className={styles.expenseListScroller}>
+                                    <ListGroup variant="flush">
+                                        {expenses.length > 0 ? (
+                                            [...expenses].reverse().map((expense) => (
+                                                <ListGroup.Item key={expense.id} className={`${styles.expenseListItem} p-3`}>
+                                                    <Row className="align-items-center">
+                                                        <Col xs={12} md={8}>
+                                                            <div className={styles.expenseInfo}>
+                                                                <div className={`${styles.expenseHeader} d-flex justify-content-between`}>
+                                                                    <strong className={styles.expenseName}>{expense.name}</strong>
+                                                                    <span className={`${styles.expenseAmount} d-block d-md-none`}>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</span>
+                                                                </div>
+                                                                <div className={styles.expenseMeta}>
+                                                                    <span>Paid by: <strong>{expense.paidBy}</strong></span>
+                                                                    <span className={`${styles.expenseAmount} d-none d-md-inline ms-4`}>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</span>
+                                                                    <span className={styles.actionButtonsInline}>
+                                                                        <Button variant="outline-primary" size="sm" onClick={() => handleEditExpense(expense.id)} title="Edit">
+                                                                            <Pencil size={18} />
+                                                                        </Button>
+                                                                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteExpense(expense.id)} className="ms-1" title="Delete">
+                                                                            <Trash3 size={18} />
+                                                                        </Button>
+                                                                    </span>
+                                                                </div>
+                                                                <div className={styles.expenseParticipants}>
+                                                                    <small>Participants: {expense.participants.join(', ')}</small>
+                                                                </div>
+                                                            </div>
+                                                        </Col>
+                                                    </Row>
+                                                </ListGroup.Item>
+                                            ))
+                                        ) : (
+                                            <ListGroup.Item className={styles.noExpensesMessage}>
+                                                No expenses added yet.
+                                            </ListGroup.Item>
+                                        )}
+                                    </ListGroup>
+                                </div>
+                                {expenses.length > 0 && (
+                                    <div className="d-flex justify-content-end p-2">
+                                        <Button variant="success" className={styles.nextButton} onClick={handleNext}>
+                                            Next
+                                        </Button>
+                                    </div>
+                                )}
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
                 </Col>
             </Row>
         </Container>

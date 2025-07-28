@@ -2,8 +2,26 @@
 @import './variable';
 
 .positive {
-@include apply-status-styles($positive-color, $positive-background)
+    @include apply-status-styles($positive-color, $positive-background);
+    padding: 0.25rem 0.5rem !important;
 }
+
 .negative {
-@include apply-status-styles($negative-color, $negative-background)
+    @include apply-status-styles($negative-color, $negative-background);
+    padding: 0.25rem 0.5rem !important;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.accordion-item {
+
+    button {
+        &:focus {
+            box-shadow: none !important;
+            outline: none !important;
+        }
+    }
 }

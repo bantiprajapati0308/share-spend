@@ -1,14 +1,18 @@
 @import './mixin';
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
 }
+
 .margin-bttom {
     margin-bottom: 175px;
 }
+
 .display-center {
     @include flex-center;
 }
+
 .display-space-between {
-    @include display-space-between;
+    // @include display-space-between;
 }
