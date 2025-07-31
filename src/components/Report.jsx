@@ -159,15 +159,15 @@ function Report() {
                                             <td>{expense.name}</td>
                                             <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
                                             <td>{expense.paidBy}</td>
-                                            <td style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            <td style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', position:'relative', paddingRight:20 }}>
                                                 <span>{expense.participants.slice(0, 2).join(', ')}{expense.participants.length > 2 ? '' : ''}</span>
                                                 {expense.participants.length > 2 && (
-                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
+                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28, position:'absolute', right:0 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
                                                         <PeopleFill size={16} />
                                                     </Button>
                                                 )}
                                                 {expense.participants.length > 0 && expense.participants.length <= 2 && (
-                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
+                                                    <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28, position:'absolute', right:0 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
                                                         <PeopleFill size={16} />
                                                     </Button>
                                                 )}
