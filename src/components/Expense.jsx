@@ -336,18 +336,21 @@ function Expense() {
                                         )}
                                     </ListGroup>
                                 </div>
-                                {expenses.length > 0 && (
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
+                </Col>
+            </Row>
+            <Row>
+                <Col> {expenses.length > 0 && (
                                     <div className="d-flex justify-content-end p-2">
                                         <Button variant="success" className={styles.nextButton} onClick={handleNext}>
                                             Next
                                         </Button>
                                     </div>
                                 )}
-                            </Accordion.Body>
-                        </Accordion.Item>
-                    </Accordion>
-                </Col>
-            </Row>
+                                </Col>
+                                </Row>
         </Container>
     );
 }
