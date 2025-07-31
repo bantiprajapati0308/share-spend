@@ -104,7 +104,7 @@ function Member() {
                             const used = isMemberUsed(member);
                             return (
                                 <div key={index} className={styles.memberCardItem}>
-                                   <div><span>{index+1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
+                                   <div className="d-flex align-items-center"><span>{index+1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
                                     <div className={styles.memberName} title={member}>{member}</div>
                                     <div className={styles.memberActions}>
                                         <OverlayTrigger
