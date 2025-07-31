@@ -211,11 +211,11 @@ function Expense() {
                                                 )}
                                                 {editMode && (
                                                     <>
-                                                        <Button variant="info" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
+                                                        <Button variant="success" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '1.08rem' }}>
                                                             <Save2 size={22} className="me-1" />Update
                                                         </Button>
-                                                        <Button variant="outline-secondary" className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
-                                                            <XCircle size={22} className="me-1" />Cancel
+                                                        <Button className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '1.08rem' }}>
+                                                            <XCircle size={22} />
                                                         </Button>
                                                     </>
                                                 )}
