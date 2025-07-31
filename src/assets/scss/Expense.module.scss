@@ -506,7 +506,6 @@
 }
 
 .expense-list-item {
-    @include display-space-between;
     border-bottom: 1px solid #ddd;
 }
 
