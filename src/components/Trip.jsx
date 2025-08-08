@@ -8,6 +8,8 @@ import { PeopleFill, Globe2, InfoCircle } from 'react-bootstrap-icons';
 import styles from '../assets/scss/Trip.module.scss';
 import ConfirmationModal from './common/ConfirmationModal';
 import { persistor } from '../redux/store';
+import { addTrip } from '../hooks/useTrips'; // Add this import
+
 function Trip() {
     const [tripName, setTripName] = useState('');
     const [description, setDescription] = useState('');
@@ -19,14 +21,27 @@ function Trip() {
     const { trip, currency: tripCurrency } = useSelector((state) => state.trip);
     console.log('trip: ', trip);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('members');
-        dispatch(setTrip({ name: tripName, description, organizer }));
-        dispatch(currency(currency));
-        setTripName('');
-        setDescription('');
-        setOrganizer('');
+        // Prepare trip data
+        const tripData = { name: tripName, description, organizer, currency };
+        try {
+            // Add trip to Firestore and get the new trip's reference
+            const tripRef = await addTrip(tripData);
+            // Get the tripId from Firestore
+            const tripId = tripRef.id;
+            // Dispatch to Redux if needed
+            dispatch(setTrip({ name: tripName, description, organizer, currency, id: tripId }));
+            // Navigate to members page with tripId
+            navigate(`/share-spend/members/${tripId}`);
+            // Reset form
+            setTripName('');
+            setDescription('');
+            setOrganizer('');
+            setCurrency('');
+        } catch (err) {
+            alert("Error creating trip: " + err.message);
+        }
     };
     useEffect(() => {
         setTripName(trip.name);

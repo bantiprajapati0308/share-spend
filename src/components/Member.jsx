@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { PencilSquare, Trash, PersonCircle, PlusCircle, ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
-import { useNavigate } from 'react-router-dom';
-import { addMember, editMember, removeMember } from '../redux/tripSlice';
-import styles from '../assets/scss/Member.module.scss'; // Import the SCSS module
+import { useNavigate, useParams } from 'react-router-dom';
+import styles from '../assets/scss/Member.module.scss';
+import { addMember as addMemberToDB, getMembers } from '../hooks/useMembers'; // Import Firestore API
 
 function Member() {
     const [memberName, setMemberName] = useState('');
     const [editIndex, setEditIndex] = useState(null);
-    const members = useSelector((state) => state.trip.members);
+    const [members, setMembers] = useState([]);
     const expenses = useSelector((state) => state.trip.expenses);
     const [validated, setValidated] = useState(false);
-    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { tripId } = useParams(); // Get tripId from route
 
-    const handleAddMember = (e) => {
+    useEffect(() => {
+        fetchMembers();
+    }, []);
+
+    const fetchMembers = async () => {
+        if (!tripId) return;
+        const data = await getMembers(tripId);
+        setMembers(data.map(m => m.name)); // Assuming member object has 'name'
+    };
+
+    const handleAddMember = async (e) => {
         e.preventDefault();
         const form = e.currentTarget;
         if (form.checkValidity() === false) {
@@ -25,12 +35,21 @@ function Member() {
         }
 
         if (editIndex !== null) {
-            dispatch(editMember({ memberName, editIndex }));
+            // Your edit logic (if you want to update Firestore, add update API)
             setEditIndex(null);
         } else {
-            dispatch(addMember(memberName));
+            if (!tripId) {
+                alert("Trip ID not found!");
+                return;
+            }
+            try {
+                await addMemberToDB(tripId, { name: memberName });
+                setMemberName('');
+                fetchMembers();
+            } catch (err) {
+                alert("Error adding member: " + err.message);
+            }
         }
-        setMemberName('');
         setValidated(false);
     };
 
@@ -104,7 +123,7 @@ function Member() {
                             const used = isMemberUsed(member);
                             return (
                                 <div key={index} className={styles.memberCardItem}>
-                                   <div className="d-flex align-items-center"><span>{index+1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
+                                    <div className="d-flex align-items-center"><span>{index + 1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
                                     <div className={styles.memberName} title={member}>{member}</div>
                                     <div className={styles.memberActions}>
                                         <OverlayTrigger
@@ -125,7 +144,13 @@ function Member() {
                                                 </Button>
                                             </span>
                                         </OverlayTrigger>
-                                        <Button variant="outline-danger" size="sm" className={styles.iconBtn} onClick={() => handleDelete(member)} title="Delete">
+                                        <Button variant={used ? "outline-danger" : "outline-danger"}
+                                            size="sm"
+                                            className={styles.iconBtn}
+                                            disabled={used}
+                                            style={{ pointerEvents: used ? 'auto' : 'auto' }}
+                                            onClick={() => handleDelete(member)}
+                                            title={used ? 'Cannot delete' : 'Delete'}>
                                             <Trash size={18} />
                                         </Button>
                                     </div>
