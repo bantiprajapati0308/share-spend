@@ -1,5 +1,4 @@
 export const getCurrencySymbol = (currency) => {
-    console.log('currency: ', currency);
     switch (currency) {
         case 'USD':
             return '$';

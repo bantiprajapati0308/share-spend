@@ -1,3 +1,11 @@
+.authBg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f3f6ff 60%, #e3e8fa 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .authContainer {
   max-width: 95vw;
   width: 100%;
@@ -5,7 +13,7 @@
   padding: 2rem 1rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 
   @media (min-width: 600px) {
     max-width: 400px;
@@ -13,15 +21,73 @@
   }
 }
 
+.authCard {
+  max-width: 370px;
+  width: 100%;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px rgba(30, 98, 208, 0.10);
+  padding: 2.2rem 1.5rem 2rem 1.5rem;
+  background: #fff;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.logoImg {
+  height: 38px;
+  width: 38px;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.07);
+  background: #e3e8fa;
+  object-fit: cover;
+}
+
+.logoText {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e62d0;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+
+.brandAccent {
+  color: #6c63ff;
+  margin-left: 4px;
+}
+
 .title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
+  color: #343a40;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.form {
+  margin-bottom: 0.7rem;
 }
 
 .formGroup {
   margin-bottom: 1rem;
+}
+
+.label {
+  font-weight: 500;
+  color: #1e62d0;
+  margin-bottom: 0.3rem;
+}
+
+.input {
+  border-radius: 8px;
+  border: 1px solid #e3e8fa;
+  font-size: 1rem;
+  padding: 0.6rem 0.9rem;
 }
 
 .buttonRow {
@@ -34,17 +100,73 @@
   }
 }
 
+.mainBtn {
+  width: 100%;
+  background: linear-gradient(90deg, #6c63ff 60%, #1e62d0 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.08rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0.3rem;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.07);
+}
+
+.switchBtn {
+  width: 100%;
+  color: #6c63ff;
+  font-size: 0.98rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  margin-top: -0.2rem;
+}
+
+.divider {
+  text-align: center;
+  margin: 1.1rem 0 0.7rem 0;
+  font-size: 0.95rem;
+  color: #aaa;
+  position: relative;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.divider:before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #e3e8fa;
+  z-index: 0;
+}
+
 .googleBtn {
   width: 100%;
-  margin-top: 1rem;
-  background: #ea4335;
+  background: linear-gradient(90deg, #4285f4 60%, #6c63ff 100%);
   color: #fff;
   border: none;
-  font-weight: 500;
-  border-radius: 6px;
+  font-weight: 600;
+  border-radius: 8px;
   padding: 0.7rem;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.07);
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+
   &:hover {
-    background: #d93025;
+    background: linear-gradient(90deg, #357ae8 60%, #5548c8 100%);
+    color: #fff;
   }
 }

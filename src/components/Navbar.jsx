@@ -1,13 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Navbar, Nav, Container, Row, Col } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
+import { auth } from '../firebase';
+import { Navbar, Nav, Container, Row, Col, Button } from 'react-bootstrap';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '../assets/images/logo.png';
 import styles from '../assets/scss/Expense.module.scss';
-import { HouseDoor, People, Wallet2, BarChart } from 'react-bootstrap-icons';
+import { HouseDoor, People, Wallet2, BarChart, BoxArrowRight } from 'react-bootstrap-icons';
 
 function NavigationBar() {
     const [expanded, setExpanded] = useState(false);
     const navRef = useRef();
+    const navigate = useNavigate();
 
 
     // Only allow hamburger icon to toggle navbar
@@ -45,6 +47,11 @@ function NavigationBar() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const handleLogout = async () => {
+        await auth.signOut();
+        navigate("/share-spend/login"); // Redirect to home after logout
+        window.location.reload();
+    };
 
     return (
         <Navbar
@@ -69,7 +76,7 @@ function NavigationBar() {
                         <div className={styles.mobileMenuGrid}>
                             <Row>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to="/share-spend/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <HouseDoor size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Trip</span>
                                     </NavLink>
@@ -118,6 +125,21 @@ function NavigationBar() {
                             </div>
                         </Nav>
                     )}
+                    <Navbar.Collapse className="justify-content-end">
+                        <Button
+                            variant="outline-danger"
+                            onClick={handleLogout}
+                            className={styles.logoutBtn}
+                            style={{
+                                border: 'none',
+                                background: 'transparent',
+                                boxShadow: 'none',
+                                padding: '0.4rem 0.6rem'
+                            }}
+                        >
+                            <BoxArrowRight size={22} color="#dc3545" />
+                        </Button>
+                    </Navbar.Collapse>
                 </Navbar.Collapse>
             </Container>
         </Navbar>
