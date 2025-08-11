@@ -1,5 +1,5 @@
 import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
 
 // Add a member to a trip
 export const addMember = async (tripId, memberData) => {
@@ -12,4 +12,10 @@ export const getMembers = async (tripId) => {
     const userId = auth.currentUser.uid;
     const snap = await getDocs(collection(db, "users", userId, "trips", tripId, "members"));
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+// ❌ Delete a member from a trip
+export const deleteMember = async (tripId, memberId) => {
+    const userId = auth.currentUser.uid;
+    await deleteDoc(doc(db, "users", userId, "trips", tripId, "members", memberId));
 };

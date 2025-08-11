@@ -4,8 +4,9 @@ import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip } from
 import { PencilSquare, Trash, PersonCircle, PlusCircle, ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from '../assets/scss/Member.module.scss';
-import { addMember as addMemberToDB, getMembers } from '../hooks/useMembers'; // Import Firestore API
+import { addMember as addMemberToDB, deleteMember, getMembers } from '../hooks/useMembers'; // Import Firestore API
 import FullScreenLoader from './common/FullScreenLoader';
+import { removeMember } from '../redux/tripSlice';
 
 function Member() {
     const [memberName, setMemberName] = useState('');
@@ -16,14 +17,14 @@ function Member() {
     const [validated, setValidated] = useState(false);
     const navigate = useNavigate();
     const { tripId } = useParams(); // Get tripId from route
-
+    const dispatch = useDispatch();
+    async function fetchMembers() {
+        setLoadingMembers(true);
+        const data = await getMembers(tripId);
+        setMembers(data);
+        setLoadingMembers(false);
+    }
     useEffect(() => {
-        async function fetchMembers() {
-            setLoadingMembers(true);
-            const data = await getMembers(tripId);
-            setMembers(data.map(m => m.name));
-            setLoadingMembers(false);
-        }
         if (tripId) fetchMembers();
     }, [tripId]);
 
@@ -61,15 +62,20 @@ function Member() {
             (exp) => exp.paidBy === member || (exp.participants && exp.participants.includes(member))
         );
     };
-
     const handleEdit = (index) => {
         if (isMemberUsed(members[index])) return;
-        setMemberName(members[index]);
+        setMemberName(members[index].name);
         setEditIndex(index);
     };
 
-    const handleDelete = (member) => {
-        dispatch(removeMember(member));
+    const handleDelete = async (memberId) => {
+        if (!tripId) return;
+        try {
+            await deleteMember(tripId, memberId); // delete from Firestore
+            await fetchMembers(); // refresh UI
+        } catch (err) {
+            alert("Error deleting member: " + err.message);
+        }
     };
 
     const handleNext = (type) => {
@@ -119,16 +125,16 @@ function Member() {
                             {members.map((member, index) => {
                                 // Avatar color
                                 let color = '#6c63ff';
-                                if (member.length > 0) {
-                                    const code = member.charCodeAt(0) + member.length * 13;
+                                if (member.name.length > 0) {
+                                    const code = member.name.charCodeAt(0) + member.length * 13;
                                     color = `hsl(${code * 13 % 360}, 70%, 70%)`;
                                 }
-                                const initials = member.split(' ').map(n => n[0]).join('').toUpperCase();
-                                const used = isMemberUsed(member);
+                                const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                                const used = isMemberUsed(member.name);
                                 return (
                                     <div key={index} className={styles.memberCardItem}>
                                         <div className="d-flex align-items-center"><span>{index + 1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
-                                        <div className={styles.memberName} title={member}>{member}</div>
+                                        <div className={styles.memberName} title={member.name}>{member.name}</div>
                                         <div className={styles.memberActions}>
                                             <OverlayTrigger
                                                 placement="top"
@@ -153,7 +159,7 @@ function Member() {
                                                 className={styles.iconBtn}
                                                 disabled={used}
                                                 style={{ pointerEvents: used ? 'auto' : 'auto' }}
-                                                onClick={() => handleDelete(member)}
+                                                onClick={() => handleDelete(member.id)}
                                                 title={used ? 'Cannot delete' : 'Delete'}>
                                                 <Trash size={18} />
                                             </Button>

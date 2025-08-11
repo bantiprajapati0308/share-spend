@@ -279,7 +279,7 @@ function Expense() {
                                                     let avatarBg = '#e3e8ee';
                                                     let avatarColor = '#232946';
                                                     if (member.length > 0) {
-                                                        const code = member.charCodeAt(0) + member.length * 13;
+                                                        const code = member.name.charCodeAt(0) + member.length * 13;
                                                         const hue = (code * 13) % 360;
                                                         avatarBg = selected
                                                             ? `hsl(${hue}, 80%, 82%)`

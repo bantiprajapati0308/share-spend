@@ -19,16 +19,17 @@ const tripSlice = createSlice({
             state.trip = action.payload;
         },
         addMember(state, action) {
-            state.members.push(action.payload);
+            const { id, name } = action.payload;
+            state.members.push({ id, name });
         },
         editMember(state, action) {
             const { editIndex, memberName } = action.payload;
             if (editIndex >= 0 && editIndex < state.members.length) {
-                state.members[editIndex] = memberName;
+                state.members[editIndex].name = memberName;
             }
         },
         removeMember(state, action) {
-            state.members = state.members.filter((member) => member !== action.payload);
+            state.members = state.members.filter((member) => member.id !== action.payload);
         },
         addExpense(state, action) {
             state.expenses.push(action.payload);
