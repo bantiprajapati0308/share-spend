@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
 import { PencilSquare, Trash, PersonCircle, PlusCircle, ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from '../assets/scss/Member.module.scss';
@@ -13,6 +13,7 @@ function Member() {
     const [editIndex, setEditIndex] = useState(null);
     const [members, setMembers] = useState([]);
     const [loadingMembers, setLoadingMembers] = useState(true);
+    const [deleteLoader, setDeleteLoader] = useState(false);
     const expenses = useSelector((state) => state.trip.expenses);
     const [validated, setValidated] = useState(false);
     const navigate = useNavigate();
@@ -59,7 +60,7 @@ function Member() {
     // Check if member is used in any expense (paidBy or participants)
     const isMemberUsed = (member) => {
         return expenses.some(
-            (exp) => exp.paidBy === member || (exp.participants && exp.participants.includes(member))
+            (exp) => exp.paidBy === member || (exp.participants && exp.participants.map(p => p.name === member))
         );
     };
     const handleEdit = (index) => {
@@ -71,8 +72,10 @@ function Member() {
     const handleDelete = async (memberId) => {
         if (!tripId) return;
         try {
+            setDeleteLoader(true)
             await deleteMember(tripId, memberId); // delete from Firestore
             await fetchMembers(); // refresh UI
+            setDeleteLoader(false)
         } catch (err) {
             alert("Error deleting member: " + err.message);
         }
@@ -132,7 +135,7 @@ function Member() {
                                 const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
                                 const used = isMemberUsed(member.name);
                                 return (
-                                    <div key={index} className={styles.memberCardItem}>
+                                    <div key={member.id} className={styles.memberCardItem}>
                                         <div className="d-flex align-items-center"><span>{index + 1}. </span> <div className={styles.avatar} style={{ background: color }}> {initials}</div></div>
                                         <div className={styles.memberName} title={member.name}>{member.name}</div>
                                         <div className={styles.memberActions}>
@@ -157,11 +160,11 @@ function Member() {
                                             <Button variant={used ? "outline-danger" : "outline-danger"}
                                                 size="sm"
                                                 className={styles.iconBtn}
-                                                disabled={used}
+                                                disabled={used || deleteLoader}
                                                 style={{ pointerEvents: used ? 'auto' : 'auto' }}
                                                 onClick={() => handleDelete(member.id)}
                                                 title={used ? 'Cannot delete' : 'Delete'}>
-                                                <Trash size={18} />
+                                                {deleteLoader ? <Spinner animation="border" size="sm" /> : <Trash size={18} />}
                                             </Button>
                                         </div>
                                     </div>

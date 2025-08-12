@@ -18,6 +18,7 @@ function Expense() {
     const [editMode, setEditMode] = useState(false);
     const [editId, setEditId] = useState(null);
     const [activeAccordion, setActiveAccordion] = useState('add');
+    const [activeAccordion2, setActiveAccordion2] = useState('list');
     const [formError, setFormError] = useState('');
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
@@ -151,7 +152,7 @@ function Expense() {
                                 <span className="fw-semibold">Back to Add Members</span>
                             </Button>
                         </div>
-                        <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} alwaysOpen className={styles.expenseAccordion}>
+                        <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} className={styles.expenseAccordion}>
                             <Accordion.Item eventKey="add">
                                 <Accordion.Header>
                                     <PlusCircle className="me-2 text-primary" size={22} />
@@ -233,16 +234,16 @@ function Expense() {
                                                 </div>
                                                 <div className={styles.formActionBtns}>
                                                     {!editMode && (
-                                                        <Button variant="success" type="submit" className={styles.iconBtn} title="Add Expense" style={{ fontWeight: 600, fontSize: '1.08rem', padding: '0.32rem 1.1rem' }}>
+                                                        <Button variant="success" type="submit" className={styles.iconBtn} title="Add Expense" style={{ fontWeight: 600, fontSize: '0.75rem', padding: '0.32rem 1.1rem' }}>
                                                             <PlusCircle size={22} className="me-1" />Add
                                                         </Button>
                                                     )}
                                                     {editMode && (
                                                         <>
-                                                            <Button variant="success" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '1.08rem' }}>
+                                                            <Button variant="success" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '0.75rem', marginRight: '0.25rem' }}>
                                                                 <Save2 size={22} className="me-1" />Update
                                                             </Button>
-                                                            <Button className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '1.08rem' }}>
+                                                            <Button className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '0.75rem' }}>
                                                                 <XCircle size={22} />
                                                             </Button>
                                                         </>
@@ -311,6 +312,8 @@ function Expense() {
                                     </Form>
                                 </Accordion.Body>
                             </Accordion.Item>
+                        </Accordion>
+                        <Accordion activeKey={activeAccordion2} onSelect={setActiveAccordion2} className={styles.expenseAccordion}>
                             <Accordion.Item eventKey="list">
                                 <Accordion.Header>
                                     <ListUl className="me-2 text-success" size={22} />
