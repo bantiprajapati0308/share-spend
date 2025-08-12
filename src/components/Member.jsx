@@ -7,14 +7,15 @@ import styles from '../assets/scss/Member.module.scss';
 import { addMember as addMemberToDB, deleteMember, getMembers } from '../hooks/useMembers'; // Import Firestore API
 import FullScreenLoader from './common/FullScreenLoader';
 import { removeMember } from '../redux/tripSlice';
+import { getExpenses } from '../hooks/useExpenses';
 
 function Member() {
     const [memberName, setMemberName] = useState('');
     const [editIndex, setEditIndex] = useState(null);
     const [members, setMembers] = useState([]);
+    const [expenses, setExpenses] = useState([]);
     const [loadingMembers, setLoadingMembers] = useState(true);
     const [deleteLoader, setDeleteLoader] = useState(false);
-    const expenses = useSelector((state) => state.trip.expenses);
     const [validated, setValidated] = useState(false);
     const navigate = useNavigate();
     const { tripId } = useParams(); // Get tripId from route
@@ -22,7 +23,9 @@ function Member() {
     async function fetchMembers() {
         setLoadingMembers(true);
         const data = await getMembers(tripId);
+        const expensesData = await getExpenses(tripId);
         setMembers(data);
+        setExpenses(expensesData);
         setLoadingMembers(false);
     }
     useEffect(() => {
@@ -59,9 +62,10 @@ function Member() {
 
     // Check if member is used in any expense (paidBy or participants)
     const isMemberUsed = (member) => {
-        return expenses.some(
-            (exp) => exp.paidBy === member || (exp.participants && exp.participants.map(p => p.name === member))
+        const data = expenses.some(
+            (exp) => exp.paidBy === member || (exp.participants && exp.participants.map(p => p.name).includes(member))
         );
+        return data
     };
     const handleEdit = (index) => {
         if (isMemberUsed(members[index])) return;

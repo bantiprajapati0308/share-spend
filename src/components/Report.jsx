@@ -37,7 +37,9 @@ function Report() {
         const balances = {};
         const spentAmounts = {};
         let totalExpense = 0;
-
+        if (members.length === 0) {
+            return { balances: {}, spentAmounts: {}, totalExpense: 0 };
+        }
         members.forEach((member) => {
             balances[member] = 0;
             spentAmounts[member] = 0;
@@ -51,7 +53,6 @@ function Report() {
             spentAmounts[expense.paidBy] += expense.amount;
             totalExpense += expense.amount;
         });
-
         return { balances, spentAmounts, totalExpense };
     };
 
