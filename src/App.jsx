@@ -9,6 +9,7 @@ import Report from './components/Report';
 import Footer from './components/Footer';
 import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -27,15 +28,17 @@ function App() {
 
   return (
     <div>
-      <NavigationBar />
-      <Routes>
-        <Route path="/share-spend/trip" element={<Trip />} />
-        <Route path="/share-spend/members/:tripId" element={<Member />} />
-        <Route path="/share-spend/expenses/:tripId" element={<Expense />} />
-        <Route path="/share-spend/report/:tripId" element={<Report />} />
-        <Route path="*" element={<Navigate to="/share-spend/" />} />
-      </Routes>
-      <Footer />
+      <ErrorBoundary>
+        <NavigationBar />
+        <Routes>
+          <Route path="/share-spend/trip" element={<Trip />} />
+          <Route path="/share-spend/members/:tripId" element={<Member />} />
+          <Route path="/share-spend/expenses/:tripId" element={<Expense />} />
+          <Route path="/share-spend/report/:tripId" element={<Report />} />
+          <Route path="*" element={<Navigate to="/share-spend/" />} />
+        </Routes>
+        <Footer />
+      </ErrorBoundary>
     </div>
   );
 }

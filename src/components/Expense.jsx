@@ -33,7 +33,7 @@ function Expense() {
         async function fetchData() {
             setLoading(true);
             const memberList = await getMembers(tripId);
-            setMembers(memberList.map(m => m.name));
+            setMembers(memberList);
             const expenseList = await getExpenses(tripId);
             setExpenses(expenseList);
             setLoading(false);
@@ -131,7 +131,6 @@ function Expense() {
     };
 
     const isAllSelected = members.length > 0 && participants.length === members.length;
-
     const handleNext = () => {
         navigate(`/share-spend/report/${tripId}`);
     };
@@ -205,8 +204,8 @@ function Expense() {
                                                     >
                                                         <option value="">Select</option>
                                                         {members.map((member, index) => (
-                                                            <option key={index} value={member}>
-                                                                {member}
+                                                            <option key={index} value={member.name}>
+                                                                {member.name}
                                                             </option>
                                                         ))}
                                                     </Form.Control>
@@ -263,8 +262,8 @@ function Expense() {
                                                     {isAllSelected && <span className={styles.checkmark}>✓</span>}
                                                 </div>
                                                 {members.map((member, index) => {
-                                                    const selected = participants.includes(member);
-                                                    const initials = member.split(' ').map(n => n[0]).join('').toUpperCase();
+                                                    const selected = participants.some((p) => p.id === member.id);
+                                                    const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
                                                     const btnStyle = selected
                                                         ? {
                                                             background: 'linear-gradient(135deg, #0d223a 0%, #1e62d0 100%)',
@@ -293,7 +292,7 @@ function Expense() {
                                                             style={btnStyle}
                                                             onClick={() => {
                                                                 if (selected) {
-                                                                    setParticipants(participants.filter((p) => p !== member));
+                                                                    setParticipants(participants.filter((p) => p.id !== member.id));
                                                                 } else {
                                                                     setParticipants([...participants, member]);
                                                                 }
@@ -302,7 +301,7 @@ function Expense() {
                                                             role="button"
                                                         >
                                                             <div className={styles.avatar} style={{ background: avatarBg, color: avatarColor }}>{initials}</div>
-                                                            <div className={styles.name} style={{ color: btnStyle.color, fontWeight: 700 }}>{member}</div>
+                                                            <div className={styles.name} style={{ color: btnStyle.color, fontWeight: 700 }}>{member.name}</div>
                                                             {selected && <span className={styles.checkmark}>✓</span>}
                                                         </div>
                                                     );

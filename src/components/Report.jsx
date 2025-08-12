@@ -42,11 +42,10 @@ function Report() {
             balances[member] = 0;
             spentAmounts[member] = 0;
         });
-
         expenses.forEach((expense) => {
             const share = expense.amount / expense.participants.length;
             expense.participants.forEach((participant) => {
-                balances[participant] -= share;
+                balances[participant.name] -= share;
             });
             balances[expense.paidBy] += expense.amount;
             spentAmounts[expense.paidBy] += expense.amount;
@@ -67,7 +66,7 @@ function Report() {
         doc.text('Expenses:', 20, 40);
         expenses.forEach((expense, index) => {
             doc.text(
-                `${index + 1}. ${expense.name} - ${currencyIcon} ${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.join(', ')}`,
+                `${index + 1}. ${expense.name} - ${currencyIcon} ${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.map((p) => p.name).join(', ')}`,
                 20,
                 50 + index * 10
             );
@@ -94,7 +93,7 @@ function Report() {
             Name: expense.name,
             Amount: expense.amount,
             PaidBy: expense.paidBy,
-            Participants: expense.participants.join(', '),
+            Participants: expense.participants.map((p) => p.name).join(', '),
         }));
 
         const spentData = Object.keys(spentAmounts).map((member) => ({
@@ -183,7 +182,7 @@ function Report() {
                                                 <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
                                                 <td>{expense.paidBy}</td>
                                                 <td style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', position: 'relative', paddingRight: 20 }}>
-                                                    <span>{expense.participants.slice(0, 2).join(', ')}{expense.participants.length > 2 ? '' : ''}</span>
+                                                    <span>{expense.participants.slice(0, 2).map((p) => p.name).join(', ')}{expense.participants.length > 2 ? '' : ''}</span>
                                                     {expense.participants.length > 2 && (
                                                         <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28, position: 'absolute', right: 0 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
                                                             <PeopleFill size={16} />
@@ -213,7 +212,7 @@ function Report() {
                                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                                     {currentParticipants.map((p, i) => (
                                                         <li key={i} style={{ padding: '0.5rem 0', borderBottom: '1px solid #e3f0ff', color: '#1769aa', fontWeight: 500 }}>
-                                                            <PeopleFill className="me-2" style={{ color: '#1de9b6' }} />{p}
+                                                            <PeopleFill className="me-2" style={{ color: '#1de9b6' }} />{p.name}
                                                         </li>
                                                     ))}
                                                 </ul>
