@@ -1,16 +1,18 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { Navbar, Nav, Container, Row, Col, Button } from 'react-bootstrap';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import Logo from '../assets/images/logo.png';
 import styles from '../assets/scss/Expense.module.scss';
 import { HouseDoor, People, Wallet2, BarChart, BoxArrowRight } from 'react-bootstrap-icons';
+import { useSelector } from 'react-redux';
+import { persistor } from '../redux/store';
 
 function NavigationBar() {
     const [expanded, setExpanded] = useState(false);
     const navRef = useRef();
     const navigate = useNavigate();
-
+    const tripDetails = useSelector(state => state.trip);
 
     // Only allow hamburger icon to toggle navbar
     const handleToggle = (nextExpanded, event) => {
@@ -37,8 +39,10 @@ function NavigationBar() {
 
 
     // Close navbar on nav click
-    const handleNavClick = () => setExpanded(false);
-
+    const handleNavClick = () => {
+        setExpanded(false);
+    };
+    const tripId = tripDetails && tripDetails?.trip?.id ? tripDetails?.trip?.id : '';
     // Responsive: detect mobile
     const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
     useEffect(() => {
@@ -50,6 +54,7 @@ function NavigationBar() {
     const handleLogout = async () => {
         await auth.signOut();
         navigate("/share-spend/login"); // Redirect to home after logout
+        persistor.purge();
         window.location.reload();
     };
 
@@ -82,7 +87,7 @@ function NavigationBar() {
                                     </NavLink>
                                 </Col>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/members" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/share-spend/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <People size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Members</span>
                                     </NavLink>
@@ -90,13 +95,13 @@ function NavigationBar() {
                             </Row>
                             <Row>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/share-spend/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <Wallet2 size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Expenses</span>
                                     </NavLink>
                                 </Col>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/report" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/share-spend/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <BarChart size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Report</span>
                                     </NavLink>
@@ -106,19 +111,19 @@ function NavigationBar() {
                     ) : (
                         <Nav className="justify-content-start">
                             <div className={styles.desktopMenuWrap}>
-                                <NavLink to="/share-spend" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to="/share-spend/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <HouseDoor size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Trip</span>
                                 </NavLink>
-                                <NavLink to="/share-spend/members" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/share-spend/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <People size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Members</span>
                                 </NavLink>
-                                <NavLink to="/share-spend/expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/share-spend/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <Wallet2 size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Expenses</span>
                                 </NavLink>
-                                <NavLink to="/share-spend/report" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/share-spend/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <BarChart size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Report</span>
                                 </NavLink>

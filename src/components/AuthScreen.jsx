@@ -40,6 +40,7 @@ const AuthScreen = ({ onLogin }) => {
       await signInWithPopup(auth, googleProvider);
       setLoadingAuth(false);
       onLogin && onLogin();
+      navigate("/share-spend/trip");
     } catch (err) {
       setError(err.message);
       setLoadingAuth(false);

@@ -342,7 +342,7 @@ function Expense() {
                                                                         </span>
                                                                     </div>
                                                                     <div className={styles.expenseParticipants}>
-                                                                        <small>Participants: {expense.participants.join(', ')}</small>
+                                                                        <small>Participants: {expense.participants.map(p => p.name).join(', ')}</small>
                                                                     </div>
                                                                 </div>
                                                             </Col>

@@ -35,7 +35,7 @@ function App() {
           <Route path="/share-spend/members/:tripId" element={<Member />} />
           <Route path="/share-spend/expenses/:tripId" element={<Expense />} />
           <Route path="/share-spend/report/:tripId" element={<Report />} />
-          <Route path="*" element={<Navigate to="/share-spend/" />} />
+          <Route path="*" element={<Navigate to="/share-spend/login" />} />
         </Routes>
         <Footer />
       </ErrorBoundary>
