@@ -207,7 +207,7 @@ function Trip() {
                                     </Form.Control>
                                 </Form.Group>
                                 <div className={styles.displaySpaceBetween}>
-                                    <Button variant='danger' onClick={handleShowModal} className='mt-2'>Clear Data</Button>
+                                    {/* <Button variant='danger' onClick={handleShowModal} className='mt-2'>Clear Data</Button> */}
                                     <Button variant="success" className='mt-2' type="submit" disabled={!tripName}>
                                         Next
                                     </Button>

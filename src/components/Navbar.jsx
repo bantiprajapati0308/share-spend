@@ -13,7 +13,8 @@ function NavigationBar() {
     const navRef = useRef();
     const navigate = useNavigate();
     const tripDetails = useSelector(state => state.trip);
-
+    const user = auth.currentUser;
+    console.log(user)
     // Only allow hamburger icon to toggle navbar
     const handleToggle = (nextExpanded, event) => {
         // Only toggle if the event is from the hamburger button
@@ -131,19 +132,22 @@ function NavigationBar() {
                         </Nav>
                     )}
                     <Navbar.Collapse className="justify-content-end">
-                        <Button
-                            variant="outline-danger"
-                            onClick={handleLogout}
-                            className={styles.logoutBtn}
-                            style={{
-                                border: 'none',
-                                background: 'transparent',
-                                boxShadow: 'none',
-                                padding: '0.4rem 0.6rem'
-                            }}
-                        >
-                            <BoxArrowRight size={22} color="#dc3545" />
-                        </Button>
+                        <div className='d-flex align-items-center justify-content-between'>
+                            <div className={styles.userInfo}>{user.photoURL && <img src={user.photoURL} alt={user.displayName} />}{user.displayName ?? user.email}</div>
+                            <Button
+                                variant="outline-danger"
+                                onClick={handleLogout}
+                                className={styles.logoutBtn}
+                                style={{
+                                    border: 'none',
+                                    background: 'transparent',
+                                    boxShadow: 'none',
+                                    padding: '0.4rem 0.6rem'
+                                }}
+                            >
+                                <BoxArrowRight size={22} color="#dc3545" />
+                            </Button>
+                        </div>
                     </Navbar.Collapse>
                 </Navbar.Collapse>
             </Container>
