@@ -41,8 +41,8 @@ const AuthScreen = ({ onRegister }) => {
     try {
       await signInWithPopup(auth, googleProvider);
       setLoadingAuth(false);
-      onLogin && onLogin();
       navigate("/share-spend/trip");
+      onLogin && onLogin();
     } catch (err) {
       setError(err.message);
       setLoadingAuth(false);

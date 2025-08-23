@@ -18,6 +18,10 @@ function Report() {
     const [showParticipants, setShowParticipants] = useState(false);
     const [currentParticipants, setCurrentParticipants] = useState([]);
     const [loadingReport, setLoadingReport] = useState(true);
+    const [activeAccordion, setActiveAccordion] = useState("0");
+    const [activeAccordion2, setActiveAccordion2] = useState("1");
+    const [activeAccordion3, setActiveAccordion3] = useState("2");
+    const [activeAccordion4, setActiveAccordion4] = useState("3");
     const navigate = useNavigate();
 
     // Fetch members and expenses from Firestore
@@ -57,6 +61,44 @@ function Report() {
     };
 
     const { balances, spentAmounts, totalExpense } = calculateBalances();
+    const calculateTransactions = (balances) => {
+        const debtors = [];
+        const creditors = [];
+
+        // Split members into debtors and creditors
+        Object.entries(balances).forEach(([member, balance]) => {
+            if (balance < 0) {
+                debtors.push({ member, amount: -balance }); // owe money
+            } else if (balance > 0) {
+                creditors.push({ member, amount: balance }); // should receive
+            }
+        });
+
+        const transactions = [];
+
+        let i = 0, j = 0;
+        while (i < debtors.length && j < creditors.length) {
+            const debtor = debtors[i];
+            const creditor = creditors[j];
+
+            const settledAmount = Math.min(debtor.amount, creditor.amount);
+
+            transactions.push({
+                from: debtor.member,
+                to: creditor.member,
+                amount: settledAmount
+            });
+
+            debtor.amount -= settledAmount;
+            creditor.amount -= settledAmount;
+
+            if (debtor.amount === 0) i++;
+            if (creditor.amount === 0) j++;
+        }
+
+        return transactions;
+    };
+    const transactions = calculateTransactions(balances);
 
     const generatePDF = () => {
         const doc = new jsPDF();
@@ -84,6 +126,19 @@ function Report() {
         Object.keys(balances).forEach((member, index) => {
             doc.text(`${member}: ${currencyIcon} ${balances[member].toFixed(2)}`, 20, 30 + index * 10);
         });
+        doc.addPage();
+        doc.text('Final Settlements:', 20, 20);
+        if (transactions.length === 0) {
+            doc.text('All settled! 🎉', 20, 30);
+        } else {
+            transactions.forEach((t, index) => {
+                doc.text(
+                    `${index + 1}. ${t.from} pays ${t.to} ${currencyIcon} ${t.amount.toFixed(2)}`,
+                    20,
+                    30 + index * 10
+                );
+            });
+        }
 
         doc.save('report.pdf');
     };
@@ -110,13 +165,25 @@ function Report() {
         const totalExpenseData = [{
             TotalExpense: totalExpense.toFixed(2),
         }];
+        const settlementData = transactions.length === 0
+            ? [{ Message: "All settled! 🎉" }]
+            : transactions.map((t, index) => ({
+                No: index + 1,
+                Payer: t.from,
+                Receiver: t.to,
+                Amount: t.amount.toFixed(2),
+            }));
+
+
 
         const wb = utils.book_new();
         const wsExpenses = utils.json_to_sheet(expenseData);
         const wsSpent = utils.json_to_sheet(spentData);
         const wsBalances = utils.json_to_sheet(balanceData);
         const wsTotalExpense = utils.json_to_sheet(totalExpenseData);
+        const wsSettlements = utils.json_to_sheet(settlementData);
 
+        utils.book_append_sheet(wb, wsSettlements, 'Settlements');
         utils.book_append_sheet(wb, wsExpenses, 'Expenses');
         utils.book_append_sheet(wb, wsSpent, 'Spent Amounts');
         utils.book_append_sheet(wb, wsBalances, 'Balances');
@@ -160,7 +227,7 @@ function Report() {
                         </div>
                     </Col>
                 </Row>
-                <Accordion defaultActiveKey="0" alwaysOpen >
+                <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} defaultActiveKey="0" alwaysOpen >
                     <Accordion.Item eventKey="0" className={styles.accordionItem}>
                         <Accordion.Header><PiggyBank className="me-2 mb-1" size={22} />Expenses</Accordion.Header>
                         <Accordion.Body className='px-2'>
@@ -227,6 +294,8 @@ function Report() {
                             )}
                         </Accordion.Body>
                     </Accordion.Item>
+                </Accordion>
+                <Accordion activeKey={activeAccordion2} onSelect={setActiveAccordion2} defaultActiveKey="1" alwaysOpen >
                     <Accordion.Item eventKey="1" className={styles.accordionItem}>
                         <Accordion.Header><CashStack className="me-2 mb-1" size={20} />Spent Amounts</Accordion.Header>
                         <Accordion.Body className='px-2'>
@@ -258,6 +327,8 @@ function Report() {
                             </Row>
                         </Accordion.Body>
                     </Accordion.Item>
+                </Accordion>
+                <Accordion activeKey={activeAccordion3} onSelect={setActiveAccordion3} defaultActiveKey="2" alwaysOpen >
                     <Accordion.Item eventKey="2" className={styles.accordionItem}>
                         <Accordion.Header><PiggyBank className="me-2 mb-1" size={20} />Balances including Total Expense</Accordion.Header>
                         <Accordion.Body className='px-2'>
@@ -278,6 +349,43 @@ function Report() {
                                                         <td className={balances[member] > 0 ? styles.positive : styles.negative}>{getCurrencySymbol(currency)}{balances[member].toFixed(2)}</td>
                                                     </tr>
                                                 ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                </Accordion>
+                <Accordion activeKey={activeAccordion4} onSelect={setActiveAccordion4} defaultActiveKey="0" alwaysOpen >
+                    <Accordion.Item eventKey="3" className={styles.accordionItem}>
+                        <Accordion.Header>
+                            💸 Final Settlements
+                        </Accordion.Header>
+                        <Accordion.Body className='px-2'>
+                            <Row>
+                                <Col>
+                                    <div className="bg-white">
+                                        <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
+                                            <thead className="table-warning">
+                                                <tr>
+                                                    <th>Payer</th>
+                                                    <th>Receiver</th>
+                                                    <th>Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {transactions.length === 0 ? (
+                                                    <tr><td colSpan="3" className="text-center">All settled! 🎉</td></tr>
+                                                ) : (
+                                                    transactions.map((t, idx) => (
+                                                        <tr key={idx}>
+                                                            <td>{t.from}</td>
+                                                            <td>{t.to}</td>
+                                                            <td>{getCurrencySymbol(currency)}{t.amount.toFixed(2)}</td>
+                                                        </tr>
+                                                    ))
+                                                )}
                                             </tbody>
                                         </Table>
                                     </div>

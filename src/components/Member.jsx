@@ -161,15 +161,20 @@ function Member() {
                                                     </Button>
                                                 </span>
                                             </OverlayTrigger>
-                                            <Button variant={used ? "outline-danger" : "outline-danger"}
-                                                size="sm"
-                                                className={styles.iconBtn}
-                                                disabled={used || deleteLoader}
-                                                style={{ pointerEvents: used ? 'auto' : 'auto' }}
-                                                onClick={() => handleDelete(member.id)}
-                                                title={used ? 'Cannot delete' : 'Delete'}>
-                                                {deleteLoader ? <Spinner animation="border" size="sm" /> : <Trash size={18} />}
-                                            </Button>
+                                            <OverlayTrigger
+                                                placement="top"
+                                                overlay={used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to delete</Tooltip> : <></>}
+                                            >
+                                                <Button variant={used ? "outline-danger" : "outline-danger"}
+                                                    size="sm"
+                                                    className={styles.iconBtn}
+                                                    disabled={used || deleteLoader}
+                                                    style={{ pointerEvents: used ? 'auto' : 'auto' }}
+                                                    onClick={() => handleDelete(member.id)}
+                                                    title={used ? 'Cannot delete' : 'Delete'}>
+                                                    {deleteLoader ? <Spinner animation="border" size="sm" /> : <Trash size={18} />}
+                                                </Button>
+                                            </OverlayTrigger>
                                         </div>
                                     </div>
                                 );
