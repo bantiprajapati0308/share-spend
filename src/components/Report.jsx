@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Container, Row, Col, Table, Accordion } from 'react-bootstrap';
 import jsPDF from 'jspdf';
+import { auth } from '../firebase';
 import { utils, writeFile } from 'xlsx';
 import { getCurrencySymbol } from '../Util';
 import styles from '../assets/scss/Report.module.scss';
@@ -23,7 +24,7 @@ function Report() {
     const [activeAccordion3, setActiveAccordion3] = useState("2");
     const [activeAccordion4, setActiveAccordion4] = useState("3");
     const navigate = useNavigate();
-
+    const user = auth.currentUser;
     // Fetch members and expenses from Firestore
     useEffect(() => {
         async function fetchData() {
@@ -164,6 +165,7 @@ function Report() {
 
         const totalExpenseData = [{
             TotalExpense: totalExpense.toFixed(2),
+            user: user.email
         }];
         const settlementData = transactions.length === 0
             ? [{ Message: "All settled! 🎉" }]
