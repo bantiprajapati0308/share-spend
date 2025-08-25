@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, ListGroup, Accordion } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -24,6 +25,8 @@ function Expense() {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingExpenses, setLoadingExpenses] = useState(true);
+    const [addExpenseLoading, setAddExpenseLoading] = useState(false);
+    const addDebounceRef = useRef(null);
 
     const { tripId } = useParams();
     const navigate = useNavigate();
@@ -54,39 +57,47 @@ function Expense() {
 
     const handleAddExpense = async (e) => {
         e.preventDefault();
+        if (addExpenseLoading) return;
         setFormError('');
         if (participants.length === 0) {
             setFormError('Please select at least one participant.');
             return;
         }
-        const newExpense = {
-            name: expenseName,
-            amount: parseFloat(amount),
-            paidBy,
-            participants,
-            description
-        };
-        try {
-            if (editMode && editId) {
-                // Update existing expense
-                await updateExpense(tripId, editId, newExpense);
-            } else {
-                // Add new expense
-                await addExpenseToDB(tripId, newExpense);
-            }
-            setExpenseName('');
-            setAmount('');
-            setPaidBy('');
-            setParticipants([]);
-            setDescription('');
-            setEditMode(false);
-            setEditId(null);
-            // Refresh expenses
-            const expenseList = await getExpenses(tripId);
-            setExpenses(expenseList);
-        } catch (err) {
-            setFormError("Error saving expense: " + err.message);
+        setAddExpenseLoading(true);
+        if (addDebounceRef.current) {
+            clearTimeout(addDebounceRef.current);
         }
+        addDebounceRef.current = setTimeout(async () => {
+            const newExpense = {
+                name: expenseName,
+                amount: parseFloat(amount),
+                paidBy,
+                participants,
+                description
+            };
+            try {
+                if (editMode && editId) {
+                    // Update existing expense
+                    await updateExpense(tripId, editId, newExpense);
+                } else {
+                    // Add new expense
+                    await addExpenseToDB(tripId, newExpense);
+                }
+                setExpenseName('');
+                setAmount('');
+                setPaidBy('');
+                setParticipants([]);
+                setDescription('');
+                setEditMode(false);
+                setEditId(null);
+                // Refresh expenses
+                const expenseList = await getExpenses(tripId);
+                setExpenses(expenseList);
+            } catch (err) {
+                setFormError("Error saving expense: " + err.message);
+            }
+            setAddExpenseLoading(false);
+        }, 400);
     };
 
     const handleDeleteExpense = async (id) => {
@@ -150,6 +161,9 @@ function Expense() {
                             <Button variant="outline-secondary" className={styles.backBtn} onClick={handleBack} title="Back to Add Members">
                                 <PeopleFill className="me-2" size={20} />
                                 <span className="fw-semibold">Back to Add Members</span>
+                            </Button>
+                            <Button variant="success" className={styles.nextButton} onClick={handleNext}>
+                                Next
                             </Button>
                         </div>
                         <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} className={styles.expenseAccordion}>
@@ -234,8 +248,15 @@ function Expense() {
                                                 </div>
                                                 <div className={styles.formActionBtns}>
                                                     {!editMode && (
-                                                        <Button variant="success" type="submit" className={styles.iconBtn} title="Add Expense" style={{ fontWeight: 600, fontSize: '0.75rem', padding: '0.32rem 1.1rem' }}>
-                                                            <PlusCircle size={22} className="me-1" />Add
+                                                        <Button
+                                                            variant="success"
+                                                            type="submit"
+                                                            className={styles.iconBtn}
+                                                            title="Add Expense"
+                                                            style={{ fontWeight: 600, fontSize: '0.75rem', padding: '0.32rem 1.1rem' }}
+                                                            disabled={addExpenseLoading}
+                                                        >
+                                                            {addExpenseLoading ? <Spinner animation="border" size="sm" className="me-1" /> : <PlusCircle size={22} className="me-1" />}Add
                                                         </Button>
                                                     )}
                                                     {editMode && (
@@ -365,7 +386,7 @@ function Expense() {
                     </Col>
                 </Row>
                 <Row>
-                    <Col> {expenses.length > 0 && (
+                    <Col md="8"> {expenses.length > 0 && (
                         <div className="d-flex justify-content-end p-2">
                             <Button variant="success" className={styles.nextButton} onClick={handleNext}>
                                 Next

@@ -101,48 +101,48 @@ function Report() {
     };
     const transactions = calculateTransactions(balances);
 
-    const generatePDF = () => {
-        const doc = new jsPDF();
-        doc.text('Expense Report', 20, 20);
+    // const generatePDF = () => {
+    //     const doc = new jsPDF();
+    //     doc.text('Expense Report', 20, 20);
 
-        doc.text(`Total Expense: ${currencyIcon} ${totalExpense.toFixed(2)}`, 20, 30);
+    //     doc.text(`Total Expense: ${currencyIcon} ${totalExpense.toFixed(2)}`, 20, 30);
 
-        doc.text('Expenses:', 20, 40);
-        expenses.forEach((expense, index) => {
-            doc.text(
-                `${index + 1}. ${expense.name} - ${currencyIcon} ${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.map((p) => p.name).join(', ')}`,
-                20,
-                50 + index * 10
-            );
-        });
+    //     doc.text('Expenses:', 20, 40);
+    //     expenses.forEach((expense, index) => {
+    //         doc.text(
+    //             `${index + 1}. ${expense.name} - ${currencyIcon} ${expense.amount} - Paid by ${expense.paidBy} - Participants: ${expense.participants.map((p) => p.name).join(', ')}`,
+    //             20,
+    //             50 + index * 10
+    //         );
+    //     });
 
-        doc.addPage();
-        doc.text('Spent Amounts:', 20, 20);
-        Object.keys(spentAmounts).forEach((member, index) => {
-            doc.text(`${member}: ${currencyIcon} ${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
-        });
+    //     doc.addPage();
+    //     doc.text('Spent Amounts:', 20, 20);
+    //     Object.keys(spentAmounts).forEach((member, index) => {
+    //         doc.text(`${member}: ${currencyIcon} ${spentAmounts[member].toFixed(2)}`, 20, 30 + index * 10);
+    //     });
 
-        doc.addPage();
-        doc.text('Balances:', 20, 20);
-        Object.keys(balances).forEach((member, index) => {
-            doc.text(`${member}: ${currencyIcon} ${balances[member].toFixed(2)}`, 20, 30 + index * 10);
-        });
-        doc.addPage();
-        doc.text('Final Settlements:', 20, 20);
-        if (transactions.length === 0) {
-            doc.text('All settled! 🎉', 20, 30);
-        } else {
-            transactions.forEach((t, index) => {
-                doc.text(
-                    `${index + 1}. ${t.from} pays ${t.to} ${currencyIcon} ${t.amount.toFixed(2)}`,
-                    20,
-                    30 + index * 10
-                );
-            });
-        }
+    //     doc.addPage();
+    //     doc.text('Balances:', 20, 20);
+    //     Object.keys(balances).forEach((member, index) => {
+    //         doc.text(`${member}: ${currencyIcon} ${balances[member].toFixed(2)}`, 20, 30 + index * 10);
+    //     });
+    //     doc.addPage();
+    //     doc.text('Final Settlements:', 20, 20);
+    //     if (transactions.length === 0) {
+    //         doc.text('All settled! 🎉', 20, 30);
+    //     } else {
+    //         transactions.forEach((t, index) => {
+    //             doc.text(
+    //                 `${index + 1}. ${t.from} pays ${t.to} ${currencyIcon} ${t.amount.toFixed(2)}`,
+    //                 20,
+    //                 30 + index * 10
+    //             );
+    //         });
+    //     }
 
-        doc.save('report.pdf');
-    };
+    //     doc.save('report.pdf');
+    // };
 
     const generateExcel = () => {
         const expenseData = expenses.map((expense, index) => ({
@@ -220,20 +220,20 @@ function Report() {
                     <Col>
                         <h5 className="mb-4">Total Expense: <strong className="text-success">{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</strong></h5>
                         <div className="d-flex gap-2 mb-4 flex-wrap">
-                            <Button variant="info" className="d-flex align-items-center gap-2 fw-semibold shadow-sm px-3 py-2" onClick={generatePDF} style={{ borderRadius: 8 }}>
+                            {/* <Button variant="info" className="d-flex align-items-center gap-2 fw-semibold shadow-sm px-3 py-2" onClick={generatePDF} style={{ borderRadius: 8 }}>
                                 <FileEarmarkArrowDown size={18} /> Export as PDF
-                            </Button>
+                            </Button> */}
                             <Button variant="success" className="d-flex align-items-center gap-2 fw-semibold shadow-sm px-3 py-2" onClick={generateExcel} style={{ borderRadius: 8 }}>
                                 <FileEarmarkExcel size={18} /> Export as Excel
                             </Button>
                         </div>
                     </Col>
                 </Row>
-                <Accordion activeKey={activeAccordion} onSelect={setActiveAccordion} defaultActiveKey="0" alwaysOpen >
+                <Accordion activeKey={activeAccordion} className='mb-2' onSelect={setActiveAccordion} defaultActiveKey="0" alwaysOpen >
                     <Accordion.Item eventKey="0" className={styles.accordionItem}>
                         <Accordion.Header><PiggyBank className="me-2 mb-1" size={22} />Expenses</Accordion.Header>
                         <Accordion.Body className='px-2'>
-                            <div style={{ maxHeight: '340px', overflowY: 'auto', overflowX: 'auto', borderRadius: '10px', boxShadow: '0 2px 8px #2196f322', border: '1px solid #e3e3e3', background: '#f8fafc' }}>
+                            <div style={{ maxHeight: '340px', overflowY: 'auto', overflowX: 'auto', boxShadow: '0 2px 8px #2196f322', border: '1px solid #e3e3e3', background: '#f8fafc' }}>
                                 <Table responsive bordered hover className="mb-0 align-middle text-nowrap">
                                     <thead className="table-primary sticky-top">
                                         <tr>
@@ -251,7 +251,7 @@ function Report() {
                                                 <td>{expense.name}</td>
                                                 <td>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</td>
                                                 <td>{expense.paidBy}</td>
-                                                <td style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', position: 'relative', paddingRight: 20 }}>
+                                                <td style={{ maxWidth: 170, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', position: 'relative', paddingRight: 30 }}>
                                                     <span>{expense.participants.slice(0, 2).map((p) => p.name).join(', ')}{expense.participants.length > 2 ? '' : ''}</span>
                                                     {expense.participants.length > 2 && (
                                                         <Button size="sm" variant="outline-info" className="ms-2 p-1 d-inline-flex align-items-center justify-content-center" style={{ borderRadius: '50%', width: 28, height: 28, position: 'absolute', right: 0 }} onClick={() => handleShowParticipants(expense.participants)} title="View All Participants">
@@ -297,15 +297,15 @@ function Report() {
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>
-                <Accordion activeKey={activeAccordion2} onSelect={setActiveAccordion2} defaultActiveKey="1" alwaysOpen >
+                <Accordion activeKey={activeAccordion2} className='mb-2' onSelect={setActiveAccordion2} defaultActiveKey="1" alwaysOpen >
                     <Accordion.Item eventKey="1" className={styles.accordionItem}>
                         <Accordion.Header><CashStack className="me-2 mb-1" size={20} />Spent Amounts</Accordion.Header>
                         <Accordion.Body className='px-2'>
                             <Row>
                                 <Col>
                                     <div className="bg-white">
-                                        <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
-                                            <thead className="table-info">
+                                        <Table responsive bordered hover className="mb-0 align-middle text-nowrap">
+                                            <thead className="table-primary sticky-top">
                                                 <tr>
                                                     <th>Member</th>
                                                     <th>Spent Amount</th>
@@ -330,15 +330,15 @@ function Report() {
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>
-                <Accordion activeKey={activeAccordion3} onSelect={setActiveAccordion3} defaultActiveKey="2" alwaysOpen >
+                <Accordion activeKey={activeAccordion3} className='mb-2' onSelect={setActiveAccordion3} defaultActiveKey="2" alwaysOpen >
                     <Accordion.Item eventKey="2" className={styles.accordionItem}>
                         <Accordion.Header><PiggyBank className="me-2 mb-1" size={20} />Balances including Total Expense</Accordion.Header>
                         <Accordion.Body className='px-2'>
                             <Row>
                                 <Col>
                                     <div className="bg-white">
-                                        <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
-                                            <thead className="table-success">
+                                        <Table responsive bordered hover className="mb-0 align-middle text-nowrap">
+                                            <thead className="table-primary sticky-top">
                                                 <tr>
                                                     <th className='p-2'>Member</th>
                                                     <th className='p-2'>Balance</th>
@@ -362,14 +362,14 @@ function Report() {
                 <Accordion activeKey={activeAccordion4} onSelect={setActiveAccordion4} defaultActiveKey="0" alwaysOpen >
                     <Accordion.Item eventKey="3" className={styles.accordionItem}>
                         <Accordion.Header>
-                            💸 Final Settlements
+                            Final Settlements
                         </Accordion.Header>
                         <Accordion.Body className='px-2'>
                             <Row>
                                 <Col>
                                     <div className="bg-white">
-                                        <Table responsive bordered hover size="sm" className="mb-0 align-middle text-nowrap">
-                                            <thead className="table-warning">
+                                        <Table responsive bordered hover className="mb-0 align-middle text-nowrap">
+                                            <thead className="table-primary sticky-top">
                                                 <tr>
                                                     <th>Payer</th>
                                                     <th>Receiver</th>
@@ -382,9 +382,9 @@ function Report() {
                                                 ) : (
                                                     transactions.map((t, idx) => (
                                                         <tr key={idx}>
-                                                            <td>{t.from}</td>
-                                                            <td>{t.to}</td>
-                                                            <td>{getCurrencySymbol(currency)}{t.amount.toFixed(2)}</td>
+                                                            <td style={{ color: '#1769aa', background: '#e3f0ff' }}>{t.from}</td>
+                                                            <td style={{ color: '#2e7d32', background: '#e8f5e9' }}>{t.to}</td>
+                                                            <td style={{ background: '#fffde7', color: '#222' }}>{getCurrencySymbol(currency)}{t.amount.toFixed(2)}</td>
                                                         </tr>
                                                     ))
                                                 )}

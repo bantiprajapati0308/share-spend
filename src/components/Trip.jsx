@@ -16,6 +16,7 @@ function Trip() {
     const [description, setDescription] = useState('');
     const [organizer, setOrganizer] = useState('');
     const [currency, setCurrency] = useState('');
+    const [date, setDate] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [trips, setTrips] = useState([]); // <-- State for trips
     const [loadingTrips, setLoadingTrips] = useState(true); // <-- Loading state
@@ -28,14 +29,14 @@ function Trip() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Prepare trip data
-        const tripData = { name: tripName, description, organizer, currency };
+        const tripData = { name: tripName, description, organizer, currency, date };
         try {
             // Add trip to Firestore and get the new trip's reference
             const tripRef = await addTrip(tripData);
             // Get the tripId from Firestore
             const tripId = tripRef.id;
             // Dispatch to Redux if needed
-            dispatch(setTrip({ name: tripName, description, organizer, currency, id: tripId }));
+            dispatch(setTrip({ name: tripName, description, organizer, currency, date, id: tripId }));
             // Navigate to members page with tripId
             navigate(`/share-spend/members/${tripId}`);
             // Reset form
@@ -43,6 +44,7 @@ function Trip() {
             setDescription('');
             setOrganizer('');
             setCurrency('');
+            setDate('');
         } catch (err) {
             alert("Error creating trip: " + err.message);
         }
@@ -51,6 +53,7 @@ function Trip() {
         setTripName(trip.name);
         setDescription(trip.description);
         setCurrency(tripCurrency);
+        setDate(trip.date || '');
     }, [])
 
     // Fetch trips on mount
@@ -108,7 +111,9 @@ function Trip() {
                                                     </span>
                                                     <div>
                                                         <span className={styles.tripName}>{tripItem.name}</span>
-                                                        <span className={styles.tripCurrency}>({tripItem.currency})</span>
+                                                        <span className={styles.tripDate} style={{ color: '#888', fontSize: '0.95em', marginLeft: 8 }}>
+                                                            {tripItem.date ? new Date(tripItem.date).toLocaleDateString() : ''}
+                                                        </span>
                                                         <div className={styles.tripDesc}>{tripItem.description}</div>
                                                     </div>
                                                 </div>
@@ -190,6 +195,16 @@ function Trip() {
                                         />
                                     </div>
                                 </Form.Group>
+                                <Form.Group controlId="date" className="mb-3">
+                                    <Form.Label className={styles.formLabel}>Trip Date <span style={{ color: 'red' }}>*</span></Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        required
+                                        min="1900-01-01"
+                                    />
+                                </Form.Group>
                                 <Form.Group controlId="currencyType" className="mb-3">
                                     <Form.Label className={styles.formLabel}>Currency</Form.Label>
                                     <Form.Control
@@ -208,7 +223,7 @@ function Trip() {
                                 </Form.Group>
                                 <div className={styles.displaySpaceBetween}>
                                     {/* <Button variant='danger' onClick={handleShowModal} className='mt-2'>Clear Data</Button> */}
-                                    <Button variant="success" className='mt-2' type="submit" disabled={!tripName}>
+                                    <Button variant="success" className='mt-2' type="submit" disabled={!tripName || !date}>
                                         Next
                                     </Button>
                                 </div>

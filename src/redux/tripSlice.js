@@ -4,7 +4,10 @@ const initialState = {
     trip: {
         name: '',
         description: '',
-        organizer: ''
+        organizer: '',
+        date: '',
+        currency: '',
+        id: '',
     },
     members: [],
     expenses: [],
@@ -16,7 +19,10 @@ const tripSlice = createSlice({
     initialState,
     reducers: {
         setTrip(state, action) {
-            state.trip = action.payload;
+            state.trip = {
+                ...state.trip,
+                ...action.payload
+            };
         },
         addMember(state, action) {
             const { id, name } = action.payload;

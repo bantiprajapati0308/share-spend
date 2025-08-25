@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
 import { PencilSquare, Trash, PersonCircle, PlusCircle, ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
@@ -6,6 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from '../assets/scss/Member.module.scss';
 import { addMember as addMemberToDB, deleteMember, getMembers } from '../hooks/useMembers'; // Import Firestore API
 import FullScreenLoader from './common/FullScreenLoader';
+import InlineLoader from './common/InlineLoader';
 import { removeMember } from '../redux/tripSlice';
 import { getExpenses } from '../hooks/useExpenses';
 
@@ -15,21 +18,30 @@ function Member() {
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [loadingMembers, setLoadingMembers] = useState(true);
+    const isInitialMount = useRef(true);
     const [deleteLoader, setDeleteLoader] = useState(false);
     const [validated, setValidated] = useState(false);
+    const [addLoader, setAddLoader] = useState(false);
     const navigate = useNavigate();
     const { tripId } = useParams(); // Get tripId from route
     const dispatch = useDispatch();
-    async function fetchMembers() {
-        setLoadingMembers(true);
+    async function fetchMembers({ initial = false } = {}) {
+        if (initial) {
+            setLoadingMembers(true);
+        }
         const data = await getMembers(tripId);
         const expensesData = await getExpenses(tripId);
         setMembers(data);
         setExpenses(expensesData);
-        setLoadingMembers(false);
+        if (initial) {
+            setLoadingMembers(false);
+        }
     }
     useEffect(() => {
-        if (tripId) fetchMembers();
+        if (tripId) {
+            fetchMembers({ initial: true });
+            isInitialMount.current = false;
+        }
     }, [tripId]);
 
     const handleAddMember = async (e) => {
@@ -41,21 +53,34 @@ function Member() {
             return;
         }
 
+        setAddLoader(true);
+        // Check for duplicate name (case-insensitive, trimmed)
+        const nameToCheck = memberName.trim().toLowerCase();
+        const isDuplicate = members.some(m => m.name.trim().toLowerCase() === nameToCheck);
+        if (isDuplicate) {
+            toast.error('Already added this member!');
+            setAddLoader(false);
+            setValidated(false);
+            return;
+        }
         if (editIndex !== null) {
             // Your edit logic (if you want to update Firestore, add update API)
             setEditIndex(null);
+            setAddLoader(false);
         } else {
             if (!tripId) {
-                alert("Trip ID not found!");
+                toast.error("Trip ID not found!");
+                setAddLoader(false);
                 return;
             }
             try {
                 await addMemberToDB(tripId, { name: memberName });
                 setMemberName('');
-                fetchMembers();
+                await fetchMembers(); // Don't trigger full-page loader
             } catch (err) {
-                alert("Error adding member: " + err.message);
+                toast.error("Error adding member: " + err.message);
             }
+            setAddLoader(false);
         }
         setValidated(false);
     };
@@ -97,15 +122,24 @@ function Member() {
 
     return (
         <>
-            {loadingMembers && <FullScreenLoader />}
+            {/* Only show FullScreenLoader for initial load, not for add member */}
+            {/* Only show FullScreenLoader for initial load, not after add/update */}
+            {loadingMembers && isInitialMount.current && <FullScreenLoader />}
             <Container className={styles.container}>
                 <Row className="justify-content-center mt-4">
                     <Col md={10} lg={8}>
                         <div className={styles.memberHeaderRow}>
                             <h2 className={styles.memberTitle}><PersonCircle className="me-2 text-primary" size={28} />Add Members</h2>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
                             <Button variant="outline-secondary" className={styles.backBtn} onClick={() => handleNext('back')}>
                                 <ArrowLeft className="me-1" size={20} /> Back
                             </Button>
+                            {members.length > 0 && (
+                                <Button variant='success' onClick={() => handleNext('next')} className={`${styles.nextButton} mt-0`}>
+                                    Next <ArrowRight className="ms-1" size={20} />
+                                </Button>
+                            )}
                         </div>
                         <Card className={styles.memberCard}>
                             <Card.Body>
@@ -119,9 +153,16 @@ function Member() {
                                                 value={memberName}
                                                 onChange={(e) => setMemberName(e.target.value)}
                                                 className={styles.formControl}
+                                                disabled={addLoader}
                                             />
-                                            <Button variant={editIndex !== null ? "info" : "success"} type="submit" className={styles.iconBtn} title={editIndex !== null ? 'Edit Member' : 'Add Member'}>
-                                                {editIndex !== null ? <PencilSquare size={22} /> : <PlusCircle size={22} />}
+                                            <Button
+                                                variant={editIndex !== null ? "info" : "success"}
+                                                type="submit"
+                                                className={styles.iconBtn}
+                                                title={editIndex !== null ? 'Edit Member' : 'Add Member'}
+                                                disabled={addLoader}
+                                            >
+                                                {addLoader ? <Spinner animation="border" size="sm" /> : (editIndex !== null ? <PencilSquare size={22} /> : <PlusCircle size={22} />)}
                                             </Button>
                                         </div>
                                     </Form.Group>
@@ -129,11 +170,12 @@ function Member() {
                             </Card.Body>
                         </Card>
                         <div className={styles.memberList}>
+                            {addLoader && <InlineLoader />}
                             {members.map((member, index) => {
                                 // Avatar color
                                 let color = '#6c63ff';
                                 if (member.name.length > 0) {
-                                    const code = member.name.charCodeAt(0) + member.length * 13;
+                                    const code = member.name.charCodeAt(0) + member.name.length * 13;
                                     color = `hsl(${code * 13 % 360}, 70%, 70%)`;
                                 }
                                 const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -191,6 +233,7 @@ function Member() {
                     </Col>
                 </Row>
             </Container>
+            <ToastContainer position="top-center" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
         </>
     );
 }

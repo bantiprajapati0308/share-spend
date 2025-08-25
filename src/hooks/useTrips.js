@@ -11,7 +11,13 @@ export const getTrips = async () => {
 // Add a new trip
 export const addTrip = async (tripData) => {
     const userId = auth.currentUser.uid;
-    return await addDoc(collection(db, "users", userId, "trips"), tripData); // Return the reference
+    // Ensure date is stored as a string (ISO format)
+    const dataToSave = {
+        ...tripData,
+        date: tripData.date || '',
+    };
+    const docRef = await addDoc(collection(db, "users", userId, "trips"), dataToSave);
+    return docRef;
 };
 
 // Update a trip
