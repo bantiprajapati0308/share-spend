@@ -14,7 +14,6 @@ function NavigationBar() {
     const navigate = useNavigate();
     const tripDetails = useSelector(state => state.trip);
     const user = auth.currentUser;
-    console.log(user)
     // Only allow hamburger icon to toggle navbar
     const handleToggle = (nextExpanded, event) => {
         // Only toggle if the event is from the hamburger button

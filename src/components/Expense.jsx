@@ -9,6 +9,9 @@ import { PlusCircle, Save2, XCircle, PeopleFill, ListUl, Pencil, Trash3 } from '
 import { getMembers } from '../hooks/useMembers';
 import { addExpense as addExpenseToDB, getExpenses, deleteExpense, updateExpense } from '../hooks/useExpenses';
 import FullScreenLoader from './common/FullScreenLoader';
+import { serverTimestamp } from 'firebase/firestore';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Expense() {
     const [expenseName, setExpenseName] = useState('');
@@ -20,7 +23,6 @@ function Expense() {
     const [editId, setEditId] = useState(null);
     const [activeAccordion, setActiveAccordion] = useState('add');
     const [activeAccordion2, setActiveAccordion2] = useState('list');
-    const [formError, setFormError] = useState('');
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,9 +60,8 @@ function Expense() {
     const handleAddExpense = async (e) => {
         e.preventDefault();
         if (addExpenseLoading) return;
-        setFormError('');
         if (participants.length === 0) {
-            setFormError('Please select at least one participant.');
+            toast.error('Please select at least one participant.');
             return;
         }
         setAddExpenseLoading(true);
@@ -73,7 +74,8 @@ function Expense() {
                 amount: parseFloat(amount),
                 paidBy,
                 participants,
-                description
+                description,
+                createdAt: serverTimestamp()
             };
             try {
                 if (editMode && editId) {
@@ -94,7 +96,7 @@ function Expense() {
                 const expenseList = await getExpenses(tripId);
                 setExpenses(expenseList);
             } catch (err) {
-                setFormError("Error saving expense: " + err.message);
+                toast.error("Error saving expense: " + err.message);
             }
             setAddExpenseLoading(false);
         }, 400);
@@ -106,7 +108,7 @@ function Expense() {
             const expenseList = await getExpenses(tripId);
             setExpenses(expenseList);
         } catch (err) {
-            alert("Error deleting expense: " + err.message);
+            toast.error("Error deleting expense: " + err.message);
         }
     };
 
@@ -174,9 +176,6 @@ function Expense() {
                                 </Accordion.Header>
                                 <Accordion.Body>
                                     <Form onSubmit={handleAddExpense}>
-                                        {formError && (
-                                            <div className="alert alert-danger py-1 px-2 mb-2" style={{ fontSize: '0.97rem' }}>{formError}</div>
-                                        )}
                                         <Row className="gy-2 gx-2 align-items-center mb-2">
                                             <Col xs={6} md={3} className="p-1">
                                                 <Form.Group controlId="amount" className={styles.inlineFormGroup}>
@@ -368,6 +367,9 @@ function Expense() {
                                                                     <div className={styles.expenseParticipants}>
                                                                         <small>Participants: {expense.participants.map(p => p.name).join(', ')}</small>
                                                                     </div>
+                                                                    {expense.description && <div className={styles.expenseParticipants}>
+                                                                        <small>Description: {expense.description}</small>
+                                                                    </div>}
                                                                 </div>
                                                             </Col>
                                                         </Row>
@@ -396,6 +398,7 @@ function Expense() {
                     </Col>
                 </Row>
             </Container>
+            <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
         </>
     );
 }

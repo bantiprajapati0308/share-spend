@@ -11,6 +11,7 @@ import FullScreenLoader from './common/FullScreenLoader';
 import InlineLoader from './common/InlineLoader';
 import { removeMember } from '../redux/tripSlice';
 import { getExpenses } from '../hooks/useExpenses';
+import { serverTimestamp } from 'firebase/firestore';
 
 function Member() {
     const [memberName, setMemberName] = useState('');
@@ -74,7 +75,7 @@ function Member() {
                 return;
             }
             try {
-                await addMemberToDB(tripId, { name: memberName });
+                await addMemberToDB(tripId, { name: memberName, createdAt: serverTimestamp() });
                 setMemberName('');
                 await fetchMembers(); // Don't trigger full-page loader
             } catch (err) {
@@ -233,7 +234,7 @@ function Member() {
                     </Col>
                 </Row>
             </Container>
-            <ToastContainer position="top-center" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+            <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
         </>
     );
 }

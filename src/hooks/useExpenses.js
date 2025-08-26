@@ -1,5 +1,5 @@
 import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query } from "firebase/firestore";
 
 // POST: Add expense to a trip
 export const addExpense = async (tripId, expenseData) => {
@@ -10,7 +10,12 @@ export const addExpense = async (tripId, expenseData) => {
 // GET: Fetch all expenses for a trip
 export const getExpenses = async (tripId) => {
     const userId = auth.currentUser.uid;
-    const snap = await getDocs(collection(db, "users", userId, "trips", tripId, "expenses"));
+    const q = query(
+        collection(db, "users", userId, "trips", tripId, "expenses"),
+        orderBy("createdAt", 'asc') // "asc" or "desc"
+    );
+
+    const snap = await getDocs(q);
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
