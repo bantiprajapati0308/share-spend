@@ -7,7 +7,6 @@ import { CURRENCY_ARRAY } from '../Util';
 import { PeopleFill, Globe2, InfoCircle, ArrowRightCircle, Trash } from 'react-bootstrap-icons';
 import styles from '../assets/scss/Trip.module.scss';
 import ConfirmationModal from './common/ConfirmationModal';
-import { persistor } from '../redux/store';
 import { addTrip, getTrips, deleteTrip } from '../hooks/useTrips'; // <-- Import deleteTrip
 import FullScreenLoader from './common/FullScreenLoader';
 
@@ -68,7 +67,6 @@ function Trip() {
     }, []);
 
     const handleClearData = () => {
-        persistor.purge(); // Clear persisted data
         window.location.reload(); // Optional: reload the page to reset the app state
     };
 

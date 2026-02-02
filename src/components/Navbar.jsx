@@ -6,7 +6,6 @@ import Logo from '../assets/images/logo.png';
 import styles from '../assets/scss/Expense.module.scss';
 import { HouseDoor, People, Wallet2, BarChart, BoxArrowRight } from 'react-bootstrap-icons';
 import { useSelector } from 'react-redux';
-import { persistor } from '../redux/store';
 
 function NavigationBar() {
     const [expanded, setExpanded] = useState(false);
@@ -54,7 +53,6 @@ function NavigationBar() {
     const handleLogout = async () => {
         await auth.signOut();
         navigate("/share-spend/login"); // Redirect to home after logout
-        persistor.purge();
         window.location.reload();
     };
 

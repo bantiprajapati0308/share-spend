@@ -36,25 +36,25 @@ function Expense() {
 
     // Fetch members and expenses on mount
     useEffect(() => {
-        async function fetchData() {
+
+        (async () => {
             setLoading(true);
             const memberList = await getMembers(tripId);
             setMembers(memberList);
             const expenseList = await getExpenses(tripId);
             setExpenses(expenseList);
             setLoading(false);
-        }
-        fetchData();
+        })()
+
     }, [tripId]);
 
     useEffect(() => {
-        async function fetchExpenses() {
+        if (tripId) (async () => {
             setLoadingExpenses(true);
             const data = await getExpenses(tripId);
             setExpenses(data);
             setLoadingExpenses(false);
-        }
-        if (tripId) fetchExpenses();
+        })()
     }, [tripId]);
 
     const handleAddExpense = async (e) => {

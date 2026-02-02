@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -39,6 +40,7 @@ function App() {
         </Routes>
         <Footer />
       </ErrorBoundary>
+      <ToastContainer position="top-center" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </div>
   );
 }

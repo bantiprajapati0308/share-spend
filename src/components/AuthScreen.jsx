@@ -6,7 +6,6 @@ import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
 import Logo from "../assets/images/logo.png"; // Use your logo
 import { Navigate, useNavigate } from "react-router-dom";
-import { persistor } from "../redux/store";
 
 const AuthScreen = ({ onRegister }) => {
   const [email, setEmail] = useState("");
@@ -27,7 +26,6 @@ const AuthScreen = ({ onRegister }) => {
         await signInWithEmailAndPassword(auth, email, password);
         navigate("/share-spend/trip");
       }
-      persistor.purge();
       setLoadingAuth(false);
     } catch (err) {
       setError(err.message);
