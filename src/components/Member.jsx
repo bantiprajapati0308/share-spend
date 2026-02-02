@@ -13,7 +13,7 @@ import { removeMember } from '../redux/tripSlice';
 import { getExpenses } from '../hooks/useExpenses';
 import { serverTimestamp } from 'firebase/firestore';
 
-function Member() {
+function Member({ canEdit = true }) {
     const [memberName, setMemberName] = useState('');
     const [editIndex, setEditIndex] = useState(null);
     const [members, setMembers] = useState([]);
@@ -47,6 +47,13 @@ function Member() {
 
     const handleAddMember = async (e) => {
         e.preventDefault();
+
+        // Check permissions
+        if (!canEdit) {
+            toast.error('You need to enter the correct passcode to add members.');
+            return;
+        }
+
         const form = e.currentTarget;
         if (form.checkValidity() === false) {
             e.stopPropagation();
@@ -100,7 +107,12 @@ function Member() {
     };
 
     const handleDelete = async (memberId) => {
-        if (!tripId) return;
+        if (!tripId || !canEdit) {
+            if (!canEdit) {
+                toast.error('You need to enter the correct passcode to delete members.');
+            }
+            return;
+        }
         try {
             setDeleteLoader(true)
             await deleteMember(tripId, memberId); // delete from Firestore
@@ -150,18 +162,18 @@ function Member() {
                                             <Form.Control
                                                 required
                                                 type="text"
-                                                placeholder="Enter member's name"
+                                                placeholder={canEdit ? "Enter member's name" : "View only - passcode required to edit"}
                                                 value={memberName}
                                                 onChange={(e) => setMemberName(e.target.value)}
                                                 className={styles.formControl}
-                                                disabled={addLoader}
+                                                disabled={addLoader || !canEdit}
                                             />
                                             <Button
                                                 variant={editIndex !== null ? "info" : "success"}
                                                 type="submit"
                                                 className={styles.iconBtn}
-                                                title={editIndex !== null ? 'Edit Member' : 'Add Member'}
-                                                disabled={addLoader}
+                                                title={!canEdit ? 'Passcode required to add members' : (editIndex !== null ? 'Edit Member' : 'Add Member')}
+                                                disabled={addLoader || !canEdit}
                                             >
                                                 {addLoader ? <Spinner animation="border" size="sm" /> : (editIndex !== null ? <PencilSquare size={22} /> : <PlusCircle size={22} />)}
                                             </Button>
@@ -188,17 +200,17 @@ function Member() {
                                         <div className={styles.memberActions}>
                                             <OverlayTrigger
                                                 placement="top"
-                                                overlay={used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to edit</Tooltip> : <></>}
+                                                overlay={!canEdit ? <Tooltip id={`tooltip-access-${index}`}>Passcode required to edit members</Tooltip> : (used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to edit</Tooltip> : <></>)}
                                             >
                                                 <span>
                                                     <Button
-                                                        variant={used ? "outline-secondary" : "outline-primary"}
+                                                        variant={used || !canEdit ? "outline-secondary" : "outline-primary"}
                                                         size="sm"
                                                         className={styles.iconBtn}
                                                         onClick={() => handleEdit(index)}
-                                                        disabled={used}
-                                                        style={{ pointerEvents: used ? 'auto' : 'auto' }}
-                                                        title={used ? 'Cannot edit' : 'Edit'}
+                                                        disabled={used || !canEdit}
+                                                        style={{ pointerEvents: (used || !canEdit) ? 'auto' : 'auto' }}
+                                                        title={!canEdit ? 'Access denied' : (used ? 'Cannot edit' : 'Edit')}
                                                     >
                                                         <PencilSquare size={18} />
                                                     </Button>
@@ -206,15 +218,15 @@ function Member() {
                                             </OverlayTrigger>
                                             <OverlayTrigger
                                                 placement="top"
-                                                overlay={used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to delete</Tooltip> : <></>}
+                                                overlay={!canEdit ? <Tooltip id={`tooltip-delete-access-${index}`}>Passcode required to delete members</Tooltip> : (used ? <Tooltip id={`tooltip-delete-${index}`}>Please remove this user from all expenses to delete</Tooltip> : <></>)}
                                             >
-                                                <Button variant={used ? "outline-danger" : "outline-danger"}
+                                                <Button variant={(used || !canEdit) ? "outline-secondary" : "outline-danger"}
                                                     size="sm"
                                                     className={styles.iconBtn}
-                                                    disabled={used || deleteLoader}
-                                                    style={{ pointerEvents: used ? 'auto' : 'auto' }}
+                                                    disabled={used || deleteLoader || !canEdit}
+                                                    style={{ pointerEvents: (used || !canEdit) ? 'auto' : 'auto' }}
                                                     onClick={() => handleDelete(member.id)}
-                                                    title={used ? 'Cannot delete' : 'Delete'}>
+                                                    title={!canEdit ? 'Access denied' : (used ? 'Cannot delete' : 'Delete')}>
                                                     {deleteLoader ? <Spinner animation="border" size="sm" /> : <Trash size={18} />}
                                                 </Button>
                                             </OverlayTrigger>

@@ -13,7 +13,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Expense() {
+function Expense({ canEdit = true }) {
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
     const [paidBy, setPaidBy] = useState('');
@@ -59,6 +59,12 @@ function Expense() {
 
     const handleAddExpense = async (e) => {
         e.preventDefault();
+
+        // Check permissions
+        if (!canEdit) {
+            toast.error('You need to enter the correct passcode to add expenses.');
+            return;
+        }
         if (addExpenseLoading) return;
         if (participants.length === 0) {
             toast.error('Please select at least one participant.');
@@ -103,6 +109,10 @@ function Expense() {
     };
 
     const handleDeleteExpense = async (id) => {
+        if (!canEdit) {
+            toast.error('You need to enter the correct passcode to delete expenses.');
+            return;
+        }
         try {
             await deleteExpense(tripId, id);
             const expenseList = await getExpenses(tripId);
@@ -113,6 +123,10 @@ function Expense() {
     };
 
     const handleEditExpense = (id) => {
+        if (!canEdit) {
+            toast.error('You need to enter the correct passcode to edit expenses.');
+            return;
+        }
         const expense = expenses.find((exp) => exp.id === id);
         if (!expense) return;
         setExpenseName(expense.name);
@@ -188,6 +202,7 @@ function Expense() {
                                                         required
                                                         size="sm"
                                                         className={styles.inlineInput}
+                                                        disabled={!canEdit}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -202,6 +217,7 @@ function Expense() {
                                                         required
                                                         size="sm"
                                                         className={styles.inlineInput}
+                                                        disabled={!canEdit}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -215,6 +231,7 @@ function Expense() {
                                                         required
                                                         size="sm"
                                                         className={styles.inlineInput}
+                                                        disabled={!canEdit}
                                                     >
                                                         <option value="">Select</option>
                                                         {members.map((member, index) => (
@@ -235,6 +252,7 @@ function Expense() {
                                                         onChange={(e) => setDescription(e.target.value)}
                                                         size="sm"
                                                         className={styles.inlineInput}
+                                                        disabled={!canEdit}
                                                     />
                                                 </Form.Group>
                                             </Col>
@@ -251,16 +269,23 @@ function Expense() {
                                                             variant="success"
                                                             type="submit"
                                                             className={styles.iconBtn}
-                                                            title="Add Expense"
+                                                            title={canEdit ? "Add Expense" : "Enter passcode to add expenses"}
                                                             style={{ fontWeight: 600, fontSize: '0.75rem', padding: '0.32rem 1.1rem' }}
-                                                            disabled={addExpenseLoading}
+                                                            disabled={addExpenseLoading || !canEdit}
                                                         >
                                                             {addExpenseLoading ? <Spinner animation="border" size="sm" className="me-1" /> : <PlusCircle size={22} className="me-1" />}Add
                                                         </Button>
                                                     )}
                                                     {editMode && (
                                                         <>
-                                                            <Button variant="success" type="submit" className={styles.iconBtn} title="Update" style={{ fontWeight: 600, fontSize: '0.75rem', marginRight: '0.25rem' }}>
+                                                            <Button
+                                                                variant="success"
+                                                                type="submit"
+                                                                className={styles.iconBtn}
+                                                                title={canEdit ? "Update" : "Enter passcode to update expenses"}
+                                                                style={{ fontWeight: 600, fontSize: '0.75rem', marginRight: '0.25rem' }}
+                                                                disabled={!canEdit}
+                                                            >
                                                                 <Save2 size={22} className="me-1" />Update
                                                             </Button>
                                                             <Button className={styles.iconBtn} onClick={() => { resetForm(); setEditMode(false); }} title="Cancel" style={{ fontWeight: 600, fontSize: '0.75rem' }}>
@@ -273,10 +298,14 @@ function Expense() {
                                             <div className={styles.participantGrid}>
                                                 {/* Select All button */}
                                                 <div
-                                                    className={`${styles.participantBtn} ${isAllSelected ? styles.selected : ''}`}
-                                                    onClick={handleSelectAll}
-                                                    tabIndex={0}
+                                                    className={`${styles.participantBtn} ${isAllSelected ? styles.selected : ''} ${!canEdit ? styles.disabled : ''}`}
+                                                    onClick={canEdit ? handleSelectAll : undefined}
+                                                    tabIndex={canEdit ? 0 : -1}
                                                     role="button"
+                                                    style={{
+                                                        cursor: canEdit ? 'pointer' : 'not-allowed',
+                                                        opacity: canEdit ? 1 : 0.6
+                                                    }}
                                                 >
                                                     <div className={styles.avatar} style={{ background: '#adb5bd' }}>ALL</div>
                                                     <div className={styles.name}>All</div>
@@ -309,16 +338,20 @@ function Expense() {
                                                     return (
                                                         <div
                                                             key={index}
-                                                            className={`${styles.participantBtn} ${selected ? styles.selected : ''}`}
-                                                            style={btnStyle}
-                                                            onClick={() => {
+                                                            className={`${styles.participantBtn} ${selected ? styles.selected : ''} ${!canEdit ? styles.disabled : ''}`}
+                                                            style={{
+                                                                ...btnStyle,
+                                                                cursor: canEdit ? 'pointer' : 'not-allowed',
+                                                                opacity: canEdit ? 1 : 0.6
+                                                            }}
+                                                            onClick={canEdit ? () => {
                                                                 if (selected) {
                                                                     setParticipants(participants.filter((p) => p.id !== member.id));
                                                                 } else {
                                                                     setParticipants([...participants, member]);
                                                                 }
-                                                            }}
-                                                            tabIndex={0}
+                                                            } : undefined}
+                                                            tabIndex={canEdit ? 0 : -1}
                                                             role="button"
                                                         >
                                                             <div className={styles.avatar} style={{ background: avatarBg, color: avatarColor }}>{initials}</div>
@@ -356,10 +389,23 @@ function Expense() {
                                                                         <span>Paid by: <strong>{expense.paidBy}</strong></span>
                                                                         <span className={`${styles.expenseAmount} d-none d-md-inline ms-4`}>{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</span>
                                                                         <span className={styles.actionButtonsInline}>
-                                                                            <Button variant="outline-primary" size="sm" onClick={() => handleEditExpense(expense.id)} title="Edit">
+                                                                            <Button
+                                                                                variant="outline-primary"
+                                                                                size="sm"
+                                                                                onClick={() => handleEditExpense(expense.id)}
+                                                                                title={canEdit ? "Edit" : "Enter passcode to edit"}
+                                                                                disabled={!canEdit}
+                                                                            >
                                                                                 <Pencil size={18} />
                                                                             </Button>
-                                                                            <Button variant="outline-danger" size="sm" onClick={() => handleDeleteExpense(expense.id)} className="ms-1" title="Delete">
+                                                                            <Button
+                                                                                variant="outline-danger"
+                                                                                size="sm"
+                                                                                onClick={() => handleDeleteExpense(expense.id)}
+                                                                                className="ms-1"
+                                                                                title={canEdit ? "Delete" : "Enter passcode to delete"}
+                                                                                disabled={!canEdit}
+                                                                            >
                                                                                 <Trash3 size={18} />
                                                                             </Button>
                                                                         </span>

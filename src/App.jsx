@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
@@ -33,9 +34,21 @@ function App() {
         <NavigationBar />
         <Routes>
           <Route path="/share-spend/trip" element={<Trip />} />
-          <Route path="/share-spend/members/:tripId" element={<Member />} />
-          <Route path="/share-spend/expenses/:tripId" element={<Expense />} />
-          <Route path="/share-spend/report/:tripId" element={<Report />} />
+          <Route path="/share-spend/members/:tripId" element={
+            <ProtectedTripRoute>
+              <Member />
+            </ProtectedTripRoute>
+          } />
+          <Route path="/share-spend/expenses/:tripId" element={
+            <ProtectedTripRoute>
+              <Expense />
+            </ProtectedTripRoute>
+          } />
+          <Route path="/share-spend/report/:tripId" element={
+            <ProtectedTripRoute>
+              <Report />
+            </ProtectedTripRoute>
+          } />
           <Route path="*" element={<Navigate to="/share-spend/login" />} />
         </Routes>
         <Footer />

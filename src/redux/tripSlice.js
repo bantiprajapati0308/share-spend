@@ -8,10 +8,12 @@ const initialState = {
         date: '',
         currency: '',
         id: '',
+        passcode: '', // Add passcode to trip data
     },
     members: [],
     expenses: [],
     currency: '',
+    passcodeAccess: {}, // Store passcode access per trip ID { tripId: boolean }
 };
 
 const tripSlice = createSlice({
@@ -52,9 +54,20 @@ const tripSlice = createSlice({
         },
         selectCurrency(state, action) {
             state.currency = action.payload;
+        },
+        setPasscodeAccess(state, action) {
+            const { tripId, hasAccess } = action.payload;
+            state.passcodeAccess[tripId] = hasAccess;
+        },
+        clearPasscodeAccess(state, action) {
+            const { tripId } = action.payload;
+            delete state.passcodeAccess[tripId];
+        },
+        resetTripState(state) {
+            return initialState;
         }
     }
 });
 
-export const { setTrip, addMember, editMember, addExpense, updateExpense, removeMember, removeExpense, selectCurrency } = tripSlice.actions;
+export const { setTrip, addMember, editMember, addExpense, updateExpense, removeMember, removeExpense, selectCurrency, setPasscodeAccess, clearPasscodeAccess, resetTripState } = tripSlice.actions;
 export default tripSlice.reducer;
