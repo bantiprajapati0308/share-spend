@@ -10,12 +10,11 @@ export const addExpense = async (tripId, expenseData) => {
 // GET: Fetch all expenses for a trip
 export const getExpenses = async (tripId) => {
     const userId = auth.currentUser.uid;
-    const q = query(
+    const expensesQuery = query(
         collection(db, "users", userId, "trips", tripId, "expenses"),
-        orderBy("createdAt", 'asc') // "asc" or "desc"
+        orderBy("createdAt", "asc")
     );
-
-    const snap = await getDocs(q);
+    const snap = await getDocs(expensesQuery);
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 

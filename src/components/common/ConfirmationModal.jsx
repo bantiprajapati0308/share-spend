@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import { DeleteButton } from '../../utils/Button';
 
 function ConfirmationModal({ show, handleClose, handleConfirm }) {
     return (
@@ -14,9 +15,7 @@ function ConfirmationModal({ show, handleClose, handleConfirm }) {
                 <Button variant="secondary" onClick={handleClose}>
                     Cancel
                 </Button>
-                <Button variant="danger" onClick={handleConfirm}>
-                    Clear Data
-                </Button>
+                <DeleteButton onClick={handleConfirm} text="Delete" />
             </Modal.Footer>
         </Modal>
     );
