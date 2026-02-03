@@ -27,10 +27,8 @@ function ProtectedTripRoute({ children }) {
             try {
                 setLoading(true);
 
-                // Clear any existing passcode access for this trip to ensure fresh authentication
                 dispatch(clearPasscodeAccess({ tripId }));
 
-                // Check if we already have trip data in Redux
                 if (trip.id === tripId && trip.name) {
                     setTripData(trip);
                 } else {
