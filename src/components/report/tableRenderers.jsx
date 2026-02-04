@@ -43,9 +43,36 @@ export const createBalancesRenderer = (currency, balances, styles) => {
     );
 };
 
-export const createTransactionsRenderer = (currency) => {
+export const createTransactionsRenderer = (currency, onTransactionClick = null) => {
     return (transaction, index) => (
-        <tr key={index}>
+        <tr
+            key={index}
+            onClick={onTransactionClick ? () => onTransactionClick(transaction) : undefined}
+            style={{
+                cursor: onTransactionClick ? 'pointer' : 'default',
+                transition: 'background-color 0.2s ease'
+            }}
+            className={onTransactionClick ? 'settlement-row' : ''}
+            onMouseEnter={(e) => {
+                if (onTransactionClick) {
+                    e.currentTarget.style.backgroundColor = '#f0f8ff';
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (onTransactionClick) {
+                    e.currentTarget.style.backgroundColor = '';
+                }
+            }}
+            title={onTransactionClick ? 'Click to settle payment' : undefined}
+            role={onTransactionClick ? 'button' : undefined}
+            tabIndex={onTransactionClick ? 0 : -1}
+            onKeyDown={onTransactionClick ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onTransactionClick(transaction);
+                }
+            } : undefined}
+        >
             <td style={{ color: '#1769aa', background: '#e3f0ff' }}>
                 {transaction.from}
             </td>
@@ -54,6 +81,11 @@ export const createTransactionsRenderer = (currency) => {
             </td>
             <td style={{ background: '#fffde7', color: '#222' }}>
                 {getCurrencySymbol(currency)}{transaction.amount.toFixed(2)}
+                {onTransactionClick && (
+                    <small className="ms-2 text-muted">
+                        (click to settle)
+                    </small>
+                )}
             </td>
         </tr>
     );

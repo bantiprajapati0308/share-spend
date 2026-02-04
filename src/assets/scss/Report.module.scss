@@ -17,11 +17,30 @@
 }
 
 .accordion-item {
-
     button {
         &:focus {
             box-shadow: none !important;
             outline: none !important;
         }
+    }
+}
+
+// Settlement row styles
+:global(.settlement-row) {
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #f0f8ff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+    }
+
+    &:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+
+    &:active {
+        transform: translateY(0);
     }
 }

@@ -1,106 +1,160 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { getCurrencySymbol } from '../Util';
 import styles from '../assets/scss/Report.module.scss';
-import { PeopleFill, PiggyBank, CashStack } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getMembers, getExpenses } from '../hooks/useReport';
 import FullScreenLoader from './common/FullScreenLoader';
-import { filterExpenses, getInitialFilters } from '../utils/expenseFilterUtils';
+import { filterExpenses } from '../utils/expenseFilterUtils';
 
-// Import new components
-import ReportAccordion from './report/ReportAccordion';
-import ReportTable from './report/ReportTable';
+// Import components that are still directly used
 import ParticipantsModal from './report/ParticipantsModal';
-import ExpenseFilters from './report/ExpenseFilters';
-import ExpenseTable from './report/ExpenseTable';
 import ExportActions from './report/ExportActions';
+import SettlementModal from './report/settlement/SettlementModal';
+import ToastNotification from './common/ToastNotification';
 
 // Import hooks and utilities
 import useReportCalculations from '../hooks/useReportCalculations';
 import { generateExcelReport } from '../utils/excelExport';
+import useSettlements from '../hooks/useSettlements';
+
+// Import report utilities
 import {
-    createSpentAmountsRenderer,
-    createBalancesRenderer,
-    createTransactionsRenderer,
-    createPersonSharesRenderer
-} from './report/tableRenderers.jsx';
+    fetchReportData,
+    initializeFilters,
+    initializeAccordionStates,
+    createFilterHandlers,
+    createAccordionHandlers,
+    createModalHandlers,
+    createToastHandlers,
+    createSettlementHandler,
+    createMemberOptions,
+    calculateSettledBalances
+} from '../utils/reportUtils';
+
+import {
+    renderExpensesAccordion,
+    renderSpentAmountsAccordion,
+    renderBalancesAccordion,
+    renderSettlementsAccordion,
+    renderPersonSharesAccordion,
+    renderSettlementHistoryAccordion
+} from '../utils/reportRenderUtils.jsx';
 
 function Report() {
     const { tripId } = useParams();
+    const navigate = useNavigate();
+
+    // Basic state
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [currency, setCurrency] = useState('INR');
+    const [loadingReport, setLoadingReport] = useState(true);
+
+    // Initialize states using utilities
+    const [expenseFilters, setExpenseFilters] = useState(() => initializeFilters().filters);
+    const [showFilters, setShowFilters] = useState(() => initializeFilters().showFilters);
+    const [accordionStates, setAccordionStates] = useState(() => initializeAccordionStates());
+
+    // Modal states
     const [showParticipants, setShowParticipants] = useState(false);
     const [currentParticipants, setCurrentParticipants] = useState([]);
-    const [loadingReport, setLoadingReport] = useState(true);
-    const [expenseFilters, setExpenseFilters] = useState(getInitialFilters());
-    const [showFilters, setShowFilters] = useState(false);
+    const [showSettlementModal, setShowSettlementModal] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [settlementLoading, setSettlementLoading] = useState(false);
 
-    // Accordion states
-    const [accordionStates, setAccordionStates] = useState({
-        expenses: "0",
-        spentAmounts: "1",
-        balances: "2",
-        settlements: "3",
-        personShares: "4"
-    });
+    // Toast notification states
+    const [toast, setToast] = useState({ show: false, variant: 'success', title: '', message: '' });
 
-    const navigate = useNavigate();
+    // Override balances and transactions for settlements (optimistic updates)
+    const [overrideBalances, setOverrideBalances] = useState(null);
+    const [overrideTransactions, setOverrideTransactions] = useState(null);
 
-    // Use custom hook for calculations
-    const { balances, spentAmounts, personShares, totalExpense, transactions } = useReportCalculations(members, expenses);
-    // Fetch members and expenses from Firestore
+    // Use custom hooks - settlements hook first since it's used in calculations
+    const {
+        settlements,
+        addSettlement,
+        removeSettlement,
+        getTotalSettled,
+        getSettlementHistory,
+        refreshSettlements
+    } = useSettlements(tripId);
+
+    // Calculate data including settlements
+    const baseCalculatedData = useReportCalculations(members, expenses);
+
+    // Apply settlements to get current state using utility function
+    const calculatedData = useMemo(() =>
+        calculateSettledBalances(baseCalculatedData, settlements),
+        [baseCalculatedData, settlements]
+    );
+
+    // Use override data if available, otherwise use calculated data
+    const { balances, spentAmounts, personShares, totalExpense } = calculatedData;
+    const transactions = overrideTransactions || calculatedData.transactions;
+    const currentBalances = overrideBalances || balances;
+    // Fetch members and expenses from Firestore using utility
     useEffect(() => {
-        async function fetchData() {
+        async function loadReportData() {
+            if (!tripId) return;
+
             setLoadingReport(true);
-            const memberList = await getMembers(tripId);
-            const expenseList = await getExpenses(tripId);
-            setMembers(memberList);
-            setExpenses(expenseList);
-            setLoadingReport(false);
+            try {
+                const { members: memberList, expenses: expenseList } = await fetchReportData(tripId);
+                setMembers(memberList);
+                setExpenses(expenseList);
+            } catch (error) {
+                console.error('Failed to load report data:', error);
+                // Could show toast notification here
+            } finally {
+                setLoadingReport(false);
+            }
         }
-        if (tripId) fetchData();
+        loadReportData();
     }, [tripId]);
 
-    // Handle accordion states
-    const handleAccordionSelect = (accordionKey, eventKey) => {
-        setAccordionStates(prev => ({
-            ...prev,
-            [accordionKey]: eventKey
-        }));
-    };
+    // Create handlers using utilities
+    const { handleAccordionSelect } = createAccordionHandlers(setAccordionStates);
 
-    // Expense filtering and participant modal handlers
-    const handleShowParticipants = (participants) => {
-        setCurrentParticipants(participants);
-        setShowParticipants(true);
-    };
+    const {
+        handleFilterChange,
+        handleMultiSelectChange,
+        handleClearFilters,
+        toggleFilters
+    } = createFilterHandlers(setExpenseFilters, setShowFilters);
 
-    const handleCloseParticipants = () => setShowParticipants(false);
+    const {
+        handleShowParticipants,
+        handleCloseParticipants,
+        handleTransactionClick,
+        handleCloseSettlementModal
+    } = createModalHandlers(
+        setShowParticipants,
+        setCurrentParticipants,
+        setShowSettlementModal,
+        setSelectedTransaction
+    );
 
-    const handleFilterChange = (field, value) => {
-        setExpenseFilters(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
+    const {
+        showSuccessToast,
+        showErrorToast,
+        handleToastClose
+    } = createToastHandlers(setToast);
 
-    const handleMultiSelectChange = (field, selectedOptions) => {
-        const values = selectedOptions ? selectedOptions.map(option => option.value) : [];
-        setExpenseFilters(prev => ({
-            ...prev,
-            [field]: values
-        }));
-    };
-
-    const handleClearFilters = () => {
-        setExpenseFilters(getInitialFilters());
-    };
-
-    const toggleFilters = () => {
-        setShowFilters(!showFilters);
-    };
+    const { handleSettlementSubmit } = createSettlementHandler({
+        tripId,
+        currency,
+        currentBalances,
+        addSettlement,
+        removeSettlement,
+        refreshSettlements,
+        setOverrideBalances,
+        setOverrideTransactions,
+        setSettlementLoading,
+        setShowSettlementModal,
+        setSelectedTransaction,
+        showSuccessToast,
+        showErrorToast
+    });
 
     // Excel export handler
     const handleExportExcel = () => {
@@ -110,11 +164,8 @@ function Report() {
     // Apply filters to expenses
     const filteredExpenses = filterExpenses(expenses, expenseFilters);
 
-    // Member options for select dropdowns
-    const memberOptions = members.map(member => ({
-        value: member,
-        label: member
-    }));
+    // Member options for select dropdowns using utility
+    const memberOptions = createMemberOptions(members);
 
     return (
         <>
@@ -148,142 +199,92 @@ function Report() {
                 </Row>
 
                 {/* Expenses Accordion */}
-                <ReportAccordion
-                    activeKey={accordionStates.expenses}
-                    onSelect={(eventKey) => handleAccordionSelect('expenses', eventKey)}
-                    eventKey="0"
-                    icon={PiggyBank}
-                    title={`Expenses (${filteredExpenses.length})`}
-                >
-                    <ExpenseFilters
-                        showFilters={showFilters}
-                        toggleFilters={toggleFilters}
-                        filters={expenseFilters}
-                        onFilterChange={handleFilterChange}
-                        onMultiSelectChange={handleMultiSelectChange}
-                        onClearFilters={handleClearFilters}
-                        memberOptions={memberOptions}
-                        currency={currency}
-                    />
-
-                    <ExpenseTable
-                        expenses={expenses}
-                        filteredExpenses={filteredExpenses}
-                        currency={currency}
-                        onShowParticipants={handleShowParticipants}
-                    />
-                </ReportAccordion>
+                {renderExpensesAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    filteredExpenses,
+                    showFilters,
+                    toggleFilters,
+                    expenseFilters,
+                    handleFilterChange,
+                    handleMultiSelectChange,
+                    handleClearFilters,
+                    memberOptions,
+                    currency,
+                    expenses,
+                    handleShowParticipants
+                })}
 
                 {/* Spent Amounts Accordion */}
-                <ReportAccordion
-                    activeKey={accordionStates.spentAmounts}
-                    onSelect={(eventKey) => handleAccordionSelect('spentAmounts', eventKey)}
-                    eventKey="1"
-                    icon={CashStack}
-                    title="Spent Amounts"
-                >
-                    <ReportTable
-                        headers={[
-                            { label: 'Member' },
-                            { label: 'Spent Amount' },
-                            { label: 'Percentage' }
-                        ]}
-                        data={Object.keys(spentAmounts)
-                            .sort((a, b) => spentAmounts[b] - spentAmounts[a])
-                            .concat(['TOTAL'])}
-                        renderRow={(member, index, sortedArray) => {
-                            if (member === 'TOTAL') {
-                                return (
-                                    <tr key="total" className='table-dark'>
-                                        <td>Total Expense</td>
-                                        <td>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</td>
-                                        <td>100.0%</td>
-                                    </tr>
-                                );
-                            }
-                            const membersOnly = Object.keys(spentAmounts).sort((a, b) => spentAmounts[b] - spentAmounts[a]);
-                            const renderSpentAmounts = createSpentAmountsRenderer(currency, spentAmounts, totalExpense);
-                            return renderSpentAmounts(member, index, membersOnly);
-                        }}
-                    />
-                </ReportAccordion>
+                {renderSpentAmountsAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    currency,
+                    spentAmounts,
+                    totalExpense
+                })}
 
                 {/* Balances Accordion */}
-                <ReportAccordion
-                    activeKey={accordionStates.balances}
-                    onSelect={(eventKey) => handleAccordionSelect('balances', eventKey)}
-                    eventKey="2"
-                    icon={PiggyBank}
-                    title="Balances including Total Expense"
-                >
-                    <ReportTable
-                        headers={[
-                            { label: 'Member', className: 'p-2' },
-                            { label: 'Balance', className: 'p-2' }
-                        ]}
-                        data={Object.keys(balances).sort((a, b) => balances[b] - balances[a])}
-                        renderRow={createBalancesRenderer(currency, balances, styles)}
-                    />
-                </ReportAccordion>
+                {renderBalancesAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    currency,
+                    balances,
+                    styles
+                })}
 
                 {/* Settlements Accordion */}
-                <ReportAccordion
-                    activeKey={accordionStates.settlements}
-                    onSelect={(eventKey) => handleAccordionSelect('settlements', eventKey)}
-                    eventKey="3"
-                    title="Final Settlements"
-                >
-                    <ReportTable
-                        headers={[
-                            { label: 'Payer' },
-                            { label: 'Receiver' },
-                            { label: 'Amount' }
-                        ]}
-                        data={transactions}
-                        renderRow={createTransactionsRenderer(currency)}
-                        emptyMessage="All settled! 🎉"
-                    />
-                </ReportAccordion>
+                {renderSettlementsAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    currency,
+                    transactions,
+                    handleTransactionClick
+                })}
 
                 {/* Person Shares Accordion */}
-                <ReportAccordion
-                    activeKey={accordionStates.personShares}
-                    onSelect={(eventKey) => handleAccordionSelect('personShares', eventKey)}
-                    eventKey="4"
-                    icon={PeopleFill}
-                    title="Per Person Expense Summary"
-                >
-                    <ReportTable
-                        headers={[
-                            { label: 'Member', className: 'p-2' },
-                            { label: 'Total Share', className: 'p-2' },
-                            { label: 'Percentage', className: 'p-2' }
-                        ]}
-                        data={Object.keys(personShares)
-                            .sort((a, b) => personShares[b] - personShares[a])
-                            .concat(['TOTAL'])}
-                        renderRow={(member, index, sortedArray) => {
-                            if (member === 'TOTAL') {
-                                return (
-                                    <tr key="total" className='table-dark'>
-                                        <td>Total</td>
-                                        <td>{getCurrencySymbol(currency)}{totalExpense.toFixed(2)}</td>
-                                        <td>100.0%</td>
-                                    </tr>
-                                );
-                            }
-                            const membersOnly = Object.keys(personShares).sort((a, b) => personShares[b] - personShares[a]);
-                            const renderPersonShares = createPersonSharesRenderer(currency, personShares, totalExpense);
-                            return renderPersonShares(member, index, membersOnly);
-                        }}
-                    />
-                </ReportAccordion>
+                {renderPersonSharesAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    currency,
+                    personShares,
+                    totalExpense
+                })}
+
+                {/* Settlement History Accordion */}
+                {renderSettlementHistoryAccordion({
+                    accordionStates,
+                    handleAccordionSelect,
+                    settlements,
+                    getSettlementHistory,
+                    currency
+                })}
 
                 {/* Participants Modal */}
                 <ParticipantsModal
                     show={showParticipants}
                     onClose={handleCloseParticipants}
                     participants={currentParticipants}
+                />
+
+                {/* Settlement Modal */}
+                <SettlementModal
+                    show={showSettlementModal}
+                    onClose={handleCloseSettlementModal}
+                    onSubmit={handleSettlementSubmit}
+                    transaction={selectedTransaction}
+                    members={members}
+                    currency={currency}
+                    loading={settlementLoading}
+                />
+
+                {/* Toast Notifications */}
+                <ToastNotification
+                    show={toast.show}
+                    onClose={handleToastClose}
+                    variant={toast.variant}
+                    title={toast.title}
+                    message={toast.message}
                 />
             </Container>
         </>
