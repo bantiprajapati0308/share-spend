@@ -4,7 +4,7 @@ import { Navbar, Nav, Container, Row, Col, Button } from 'react-bootstrap';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import Logo from '../assets/images/logo.png';
 import styles from '../assets/scss/Expense.module.scss';
-import { HouseDoor, People, Wallet2, BarChart, BoxArrowRight } from 'react-bootstrap-icons';
+import { HouseDoor, People, Wallet2, BarChart, BoxArrowRight, Calendar, HandThumbsUp } from 'react-bootstrap-icons';
 import { useSelector } from 'react-redux';
 
 function NavigationBar() {
@@ -105,6 +105,20 @@ function NavigationBar() {
                                     </NavLink>
                                 </Col>
                             </Row>
+                            <Row>
+                                <Col xs={6} className={styles.menuCol}>
+                                    <NavLink to="/share-spend/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                        <Calendar size={20} className="me-2" />
+                                        <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Daily</span>
+                                    </NavLink>
+                                </Col>
+                                <Col xs={6} className={styles.menuCol}>
+                                    <NavLink to="/share-spend/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                        <HandThumbsUp size={20} className="me-2" />
+                                        <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Lending</span>
+                                    </NavLink>
+                                </Col>
+                            </Row>
                         </div>
                     ) : (
                         <Nav className="justify-content-start">
@@ -124,6 +138,14 @@ function NavigationBar() {
                                 <NavLink to={`/share-spend/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <BarChart size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Report</span>
+                                </NavLink>
+                                <NavLink to="/share-spend/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <Calendar size={16} className="me-2" />
+                                    <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Daily</span>
+                                </NavLink>
+                                <NavLink to="/share-spend/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <HandThumbsUp size={16} className="me-2" />
+                                    <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Lending</span>
                                 </NavLink>
                             </div>
                         </Nav>

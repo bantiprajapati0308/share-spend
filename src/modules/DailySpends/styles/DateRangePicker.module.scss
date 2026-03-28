@@ -1,0 +1,122 @@
+.dateRangeContainer {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .pickerSection {
+        margin-bottom: 1rem;
+
+        .label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dateInput {
+            border: 2px solid #e0e4e8;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+
+            &:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                outline: none;
+            }
+        }
+
+        .applyBtn {
+            margin-top: 1.85rem;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+    }
+
+    .presets {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        .presetsLabel {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .presetButtons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+
+            .presetBtn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+                font-weight: 500;
+                border-radius: 6px;
+                transition: all 0.3s ease;
+                border: 1px solid #cbd5e1;
+                color: #64748b;
+
+                &:hover {
+                    border-color: #667eea;
+                    color: #667eea;
+                    background-color: rgba(102, 126, 234, 0.05);
+                }
+
+                &:active {
+                    transform: scale(0.95);
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .dateRangeContainer {
+        padding: 1rem;
+
+        .pickerSection {
+            .applyBtn {
+                margin-top: 1.5rem;
+            }
+        }
+
+        .presets {
+            flex-direction: column;
+            align-items: flex-start;
+
+            .presetsLabel {
+                width: 100%;
+            }
+
+            .presetButtons {
+                width: 100%;
+
+                .presetBtn {
+                    flex: 1;
+                    min-width: 80px;
+                }
+            }
+        }
+    }
+}

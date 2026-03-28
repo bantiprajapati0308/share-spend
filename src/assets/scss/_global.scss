@@ -1,11 +1,40 @@
+@import './variable';
 @import './mixin';
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.margin-bttom {
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: $background-color;
+    color: $text-primary;
+    line-height: 1.6;
+}
+
+input,
+textarea,
+select {
+    font-size: 16px;
+    font-family: inherit;
+    touch-action: manipulation;
+
+    &:focus {
+        font-size: 16px;
+        outline: none;
+    }
+}
+
+// Utility Classes
+.margin-bottom {
     margin-bottom: 40px;
 }
 
@@ -13,18 +42,113 @@ body {
     @include flex-center;
 }
 
-input,
-textarea,
-select {
-    font-size: 16px;
-    /* Prevent auto zoom */
-    touch-action: manipulation;
-}
-
-input:focus {
-    font-size: 16px;
-}
-
 .display-space-between {
-    // @include display-space-between;
+    display: flex;
+    space-between: space-between;
+}
+
+// Container utilities
+.container-modern {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+
+    @media (min-width: 768px) {
+        padding: 0 2rem;
+    }
+}
+
+// Card styles
+.card-modern {
+    background: #fff;
+    border: 1px solid $border-color;
+    border-radius: 1rem;
+    box-shadow: $shadow-md;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: $shadow-lg;
+    }
+}
+
+// Button utilities
+.btn-modern {
+    border-radius: 0.75rem;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+}
+
+// Input field styles
+.form-control-modern {
+    border: 2px solid $border-color;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+    }
+}
+
+// Responsive text sizing
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    line-height: 1.3;
+    color: $text-primary;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.75rem;
+}
+
+h4 {
+    font-size: 1.5rem;
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.35rem;
+    }
+
+    h4 {
+        font-size: 1.25rem;
+    }
 }

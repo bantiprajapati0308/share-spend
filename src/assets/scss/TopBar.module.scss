@@ -1,0 +1,87 @@
+@import './variable';
+
+.topBar {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid $border-color;
+    z-index: 999;
+    box-shadow: $shadow-sm;
+}
+
+.container {
+    max-width: 100%;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @media (min-width: 768px) {
+        padding: 1rem 2rem;
+    }
+}
+
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid $primary-color;
+
+    @media (min-width: 768px) {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.userName {
+    font-weight: 700;
+    font-size: 1rem;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+
+    @media (max-width: 480px) {
+        max-width: 120px;
+        font-size: 0.9rem;
+    }
+}
+
+.logoutBtn {
+    background: white;
+    border: 2px solid $border-color;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: $danger-color;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+
+    &:hover {
+        background: rgba($danger-color, 0.1);
+        border-color: $danger-color;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
