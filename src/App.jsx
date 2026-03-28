@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
-import NavigationBar from './components/Navbar';
+import TopBar from './components/TopBar';
+import BottomNavigation from './components/BottomNavigation';
 import Trip from './components/Trip';
 import Member from './components/Member';
 import Expense from './components/Expense';
 import Report from './components/Report';
-import Footer from './components/Footer';
 import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
+import DailyExpenses from './components/DailyExpenses';
+import Lending from './components/Lending';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
@@ -29,9 +31,9 @@ function App() {
   }
 
   return (
-    <div>
+    <div style={{ paddingBottom: '70px' }}>
       <ErrorBoundary>
-        <NavigationBar />
+        <TopBar />
         <Routes>
           <Route path="/share-spend/trip" element={<Trip />} />
           <Route path="/share-spend/members/:tripId" element={
@@ -49,10 +51,12 @@ function App() {
               <Report />
             </ProtectedTripRoute>
           } />
+          <Route path="/share-spend/daily-expenses" element={<DailyExpenses />} />
+          <Route path="/share-spend/lending" element={<Lending />} />
           <Route path="*" element={<Navigate to="/share-spend/login" />} />
         </Routes>
-        <Footer />
       </ErrorBoundary>
+      <BottomNavigation />
       <ToastContainer position="top-center" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </div>
   );

@@ -1,0 +1,273 @@
+@import './variable';
+@import './mixin';
+
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.header {
+    margin-bottom: 2.5rem;
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: $primary-color;
+        margin-bottom: 0.5rem;
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
+    }
+
+    p {
+        color: $text-secondary;
+        font-size: 1.1rem;
+    }
+}
+
+.summaryCard {
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: $shadow-lg;
+
+    .summaryLabel {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .summaryAmount {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
+    }
+}
+
+.formSection {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: $shadow-md;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: $text-primary;
+    }
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: $text-primary;
+        font-size: 1rem;
+    }
+
+    input,
+    textarea,
+    select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid $border-color;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+        }
+
+        &::placeholder {
+            color: $text-secondary;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.expenseList {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: $shadow-md;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: $text-primary;
+    }
+
+    &.empty {
+        text-align: center;
+        padding: 3rem 2rem;
+
+        .emptyIcon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        p {
+            color: $text-secondary;
+            font-size: 1.1rem;
+        }
+    }
+}
+
+.expenseItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid $border-color;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: $light-color;
+        box-shadow: $shadow-sm;
+    }
+
+    .expenseInfo {
+        flex: 1;
+
+        .expenseName {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: $text-primary;
+            margin-bottom: 0.5rem;
+        }
+
+        .expenseCategory {
+            display: inline-block;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            background-color: rgba($primary-color, 0.1);
+            color: $primary-color;
+            border-radius: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .expenseDate {
+            font-size: 0.9rem;
+            color: $text-secondary;
+        }
+    }
+
+    .expenseAmount {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: $primary-color;
+        text-align: right;
+        margin-right: 1rem;
+        min-width: 100px;
+    }
+
+    .deleteBtn {
+        background: white;
+        color: $danger-color;
+        border: 2px solid $danger-color;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: $danger-color;
+            color: white;
+        }
+    }
+}
+
+.noExpenses {
+    text-align: center;
+    padding: 2rem;
+    color: $text-secondary;
+
+    p {
+        font-size: 1.1rem;
+    }
+}
+
+.expenseStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .statCard {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border-left: 4px solid $primary-color;
+        box-shadow: $shadow-sm;
+
+        .statLabel {
+            color: $text-secondary;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .statValue {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: $primary-color;
+        }
+    }
+}

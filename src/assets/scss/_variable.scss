@@ -1,14 +1,30 @@
-
-$positive-background: #07c90726;
-$negative-background: #ff00002b;
-$positive-color: #008f00;
-$negative-color: #fb0707;
-
-$primary-color: #007bff;
+// Modern Color Palette
+$primary-color: #1e62d0;
+$primary-dark: #0d223a;
+$primary-light: #2d73e1;
 $secondary-color: #6c757d;
-$success-color: #28a745;
-$danger-color: #dc3545;
-$info-color: #17a2b8;
-$warning-color: #ffc107;
+$success-color: #10b981;
+$danger-color: #ef4444;
+$warning-color: #f59e0b;
+$info-color: #3b82f6;
 $light-color: #f8f9fa;
-$dark-color: #343a40;
+$dark-color: #1f2937;
+
+// Semantic Colors
+$positive-background: #d1fae5;
+$negative-background: #fee2e2;
+$positive-color: #059669;
+$negative-color: #dc2626;
+
+// Neutral Colors
+$text-primary: #111827;
+$text-secondary: #6b7280;
+$text-light: #f3f4f6;
+$border-color: #e5e7eb;
+$background-color: #f9fafb;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
