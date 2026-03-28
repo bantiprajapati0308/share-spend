@@ -1,0 +1,1100 @@
+@import '../../../assets/scss/variable';
+@import '../../../assets/scss/mixin';
+
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.header {
+    margin-bottom: 2.5rem;
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: $primary-color;
+        margin-bottom: 0.5rem;
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
+    }
+
+    p {
+        color: $text-secondary;
+        font-size: 1.1rem;
+    }
+}
+
+.summaryCard {
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: $shadow-lg;
+
+    .summaryLabel {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .summaryAmount {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+        }
+    }
+}
+
+.formSection {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: $shadow-md;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: $text-primary;
+    }
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: $text-primary;
+        font-size: 1rem;
+    }
+
+    input,
+    textarea,
+    select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid $border-color;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+        }
+
+        &::placeholder {
+            color: $text-secondary;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.expenseList {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: $shadow-md;
+
+    h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: $text-primary;
+    }
+
+    &.empty {
+        text-align: center;
+        padding: 3rem 2rem;
+
+        .emptyIcon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        p {
+            color: $text-secondary;
+            font-size: 1.1rem;
+        }
+    }
+}
+
+.expenseItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid $border-color;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: $light-color;
+        box-shadow: $shadow-sm;
+    }
+
+    .expenseInfo {
+        flex: 1;
+
+        .expenseName {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: $text-primary;
+            margin-bottom: 0.5rem;
+        }
+
+        .expenseCategory {
+            display: inline-block;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            background-color: rgba($primary-color, 0.1);
+            color: $primary-color;
+            border-radius: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .expenseDate {
+            font-size: 0.9rem;
+            color: $text-secondary;
+        }
+    }
+
+    .expenseAmount {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: $primary-color;
+        text-align: right;
+        margin-right: 1rem;
+        min-width: 100px;
+    }
+
+    .deleteBtn {
+        background: white;
+        color: $danger-color;
+        border: 2px solid $danger-color;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: $danger-color;
+            color: white;
+        }
+    }
+}
+
+.noExpenses {
+    text-align: center;
+    padding: 2rem;
+    color: $text-secondary;
+
+    p {
+        font-size: 1.1rem;
+    }
+}
+
+.expenseStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .statCard {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border-left: 4px solid $primary-color;
+        box-shadow: $shadow-sm;
+
+        .statLabel {
+            color: $text-secondary;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .statValue {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: $primary-color;
+        }
+    }
+}
+
+// ==========================================
+// Category Management Styles
+// ==========================================
+
+.categoryManagementSection {
+    margin-bottom: 2rem;
+}
+
+.categoryForm {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: $shadow-md;
+    margin-bottom: 2rem;
+    overflow: hidden;
+
+    .categoryHeader {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($primary-light, 0.05) 100%);
+        border-bottom: 1px solid $border-color;
+
+        h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: $text-primary;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .categoryToggle {
+            display: inline-flex;
+            align-items: center;
+            color: $primary-color;
+        }
+    }
+
+    .categoryFormContent {
+        padding: 1.5rem;
+    }
+}
+
+.categoryFormContent {
+    .formGroup {
+        label {
+            font-weight: 600;
+            color: $text-primary;
+            margin-bottom: 0.75rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid $border-color;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+
+            &:focus {
+                outline: none;
+                border-color: $primary-color;
+                box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+            }
+        }
+
+        small {
+            display: block;
+            margin-top: 0.35rem;
+        }
+    }
+
+    .emojiGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        gap: 0.5rem;
+
+        .emojiBtn {
+            width: 100%;
+            padding: 0.5rem;
+            border: 2px solid $border-color;
+            border-radius: 0.75rem;
+            background: white;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+
+            &:hover {
+                border-color: $primary-color;
+                box-shadow: $shadow-sm;
+            }
+
+            &.emojiActive {
+                border-color: $primary-color;
+                background: rgba($primary-color, 0.1);
+                box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+            }
+        }
+    }
+}
+
+.addCategoryBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.categoryDisplay {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: $shadow-md;
+
+    h4 {
+        font-size: 1.3rem;
+        color: $text-primary;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+
+    .categoryGrid {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .categorySection {
+        h5 {
+            font-size: 1rem;
+            color: $text-secondary;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .categoryList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+    }
+}
+
+.categoryTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    background: linear-gradient(135deg, rgba($primary-color, 0.08) 0%, rgba($primary-light, 0.08) 100%);
+    border: 1px solid rgba($primary-color, 0.2);
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: $text-primary;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, rgba($primary-color, 0.12) 0%, rgba($primary-light, 0.12) 100%);
+        border-color: $primary-color;
+    }
+
+    .categoryTagEmoji {
+        font-size: 1.2rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .categoryTagLabel {
+        font-size: 0.95rem;
+    }
+
+    .categoryTagBadge {
+        display: inline-block;
+        margin-left: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        background: rgba($primary-color, 0.2);
+        color: $primary-color;
+        border-radius: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    &.customTag {
+        background: linear-gradient(135deg, rgba($success-color, 0.08) 0%, rgba($success-color, 0.12) 100%);
+        border-color: rgba($success-color, 0.2);
+
+        &:hover {
+            border-color: $success-color;
+        }
+    }
+}
+
+.deleteCategoryBtn {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    background: transparent;
+    border: none;
+    color: $danger-color;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0.35rem;
+
+    &:hover {
+        background: rgba($danger-color, 0.15);
+        transform: scale(1.15);
+    }
+}
+
+// React-Select Custom Styling
+:global(.react-select__control) {
+    border: 2px solid $border-color;
+    border-radius: 0.75rem;
+    padding: 0.25rem 0;
+    font-size: 1rem !important;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: $primary-color;
+    }
+
+    &.react-select__control--is-focused {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+    }
+}
+
+:global(.react-select__menu) {
+    z-index: 10;
+    border-radius: 0.75rem;
+    box-shadow: $shadow-md;
+}
+
+:global(.react-select__option) {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.react-select__option--is-selected {
+        background-color: rgba($primary-color, 0.2);
+        color: $text-primary;
+    }
+
+    &.react-select__option--is-focused {
+        background-color: rgba($primary-color, 0.1);
+    }
+}
+
+:global(.react-select__placeholder) {
+    color: $text-secondary;
+}
+
+:global(.react-select__single-value) {
+    color: $text-primary;
+}
+
+// ==========================================
+// Label with Button (Category)
+// ==========================================
+
+.labelWithButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+
+    label {
+        display: block;
+        font-weight: 600;
+        color: $text-primary;
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+.addCategoryIconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: $shadow-md;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// ==========================================
+// Category Management Modal
+// ==========================================
+
+.categoryModal {
+    :global(.modal-content) {
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: $shadow-lg;
+    }
+}
+
+.modalHeader {
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    border: none;
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding: 1.5rem;
+
+    :global(.modal-title) {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    :global(.btn-close) {
+        filter: brightness(0) invert(1);
+    }
+}
+
+.modalBody {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba($primary-color, 0.05);
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba($primary-color, 0.3);
+        border-radius: 10px;
+
+        &:hover {
+            background: rgba($primary-color, 0.5);
+        }
+    }
+}
+
+.addCategorySection {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid $border-color;
+}
+
+.sectionTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 1.5rem;
+}
+
+.submitCategoryBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.charCounter {
+    display: block;
+    margin-top: 0.35rem;
+    color: $text-secondary;
+}
+
+.emojiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 0.5rem;
+
+    .emojiBtn {
+        width: 100%;
+        padding: 0.5rem;
+        border: 2px solid $border-color;
+        border-radius: 0.75rem;
+        background: white;
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+            border-color: $primary-color;
+            box-shadow: $shadow-sm;
+        }
+
+        &.emojiActive {
+            border-color: $primary-color;
+            background: rgba($primary-color, 0.1);
+            box-shadow: 0 0 0 3px rgba(30, 98, 208, 0.1);
+        }
+    }
+}
+
+.categoriesDisplay {
+    margin-top: 2rem;
+}
+
+.categoriesSection {
+    margin-bottom: 2rem;
+}
+
+.categoryGroupTitle {
+    font-size: 0.95rem;
+    color: $text-secondary;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.categoryTagsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.categoryTagModal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    background: linear-gradient(135deg, rgba($primary-color, 0.08) 0%, rgba($primary-light, 0.08) 100%);
+    border: 1px solid rgba($primary-color, 0.2);
+    border-radius: 0.75rem;
+    font-weight: 600;
+    color: $text-primary;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, rgba($primary-color, 0.12) 0%, rgba($primary-light, 0.12) 100%);
+        border-color: $primary-color;
+    }
+
+    .categoryEmoji {
+        font-size: 1.2rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .categoryLabelTag {
+        font-size: 0.95rem;
+    }
+
+    .builtinBadge {
+        display: inline-block;
+        margin-left: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        background: rgba($primary-color, 0.2);
+        color: $primary-color;
+        border-radius: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    &.customCategoryTag {
+        background: linear-gradient(135deg, rgba($success-color, 0.08) 0%, rgba($success-color, 0.12) 100%);
+        border-color: rgba($success-color, 0.2);
+
+        &:hover {
+            border-color: $success-color;
+        }
+    }
+}
+
+.deleteTagBtn {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    background: transparent;
+    border: none;
+    color: $danger-color;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0.35rem;
+
+    &:hover {
+        background: rgba($danger-color, 0.15);
+        transform: scale(1.15);
+    }
+}
+
+.noCustomCategories {
+    text-align: center;
+    padding: 2rem;
+    background: rgba($primary-color, 0.05);
+    border-radius: 1rem;
+    border: 2px dashed rgba($primary-color, 0.2);
+
+    p {
+        margin: 0;
+        color: $text-secondary;
+        font-size: 1rem;
+    }
+}
+
+// ==========================================
+// Form Header with Radio Buttons
+// ==========================================
+
+.formHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    h3 {
+        margin: 0;
+        flex: 1;
+        min-width: 150px;
+    }
+}
+
+.radioGroup {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background: rgba($primary-color, 0.05);
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+    user-select: none;
+
+    input[type='radio'] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+        accent-color: $primary-color;
+    }
+
+    .radioText {
+        font-size: 1rem;
+    }
+
+    &:hover {
+        color: $primary-color;
+    }
+}
+
+// ==========================================
+// Dual Summary Cards
+// ==========================================
+
+.dualSummaryContainer {
+    margin-bottom: 2rem;
+}
+
+.summaryCardCompact {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    box-shadow: $shadow-md;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: $shadow-lg;
+    }
+}
+
+.summaryTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.summaryLabel {
+    font-size: 0.95rem;
+    color: $text-secondary;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.summaryAmount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: $primary-color;
+    margin: 0;
+
+    &.incomeAmount {
+        color: $success-color;
+    }
+}
+
+.summaryBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: white;
+
+    &.spendBadge {
+        background: linear-gradient(135deg, rgba($primary-color, 0.8) 0%, rgba($primary-light, 0.8) 100%);
+    }
+
+    &.incomeBadge {
+        background: linear-gradient(135deg, rgba($success-color, 0.8) 0%, rgba($success-color, 0.9) 100%);
+        font-size: 2rem;
+    }
+}
+
+.progressContainer {
+    margin-top: 1rem;
+}
+
+.progressBar {
+    height: 10px;
+    background: rgba($primary-color, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, $primary-color 0%, $primary-light 100%);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.remainingAmount {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-color;
+    font-size: 0.95rem;
+    color: $text-secondary;
+
+    strong {
+        color: $text-primary;
+        font-weight: 700;
+    }
+}
+
+// ==========================================
+// View Toggle Buttons
+// ==========================================
+
+.viewToggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+
+    @media (max-width: 768px) {
+        justify-content: flex-start;
+    }
+}
+
+.toggleBtn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid $border-color;
+    background: white;
+    color: $text-primary;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+
+    &:hover {
+        border-color: $primary-color;
+        color: $primary-color;
+    }
+
+    &.active {
+        background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+        color: white;
+        border-color: $primary-color;
+        box-shadow: $shadow-md;
+    }
+}
+
+// ==========================================
+// Report Actions
+// ==========================================
+
+.reportActionsTop {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+
+    .reportBtn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        flex: 1;
+        min-width: 180px;
+
+        @media (max-width: 768px) {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: $shadow-md;
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+// ==========================================
+// Loading Spinner
+// ==========================================
+
+.loadingSpinner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 0.75rem;
+    margin-bottom: 2rem;
+    color: $text-secondary;
+    font-weight: 500;
+    box-shadow: $shadow-sm;
+
+    :global(.spinner-border) {
+        width: 24px;
+        height: 24px;
+
+        :global(.spinner-border) {
+            border-width: 3px;
+        }
+    }
+}
+
+// ==========================================
+// Dual Summary Container Date Range
+// ==========================================
+
+.dualSummaryContainer {
+    .dateRangeIndicator {
+        margin-bottom: 1.5rem;
+        text-align: center;
+
+        .dateBadge {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, rgba($primary-color, 0.15) 0%, rgba($primary-light, 0.15) 100%);
+            border: 1px solid $primary-color;
+            color: $primary-color;
+            border-radius: 20px;
+        }
+    }
+}

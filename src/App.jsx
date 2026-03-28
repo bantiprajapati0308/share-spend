@@ -9,8 +9,10 @@ import Expense from './components/Expense';
 import Report from './components/Report';
 import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
-import DailyExpenses from './components/DailyExpenses';
-import Lending from './components/Lending';
+import DailySpends from './modules/DailySpends';
+import BorrowLend from './modules/BorrowLend';
+import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
+import MasterReport from './modules/DailySpends/components/MasterReport';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
@@ -51,8 +53,10 @@ function App() {
               <Report />
             </ProtectedTripRoute>
           } />
-          <Route path="/share-spend/daily-expenses" element={<DailyExpenses />} />
-          <Route path="/share-spend/lending" element={<Lending />} />
+          <Route path="/share-spend/daily-expenses" element={<DailySpends />} />
+          <Route path="/share-spend/breakdown-report" element={<BreakdownReport />} />
+          <Route path="/share-spend/master-report" element={<MasterReport />} />
+          <Route path="/share-spend/lending" element={<BorrowLend />} />
           <Route path="*" element={<Navigate to="/share-spend/login" />} />
         </Routes>
       </ErrorBoundary>
