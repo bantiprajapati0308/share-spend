@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col, Form } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
@@ -71,5 +72,9 @@ function CategoryForm({ onCategoryAdded }) {
         </div>
     );
 }
+
+CategoryForm.propTypes = {
+    onCategoryAdded: PropTypes.func.isRequired,
+};
 
 export default CategoryForm;

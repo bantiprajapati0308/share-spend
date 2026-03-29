@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col, Badge } from 'react-bootstrap';
 import styles from '../styles/DailySpends.module.scss';
 import { getCurrencySymbol } from '../../../Util';
@@ -18,7 +18,7 @@ function DualSummaryCards({
             {/* Date range indicator */}
             {startDate && endDate && (
                 <div className={styles.dateRangeIndicator}>
-                    <Badge bg="info" class={styles.dateBadge}>
+                    <Badge bg="info" className={styles.dateBadge}>
                         {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
                     </Badge>
                 </div>
@@ -72,5 +72,14 @@ function DualSummaryCards({
         </div>
     );
 }
+
+DualSummaryCards.propTypes = {
+    totalSpend: PropTypes.number.isRequired,
+    totalIncome: PropTypes.number.isRequired,
+    spendPercentage: PropTypes.number,
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+    currency: PropTypes.string,
+};
 
 export default DualSummaryCards;

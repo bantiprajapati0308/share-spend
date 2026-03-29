@@ -21,37 +21,56 @@ function ExpenseItem({ expense, onDelete }) {
     };
 
     return (
-        <div className={styles.expenseItem}>
-            <div className={styles.expenseInfo}>
-                <div className={styles.expenseName}>
-                    {getCategoryIcon(expense.category)} {expense.name}
-                </div>
-                <div className={styles.expenseCategory}>
-                    {expense.category}
-                </div>
-                {expense.notes && (
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#6b7280' }}>
-                        {expense.notes}
+        <div className="d-flex align-items-center justify-content-between border-0 rounded-3 px-3 py-2 mb-2 bg-white shadow-sm">
+
+            {/* Left Section */}
+            <div className="flex-grow-1 overflow-hidden">
+
+                {/* Line 1 */}
+                <div className="d-flex justify-content-between align-items-center">
+                    <div className="fw-semibold text-dark text-truncate d-flex align-items-center gap-2">
+                        <span className="fs-5">
+                            {getCategoryIcon(expense.category)}
+                        </span>
+                        {expense.name}
                     </div>
-                )}
-                <div className={styles.expenseDate}>
-                    {new Date(expense.date).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    })}
+
+                    <div className="fw-bold text-danger fs-6">
+                        {currencySymbol}{expense.amount.toFixed(2)}
+                    </div>
+                </div>
+
+                {/* Line 2 */}
+                <div className="d-flex justify-content-between align-items-center small mt-1">
+                    <div className="text-muted text-truncate">
+                        <span className="badge bg-light text-dark border me-2">
+                            {expense.category}
+                        </span>
+
+                        {expense.notes && (
+                            <span className="text-secondary">
+                                {expense.notes}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="text-muted text-nowrap">
+                        {new Date(expense.date).toLocaleDateString('en-US', {
+                            day: 'numeric',
+                            month: 'short'
+                        })}
+                    </div>
                 </div>
             </div>
-            <div className={styles.expenseAmount}>
-                {currencySymbol}{expense.amount.toFixed(2)}
-            </div>
+
+            {/* Delete Button */}
             <button
-                className={styles.deleteBtn}
+                className="btn btn-sm btn-light border-0 ms-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px' }}
                 onClick={() => onDelete(expense.id)}
                 title="Delete expense"
             >
-                <Trash3 size={18} />
+                <Trash3 size={16} className="text-danger" />
             </button>
         </div>
     );

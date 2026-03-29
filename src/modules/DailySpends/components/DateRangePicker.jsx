@@ -3,8 +3,17 @@ import { Form, Row, Col, Button } from 'react-bootstrap';
 import styles from '../styles/DateRangePicker.module.scss';
 
 function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }) {
-    const [startDate, setStartDate] = useState(defaultStartDate || '');
-    const [endDate, setEndDate] = useState(defaultEndDate || '');
+    // Convert Date objects to string format if needed
+    const formatDateValue = (dateValue) => {
+        if (!dateValue) return '';
+        if (dateValue instanceof Date) {
+            return dateValue.toISOString().split('T')[0];
+        }
+        return dateValue;
+    };
+
+    const [startDate, setStartDate] = useState(formatDateValue(defaultStartDate));
+    const [endDate, setEndDate] = useState(formatDateValue(defaultEndDate));
 
     const handleStartDateChange = (e) => {
         setStartDate(e.target.value);

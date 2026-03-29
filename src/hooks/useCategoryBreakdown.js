@@ -4,7 +4,7 @@ import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 /**
  * GET: Fetch expenses grouped by category for a specific date range
  * Returns object: { category: [expenses], ... }
- * Converts Date objects to YYYY-MM-DD strings for proper Firebase comparison
+ * Converts Date objects to YYYY-MM-DD strings for proper date filtering
  */
 export const getExpensesByCategory = async (startDate, endDate) => {
     try {
@@ -14,16 +14,14 @@ export const getExpensesByCategory = async (startDate, endDate) => {
             return {};
         }
 
-        // Convert Date objects to YYYY-MM-DD strings for Firestore comparison
+        // Convert Date objects to YYYY-MM-DD strings for date filtering
         const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
         const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
 
-        // Query all spend transactions in the date range
+        // Query all spend transactions (date filtering done client-side to avoid composite index)
         const expensesQuery = query(
             collection(db, "users", userId, "dailySpends"),
             where("type", "==", "spend"),
-            where("date", ">=", startDateStr),
-            where("date", "<=", endDateStr),
             orderBy("date", "desc")
         );
 
@@ -33,9 +31,15 @@ export const getExpensesByCategory = async (startDate, endDate) => {
             ...doc.data(),
         }));
 
+        // Filter by date range on client side
+        const filteredExpenses = expenses.filter(exp => {
+            const expDate = exp.date || exp.createdAt?.toISOString?.().split('T')[0];
+            return expDate >= startDateStr && expDate <= endDateStr;
+        });
+
         // Group by category
         const grouped = {};
-        expenses.forEach(expense => {
+        filteredExpenses.forEach(expense => {
             const category = expense.category || "Other";
             if (!grouped[category]) {
                 grouped[category] = [];
@@ -53,7 +57,7 @@ export const getExpensesByCategory = async (startDate, endDate) => {
 /**
  * GET: Calculate total spent per category for a date range
  * Returns object: { category: totalAmount, ... }
- * Converts Date objects to YYYY-MM-DD strings for proper Firebase comparison
+ * Converts Date objects to YYYY-MM-DD strings for proper date filtering
  */
 export const getCategoryTotals = async (startDate, endDate) => {
     try {
@@ -63,22 +67,27 @@ export const getCategoryTotals = async (startDate, endDate) => {
             return {};
         }
 
-        // Convert Date objects to YYYY-MM-DD strings for Firestore comparison
+        // Convert Date objects to YYYY-MM-DD strings for date filtering
         const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
         const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
 
+        // Query all spend transactions (date filtering done client-side to avoid composite index)
         const expensesQuery = query(
             collection(db, "users", userId, "dailySpends"),
-            where("type", "==", "spend"),
-            where("date", ">=", startDateStr),
-            where("date", "<=", endDateStr)
+            where("type", "==", "spend")
         );
 
         const snap = await getDocs(expensesQuery);
         const expenses = snap.docs.map(doc => doc.data());
 
+        // Filter by date range on client side
+        const filteredExpenses = expenses.filter(exp => {
+            const expDate = exp.date || exp.createdAt?.toISOString?.().split('T')[0];
+            return expDate >= startDateStr && expDate <= endDateStr;
+        });
+
         const totals = {};
-        expenses.forEach(expense => {
+        filteredExpenses.forEach(expense => {
             const category = expense.category || "Other";
             const amount = parseFloat(expense.amount) || 0;
             totals[category] = (totals[category] || 0) + amount;
@@ -103,24 +112,29 @@ export const getCategorySummary = async (category, startDate, endDate, limit = n
             return null;
         }
 
-        // Convert Date objects to YYYY-MM-DD strings for Firestore comparison
+        // Convert Date objects to YYYY-MM-DD strings for date filtering
         const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
         const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
 
+        // Query by category only (date filtering done client-side to avoid composite index)
         const expensesQuery = query(
             collection(db, "users", userId, "dailySpends"),
             where("type", "==", "spend"),
             where("category", "==", category),
-            where("date", ">=", startDateStr),
-            where("date", "<=", endDateStr),
             orderBy("date", "desc")
         );
 
         const snap = await getDocs(expensesQuery);
-        const transactions = snap.docs.map(doc => ({
+        let transactions = snap.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
         }));
+
+        // Filter by date range on client side
+        transactions = transactions.filter(tx => {
+            const txDate = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+            return txDate >= startDateStr && txDate <= endDateStr;
+        });
 
         const totalSpent = transactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
         const percentage = limit ? Math.round((totalSpent / limit) * 100) : 0;
