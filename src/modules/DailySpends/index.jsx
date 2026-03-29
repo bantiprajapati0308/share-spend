@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Container, Row, Col, Button, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
+import { useUserCategories } from './hooks/useUserCategories';
+import { useSelectedDateRange } from './hooks/useSelectedDateRange';
 import { getCategoryLimits, addCategoryLimit, updateCategoryLimit, deleteCategoryLimit } from '../../hooks/useCategoryLimits';
 import { getCategoryTotals, getBreakdownData } from '../../hooks/useCategoryBreakdown';
+import DailySpendsHeader from './components/DailySpendsHeader';
+import ReportActionButtons from './components/ReportActionButtons';
+import DateRangeAccordion from './components/DateRangeAccordion';
 import DualSummaryCards from './components/DualSummaryCards';
+import CategoryLimitsModalView from './components/CategoryLimitsModalView';
 import AddExpenseForm from './components/AddExpenseForm';
+import TransactionViewToggle from './components/TransactionViewToggle';
 import ExpenseList from './components/ExpenseList';
 import DateRangePicker from './components/DateRangePicker';
-import CategoryLimitsManagement from './components/CategoryLimitsManagement';
 import styles from './styles/DailySpends.module.scss';
 import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
@@ -17,12 +23,16 @@ function DailySpends() {
     const navigate = useNavigate();
     const location = useLocation();
     const [selectedType, setSelectedType] = useState('spend');
-    const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
-    const [endDate, setEndDate] = useState(new Date(new Date().setHours(23, 59, 59, 999)));
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [dateRangeLoaded, setDateRangeLoaded] = useState(false);
     const [categoryLimits, setCategoryLimits] = useState([]);
     const [categoryTotals, setCategoryTotals] = useState({});
     const [limitsLoading, setLimitsLoading] = useState(false);
     const [limitsError, setLimitsError] = useState(null);
+    const [showLimitsModal, setShowLimitsModal] = useState(false);
+    const [userCategories, setUserCategories] = useState([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
 
     const {
         transactions,
@@ -36,6 +46,19 @@ function DailySpends() {
         error,
     } = useDailyExpenses();
 
+    const { fetchEnabledCategories } = useUserCategories();
+    const { loadDateRange, saveDateRange } = useSelectedDateRange();
+
+    // Load saved date range from database on mount
+    useEffect(() => {
+        loadSavedDateRange();
+    }, []);
+
+    // Load user categories on mount
+    useEffect(() => {
+        loadUserCategories();
+    }, []);
+
     // Load category limits on mount
     useEffect(() => {
         loadCategoryLimits();
@@ -43,8 +66,41 @@ function DailySpends() {
 
     // Update category totals when date range changes
     useEffect(() => {
-        loadCategoryTotals();
+        if (startDate && endDate) {
+            loadCategoryTotals();
+        }
     }, [startDate, endDate]);
+
+    const loadSavedDateRange = async () => {
+        try {
+            const savedRange = await loadDateRange();
+            if (savedRange && savedRange.startDate && savedRange.endDate) {
+                // Convert string dates back to Date objects
+                setStartDate(new Date(savedRange.startDate));
+                setEndDate(new Date(savedRange.endDate));
+            }
+            setDateRangeLoaded(true);
+        } catch (err) {
+            console.error('Error loading saved date range:', err);
+            setDateRangeLoaded(true);
+        }
+    };
+
+    const loadUserCategories = async () => {
+        try {
+            setCategoriesLoading(true);
+            const categories = await fetchEnabledCategories();
+            // Extract category names for the limits dropdown
+            const categoryNames = categories.map(cat => cat.name);
+            setUserCategories(categoryNames);
+        } catch (err) {
+            console.error('Error loading user categories:', err);
+            // Fallback to empty array - users won't see categories until they create one
+            setUserCategories([]);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
 
     const loadCategoryLimits = async () => {
         try {
@@ -62,6 +118,7 @@ function DailySpends() {
 
     const loadCategoryTotals = async () => {
         try {
+            if (!startDate || !endDate) return;
             // Convert dates to string format for Firebase
             const startDateStr = startDate.toISOString().split('T')[0];
             const endDateStr = endDate.toISOString().split('T')[0];
@@ -73,6 +130,7 @@ function DailySpends() {
     };
 
     const getDateRangeSummary = () => {
+        if (!startDate || !endDate) return 0;
         const rangeStartStr = startDate.toISOString().split('T')[0];
         const rangeEndStr = endDate.toISOString().split('T')[0];
 
@@ -85,6 +143,7 @@ function DailySpends() {
     };
 
     const getDateRangeIncome = () => {
+        if (!startDate || !endDate) return 0;
         const rangeStartStr = startDate.toISOString().split('T')[0];
         const rangeEndStr = endDate.toISOString().split('T')[0];
 
@@ -102,10 +161,19 @@ function DailySpends() {
         return totalIncome > 0 ? Math.round((totalSpend / totalIncome) * 100) : 0;
     };
 
-    const handleDateRangeChange = (newRange) => {
-        setStartDate(newRange.startDate);
-        setEndDate(newRange.endDate);
-        loadCategoryTotals();
+    const handleDateRangeChange = async (newRange) => {
+        try {
+            // Save to database
+            await saveDateRange(newRange.startDate, newRange.endDate);
+            // Update local state
+            setStartDate(newRange.startDate);
+            setEndDate(newRange.endDate);
+            toast.success('Date range saved successfully!');
+        } catch (err) {
+            console.error('Error saving date range:', err);
+            toast.error('Failed to save date range');
+            throw err;
+        }
     };
 
     const handleAddLimit = async (limitData) => {
@@ -175,6 +243,7 @@ function DailySpends() {
 
     const displayedTransactions = getTransactionsByType(selectedType)
         .filter(tx => {
+            if (!startDate || !endDate) return false;
             const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
             const rangeStartStr = startDate.toISOString().split('T')[0];
             const rangeEndStr = endDate.toISOString().split('T')[0];
@@ -182,8 +251,42 @@ function DailySpends() {
         });
     const sectionTitle = selectedType === 'spend' ? "Expenses" : "Income";
 
-    if (loading) {
+    // Show loader while loading date range
+    if (!dateRangeLoaded || loading) {
         return <FullScreenLoader />;
+    }
+
+    // Show date range selection screen if no date range is set
+    if (!startDate || !endDate) {
+        return (
+            <Container className={styles.container}>
+                <Row>
+                    <Col lg={8} className="mx-auto">
+                        <DailySpendsHeader />
+                        <div style={{
+                            backgroundColor: '#f8f9fa',
+                            border: '2px solid #dc3545',
+                            borderRadius: '8px',
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            marginTop: '30px'
+                        }}>
+                            <h3 style={{ color: '#dc3545', marginBottom: '20px' }}>📅 Select Date Range</h3>
+                            <p style={{ fontSize: '16px', marginBottom: '30px', color: '#666' }}>
+                                Please select a date range to start tracking your expenses and income.
+                            </p>
+                            <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', marginBottom: '20px' }}>
+                                <DateRangePicker
+                                    onDateRangeChange={handleDateRangeChange}
+                                    defaultStartDate={null}
+                                    defaultEndDate={null}
+                                />
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        );
     }
 
     if (error) {
@@ -191,7 +294,10 @@ function DailySpends() {
             <Container className={styles.container}>
                 <Row>
                     <Col lg={8} className="mx-auto">
-                        <Alert variant="danger">Failed to load transactions: {error}</Alert>
+                        <DailySpendsHeader />
+                        <Alert variant="danger" style={{ marginTop: '20px' }}>
+                            <strong>Error:</strong> Failed to load transactions: {error}
+                        </Alert>
                     </Col>
                 </Row>
             </Container>
@@ -203,35 +309,18 @@ function DailySpends() {
             <Row>
                 <Col lg={8} className="mx-auto">
                     {/* Header */}
-                    <div className={styles.header}>
-                        <h1>Daily Spends</h1>
-                        <p>Track your daily spending and manage your budget</p>
-                    </div>
+                    <DailySpendsHeader />
 
                     {/* Report Action Buttons */}
-                    <div className={styles.reportActionsTop}>
-                        <Button
-                            variant="primary"
-                            onClick={handleOpenBreakdownReport}
-                            className={styles.reportBtn}
-                        >
-                            View Breakdown Report
-                        </Button>
-                        <Button
-                            variant="outline-primary"
-                            onClick={handleOpenMasterReport}
-                            className={styles.reportBtn}
-                        >
-                            View Master Report
-                        </Button>
-                    </div>
 
-                    {/* Date Range Picker */}
-                    <DateRangePicker
-                        onDateRangeChange={handleDateRangeChange}
-                        defaultStartDate={startDate}
-                        defaultEndDate={endDate}
-                    />
+                    {/* Date Range Accordion */}
+                    {startDate && endDate && (
+                        <DateRangeAccordion
+                            startDate={startDate}
+                            endDate={endDate}
+                            onDateRangeChange={handleDateRangeChange}
+                        />
+                    )}
 
                     {/* Date Range Summary Cards */}
                     <DualSummaryCards
@@ -242,45 +331,34 @@ function DailySpends() {
                         endDate={endDate}
                     />
 
-                    {/* Category Limits Management */}
-                    {limitsLoading ? (
-                        <div className={styles.loadingSpinner}>
-                            <Spinner animation="border" size="sm" />
-                            <span>Loading limits...</span>
-                        </div>
-                    ) : (
-                        <CategoryLimitsManagement
-                            categories={['🍔 Food', '🚗 Transport', '🏥 Health', '🎮 Entertainment', '📚 Education', '🛍️ Shopping', 'Other']}
-                            limits={categoryLimits}
-                            categoryTotals={categoryTotals}
-                            startDate={startDate}
-                            endDate={endDate}
-                            onAddLimit={handleAddLimit}
-                            onUpdateLimit={handleUpdateLimit}
-                            onDeleteLimit={handleDeleteLimit}
-                            loading={limitsLoading}
-                            error={limitsError}
-                        />
-                    )}
+                    {/* Category Limits Modal */}
+                    <CategoryLimitsModalView
+                        show={showLimitsModal}
+                        onHide={() => setShowLimitsModal(false)}
+                        categories={userCategories}
+                        limits={categoryLimits}
+                        categoryTotals={categoryTotals}
+                        startDate={startDate}
+                        endDate={endDate}
+                        onAddLimit={handleAddLimit}
+                        onUpdateLimit={handleUpdateLimit}
+                        onDeleteLimit={handleDeleteLimit}
+                        loading={limitsLoading}
+                        error={limitsError}
+                    />
 
                     {/* Add Transaction Form */}
                     <AddExpenseForm onAddExpense={handleAddTransaction} />
-
-                    {/* View Toggle */}
-                    <div className={styles.viewToggle}>
-                        <button
-                            className={`${styles.toggleBtn} ${selectedType === 'spend' ? styles.active : ''}`}
-                            onClick={() => setSelectedType('spend')}
-                        >
-                            Expenses
-                        </button>
-                        <button
-                            className={`${styles.toggleBtn} ${selectedType === 'income' ? styles.active : ''}`}
-                            onClick={() => setSelectedType('income')}
-                        >
-                            Income
-                        </button>
-                    </div>
+                    <ReportActionButtons
+                        onBreakdownClick={handleOpenBreakdownReport}
+                        onMasterClick={handleOpenMasterReport}
+                        onLimitsClick={() => setShowLimitsModal(true)}
+                    />
+                    {/* Transaction View Toggle */}
+                    <TransactionViewToggle
+                        selectedType={selectedType}
+                        onTypeChange={setSelectedType}
+                    />
 
                     {/* Transaction List */}
                     <ExpenseList

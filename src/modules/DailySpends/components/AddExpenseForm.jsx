@@ -1,33 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col, Spinner } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import Select from 'react-select';
 import styles from '../styles/DailySpends.module.scss';
 import { getCurrencySymbol } from '../../../Util';
-import { useCategories } from '../hooks/useCategories';
+import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 
 function AddExpenseForm({ onAddExpense }) {
-    const { getCategoriesForSelect, getCategoryByValue } = useCategories();
-    let categoryOptions = getCategoriesForSelect();
-
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState(categoryOptions[0] || null);
+    const [category, setCategory] = useState(null);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
-
-    const handleCategoryAdded = () => {
-        // Refresh category options
-        categoryOptions = getCategoriesForSelect();
-        setCategory(categoryOptions[0] || null);
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,7 +32,9 @@ function AddExpenseForm({ onAddExpense }) {
             type: transactionType,
             name: expenseName,
             amount: parseFloat(amount),
-            category: category.value,
+            categoryId: category.categoryId,
+            categoryName: category.categoryName,
+            category: category.categoryName,
             date: date,
             notes: notes,
         };
@@ -53,7 +46,7 @@ function AddExpenseForm({ onAddExpense }) {
             // Reset form only on success
             setExpenseName('');
             setAmount('');
-            setCategory(categoryOptions[0] || null);
+            setCategory(null);
             setDate(new Date().toISOString().split('T')[0]);
             setNotes('');
 
@@ -70,7 +63,7 @@ function AddExpenseForm({ onAddExpense }) {
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
-                <h3>Add Transaction</h3>
+                <h3>➕ Add {transactionType === 'spend' ? 'Expense' : 'Income'}</h3>
                 <div className={styles.radioGroup}>
                     <label className={styles.radioLabel}>
                         <input
@@ -95,23 +88,23 @@ function AddExpenseForm({ onAddExpense }) {
                 </div>
             </div>
 
-            <Row>
-                <Col md={6}>
+            <Row className="g-2">
+                <Col xs={12} sm={6} md={4}>
                     <div className={styles.formGroup}>
-                        <label>Expense Name *</label>
+                        <label>Name *</label>
                         <input
                             type="text"
-                            placeholder="e.g., Coffee, Groceries"
+                            placeholder="Coffee, Groceries..."
                             value={expenseName}
                             onChange={(e) => setExpenseName(e.target.value)}
                         />
                     </div>
                 </Col>
-                <Col md={6}>
+                <Col xs={12} sm={6} md={3}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <span style={{ marginRight: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold', color: '#1e62d0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e62d0', minWidth: '20px' }}>
                                 {currencySymbol}
                             </span>
                             <input
@@ -126,82 +119,78 @@ function AddExpenseForm({ onAddExpense }) {
                         </div>
                     </div>
                 </Col>
-            </Row>
-
-            <Row>
-                <Col md={6}>
+                <Col xs={12} sm={6} md={2}>
                     <div className={styles.formGroup}>
-                        <div className={styles.labelWithButton}>
-                            <label>Category</label>
+                        <label>Date *</label>
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => {
+                                const dateValue = e.target.value;
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                                    setDate(dateValue);
+                                }
+                            }}
+                            required
+                        />
+                    </div>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                    <div className={styles.formGroup}>
+
+                        <CategorySelectDropdown
+                            value={category}
+                            onChange={(selected) => setCategory(selected)}
+                            placeholder="Select..."
+                            styles={{ flex: 1 }}
+                        >
                             <button
                                 type="button"
                                 className={styles.addCategoryIconBtn}
                                 onClick={() => setShowCategoryModal(true)}
-                                title="Add new category"
+                                title="Manage categories"
+                                style={{ padding: '0.6rem 0.7rem' }}
                             >
-                                <Plus size={18} />
-                            </button>
-                        </div>
-                        <Select
-                            options={categoryOptions}
-                            value={category}
-                            onChange={(selected) => setCategory(selected)}
-                            placeholder="Select a category..."
-                            isSearchable
-                            isClearable={false}
-                            classNamePrefix="react-select"
-                            formatOptionLabel={(option) => (
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    {option.label}
-                                </div>
-                            )}
-                        />
-                    </div>
-                </Col>
-                <Col md={6}>
-                    <div className={styles.formGroup}>
-                        <label>Date</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                        />
+                                <Plus size={16} />
+                            </button></CategorySelectDropdown>
                     </div>
                 </Col>
             </Row>
 
-            <div className={styles.formGroup}>
+            <div className={styles.formGroup} style={{ marginBottom: '0.75rem' }}>
                 <label>Notes (Optional)</label>
                 <textarea
-                    placeholder="Add any notes about this expense..."
+                    placeholder="Add notes..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
+                    style={{ minHeight: '50px' }}
                 />
             </div>
 
             <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
                 {isSubmitting ? (
                     <>
-                        <Spinner animation="border" size="sm" className="me-2" style={{ width: '18px', height: '18px' }} />
+                        <Spinner animation="border" size="sm" style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
                         Adding...
                     </>
                 ) : (
                     <>
-                        <Plus size={20} className="me-2" />
-                        {transactionType === 'spend' ? 'Add Expense' : 'Add Income'}
+                        <Plus size={18} style={{ marginRight: '0.4rem' }} />
+                        Add
                     </>
                 )}
             </button>
 
-            {/* Category Management Modal */}
             <CategoryManagementModal
                 show={showCategoryModal}
-                onClose={() => setShowCategoryModal(false)}
-                useCategories={useCategories}
-                onCategoryAdded={handleCategoryAdded}
+                onHide={() => setShowCategoryModal(false)}
             />
         </form>
     );
 }
+
+AddExpenseForm.propTypes = {
+    onAddExpense: PropTypes.func.isRequired,
+};
 
 export default AddExpenseForm;
