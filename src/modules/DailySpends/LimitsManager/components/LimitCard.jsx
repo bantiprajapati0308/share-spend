@@ -8,6 +8,8 @@ import {
     calculateOverLimit,
     getStatusVariant,
     getStatusText,
+    getStatusVariantForIncome,
+    getStatusTextForIncome,
     formatCurrency,
 } from '../utils/limitsCalculations';
 import GradientProgressBar from '../../components/GradientProgressBar';
@@ -16,12 +18,18 @@ import GradientProgressBar from '../../components/GradientProgressBar';
  * LimitCard Component
  * Displays a single limit with progress and actions
  */
-function LimitCard({ limit, spent, onEdit, onDelete }) {
+function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
     const percentage = calculateLimitPercentage(spent, limit.limit);
     const remaining = calculateRemaining(spent, limit.limit);
     const overLimit = calculateOverLimit(spent, limit.limit);
-    const statusVariant = getStatusVariant(percentage);
-    const statusText = getStatusText(percentage);
+
+    // Use different status logic for income vs spend
+    const statusVariant = limitType === 'income'
+        ? getStatusVariantForIncome(percentage)
+        : getStatusVariant(percentage);
+    const statusText = limitType === 'income'
+        ? getStatusTextForIncome(percentage)
+        : getStatusText(percentage);
 
     const handleDelete = () => {
         if (window.confirm(`Delete limit for "${limit.category}"?`)) {
@@ -61,25 +69,35 @@ function LimitCard({ limit, spent, onEdit, onDelete }) {
 
             {/* Progress bar */}
             <div className={styles.progressSection}>
-                <GradientProgressBar percentage={percentage} />
+                <GradientProgressBar percentage={percentage} reverse={limitType === 'income'} />
             </div>
 
             {/* Amount details */}
             <div className={styles.amountDetails}>
                 <div className={styles.amountGroup}>
-                    <span className={styles.label}>Spent</span>
+                    <span className={styles.label}>
+                        {limitType === 'income' ? 'Actual' : 'Spent'}
+                    </span>
                     <span className={styles.amount}>{formatCurrency(spent)}</span>
                 </div>
                 <div className={styles.amountGroup}>
-                    <span className={styles.label}>Limit</span>
+                    <span className={styles.label}>
+                        {limitType === 'income' ? 'Target Income' : 'Limit'}
+                    </span>
                     <span className={styles.amount}>{formatCurrency(limit.limit)}</span>
                 </div>
-                <div className={`${styles.amountGroup} ${percentage > 100 ? styles.overLimit : ''}`}>
+                <div className={`${styles.amountGroup} ${limitType === 'income' && percentage > 100 ? styles.incomeBenefit : percentage > 100 ? styles.overLimit : ''}`}>
                     <span className={styles.label}>
-                        {percentage > 100 ? 'Over' : 'Remaining'}
+                        {limitType === 'income'
+                            ? (percentage > 100 ? 'Exceeded' : 'Remaining to Target')
+                            : (percentage > 100 ? 'Over' : 'Remaining')
+                        }
                     </span>
-                    <span className={styles.amount}>
-                        {formatCurrency(percentage > 100 ? overLimit : remaining)}
+                    <span className={styles.amount} style={limitType === 'income' && percentage > 100 ? { color: '#10b981', fontWeight: 'bold' } : {}}>
+                        {limitType === 'income' && percentage > 100
+                            ? `+${formatCurrency(overLimit)}`
+                            : (percentage > 100 ? `-${formatCurrency(overLimit)}` : formatCurrency(remaining))
+                        }
                     </span>
                 </div>
             </div>
@@ -97,6 +115,7 @@ LimitCard.propTypes = {
     spent: PropTypes.number.isRequired,
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
+    limitType: PropTypes.oneOf(['spend', 'income']),
 };
 
 export default LimitCard;

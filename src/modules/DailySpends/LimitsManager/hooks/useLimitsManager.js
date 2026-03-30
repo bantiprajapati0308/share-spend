@@ -7,8 +7,11 @@ import { toast } from 'react-toastify';
  * Custom hook to manage category limits
  * Handles separate spend and income limit operations
  * NO useEffect - lazy initialization pattern
+ * @param {Date} startDate - Start date for transactions
+ * @param {Date} endDate - End date for transactions
+ * @param {string} transactionType - Type of transaction: 'spend' or 'income' (default: 'spend')
  */
-export const useLimitsManager = (startDate, endDate) => {
+export const useLimitsManager = (startDate, endDate, transactionType = 'spend') => {
     const [limits, setLimits] = useState([]);
     const [categoryTotals, setCategoryTotals] = useState({});
     const [loading, setLoading] = useState(false);
@@ -16,7 +19,6 @@ export const useLimitsManager = (startDate, endDate) => {
 
     // Track initialization to prevent duplicate API calls
     const initialized = useRef(false);
-    const prevDatesRef = useRef(null);
 
     /**
      * Load all limits from database (called once on first use)
@@ -47,20 +49,28 @@ export const useLimitsManager = (startDate, endDate) => {
         if (!startDate || !endDate) return;
 
         try {
-            // Check if dates actually changed (not just object reference change)
-            const currentDates = `${startDate.toISOString()}-${endDate.toISOString()}`;
-            if (prevDatesRef.current === currentDates) {
-                return; // Dates haven't changed, skip API call
-            }
-            prevDatesRef.current = currentDates;
-
-            const totals = await getCategoryTotals(startDate, endDate);
+            const totals = await getCategoryTotals(startDate, endDate, transactionType);
             setCategoryTotals(totals);
         } catch (err) {
             console.error('Error loading category totals:', err);
             toast.error('Failed to load category totals');
         }
-    }, [startDate, endDate]);
+    }, [startDate, endDate, transactionType]);
+
+    /**
+     * Refresh category totals on demand
+     * Used when new transactions are added
+     */
+    const refreshCategoryTotals = useCallback(async () => {
+        if (!startDate || !endDate) return;
+
+        try {
+            const totals = await getCategoryTotals(startDate, endDate, transactionType);
+            setCategoryTotals(totals);
+        } catch (err) {
+            console.error('Error refreshing category totals:', err);
+        }
+    }, [startDate, endDate, transactionType]);
 
     /**
      * Get limits filtered by type
@@ -152,6 +162,7 @@ export const useLimitsManager = (startDate, endDate) => {
         ),
         loadLimits,
         loadCategoryTotals,
+        refreshCategoryTotals,
         initialize, // Add this to component render
     };
 };
