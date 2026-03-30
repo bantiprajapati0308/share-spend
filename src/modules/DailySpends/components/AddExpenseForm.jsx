@@ -7,6 +7,7 @@ import styles from '../styles/DailySpends.module.scss';
 import { getCurrencySymbol } from '../../../Util';
 import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
+import TransactionTypeSelector from './common/TransactionTypeSelector';
 
 function AddExpenseForm({ onAddExpense }) {
     const [transactionType, setTransactionType] = useState('spend');
@@ -64,28 +65,11 @@ function AddExpenseForm({ onAddExpense }) {
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
                 <h3>➕ Add {transactionType === 'spend' ? 'Expense' : 'Income'}</h3>
-                <div className={styles.radioGroup}>
-                    <label className={styles.radioLabel}>
-                        <input
-                            type="radio"
-                            name="transactionType"
-                            value="spend"
-                            checked={transactionType === 'spend'}
-                            onChange={(e) => setTransactionType(e.target.value)}
-                        />
-                        <span className={styles.radioText}>Spend</span>
-                    </label>
-                    <label className={styles.radioLabel}>
-                        <input
-                            type="radio"
-                            name="transactionType"
-                            value="income"
-                            checked={transactionType === 'income'}
-                            onChange={(e) => setTransactionType(e.target.value)}
-                        />
-                        <span className={styles.radioText}>Income</span>
-                    </label>
-                </div>
+                <TransactionTypeSelector
+                    value={transactionType}
+                    onChange={setTransactionType}
+                    showLabel={false}
+                />
             </div>
 
             <Row className="g-2">
@@ -141,18 +125,18 @@ function AddExpenseForm({ onAddExpense }) {
                         <CategorySelectDropdown
                             value={category}
                             onChange={(selected) => setCategory(selected)}
+                            type={transactionType}
                             placeholder="Select..."
-                            styles={{ flex: 1 }}
                         >
                             <button
                                 type="button"
                                 className={styles.addCategoryIconBtn}
                                 onClick={() => setShowCategoryModal(true)}
                                 title="Manage categories"
-                                style={{ padding: '0.6rem 0.7rem' }}
                             >
                                 <Plus size={16} />
-                            </button></CategorySelectDropdown>
+                            </button>
+                        </CategorySelectDropdown>
                     </div>
                 </Col>
             </Row>
@@ -184,6 +168,7 @@ function AddExpenseForm({ onAddExpense }) {
             <CategoryManagementModal
                 show={showCategoryModal}
                 onHide={() => setShowCategoryModal(false)}
+                type={transactionType}
             />
         </form>
     );

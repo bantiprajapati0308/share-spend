@@ -1,0 +1,508 @@
+@import '../../../../assets/scss/_variable';
+@import '../../../../assets/scss/_mixin';
+
+.limitsManagerContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+// ==================== Header ====================
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin-bottom: 2rem;
+
+    .headerContent {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .backButton {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+    }
+
+    .headerText {
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+    }
+}
+
+// ==================== Main Content ====================
+.mainContent {
+    flex: 1;
+    padding: 1rem;
+}
+
+// ==================== Tab Navigation ====================
+.tabNavigation {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 2rem;
+
+    .tabLink {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 1rem 1.5rem !important;
+        color: #6c757d !important;
+        transition: all 0.3s ease;
+        position: relative;
+
+        &:hover {
+            color: #495057 !important;
+        }
+
+        &.active {
+            color: #667eea !important;
+            border-bottom: 3px solid #667eea !important;
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: #667eea;
+            }
+        }
+    }
+}
+
+.tabContent {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// ==================== Limits Panel ====================
+.limitsPanel {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .panelHeader {
+        background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.5rem;
+
+        .headerContent {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .panelTitle {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .panelSubtitle {
+            margin: 0.5rem 0 0 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .addLimitBtn {
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+        }
+    }
+
+    .panelBody {
+        padding: 2rem;
+        background: #ffffff;
+    }
+
+    .loadingState {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+}
+
+// ==================== Summary Section ====================
+.summarySection {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, #667eea25 0%, #764ba225 100%);
+    }
+
+    .summaryRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .summaryLabel {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .summaryValue {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+
+        &.overBudget {
+            color: #e74c3c;
+        }
+    }
+}
+
+// ==================== Limits List ====================
+.limitsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+// ==================== Card Styles ====================
+.limitCard {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+
+        .categoryInfo {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .categoryName {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .statusBadge {
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .cardActions {
+            display: flex;
+            gap: 0.5rem;
+
+            button {
+                transition: all 0.2s ease;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+            }
+        }
+    }
+
+    .progressSection {
+        margin-bottom: 1.25rem;
+    }
+
+    .amountDetails {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .amountGroup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+
+        .label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .amount {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        &.overLimit {
+            background: #ffe5e5;
+
+            .amount {
+                color: #e74c3c;
+            }
+        }
+    }
+
+    @media (max-width: 576px) {
+        .amountDetails {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .amountGroup:nth-child(3) {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+// ==================== Empty State ====================
+.emptyState {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+
+    .emptyIcon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    h5 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .emptyButton {
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    }
+}
+
+// ==================== Limit Form ====================
+.addCategoryBtn {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid #667eea;
+    color: #667eea;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: #667eea;
+        color: white;
+    }
+}
+
+// ==================== Responsive Design ====================
+@media (max-width: 768px) {
+    .header {
+        padding: 1.5rem 0;
+
+        .headerContent {
+            gap: 1rem;
+        }
+
+        .headerText {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            p {
+                font-size: 0.85rem;
+            }
+        }
+    }
+
+    .tabNavigation {
+        .tabLink {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem !important;
+        }
+    }
+
+    .limitsPanel {
+        .panelHeader {
+            .headerContent {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .addLimitBtn {
+                width: 100%;
+            }
+        }
+    }
+
+    .limitsList {
+        grid-template-columns: 1fr;
+    }
+
+    .summarySection {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .mainContent {
+        padding: 0.5rem;
+    }
+
+    .header {
+        margin-bottom: 1.5rem;
+
+        .headerContent {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .backButton {
+            align-self: flex-start;
+        }
+    }
+
+    .tabNavigation {
+        margin-bottom: 1rem;
+
+        .tabLink {
+            font-size: 0.8rem;
+            padding: 0.6rem 0.8rem !important;
+        }
+    }
+
+    .limitsPanel {
+        .panelHeader {
+            padding: 1rem;
+
+            .panelTitle {
+                font-size: 1.2rem;
+            }
+
+            .panelSubtitle {
+                font-size: 0.8rem;
+            }
+        }
+
+        .panelBody {
+            padding: 1rem;
+        }
+    }
+
+    .limitCard {
+        padding: 1rem;
+
+        .cardHeader {
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .amountDetails {
+            gap: 0.75rem;
+        }
+    }
+
+    .emptyState {
+        padding: 2rem 1rem;
+
+        .emptyIcon {
+            font-size: 3rem;
+        }
+
+        h5 {
+            font-size: 1.1rem;
+        }
+    }
+}

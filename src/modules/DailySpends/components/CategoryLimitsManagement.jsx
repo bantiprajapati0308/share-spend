@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import { useState, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { Form, Button, Modal, ListGroup, Badge, Alert } from 'react-bootstrap';
 import { Trash2, Plus } from 'react-bootstrap-icons';
 import styles from '../styles/CategoryLimitsManagement.module.scss';
 import GradientProgressBar from './GradientProgressBar';
+import CategorySelectDropdown from './CategorySelectDropdown';
+import CategoryManagementModal from './CategoryManagementModal';
+import TransactionTypeSelector from './common/TransactionTypeSelector';
 
 function CategoryLimitsManagement({
-    categories,
+    // eslint-disable-next-line no-unused-vars
+    categories, // Kept for backward compatibility with parent component
     limits,
     categoryTotals,
     startDate,
@@ -17,9 +22,11 @@ function CategoryLimitsManagement({
     error,
 }) {
     const [showModal, setShowModal] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [limitAmount, setLimitAmount] = useState('');
     const [editingId, setEditingId] = useState(null);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [limitType, setLimitType] = useState('spend'); // 'spend' or 'income'
 
     const handleAddLimit = () => {
         if (!selectedCategory || !limitAmount) {
@@ -29,15 +36,19 @@ function CategoryLimitsManagement({
 
         if (editingId) {
             onUpdateLimit(editingId, {
-                category: selectedCategory,
+                category: selectedCategory.categoryName,
+                categoryId: selectedCategory.categoryId,
                 limit: parseFloat(limitAmount),
+                type: limitType,
                 startDate,
                 endDate,
             });
         } else {
             onAddLimit({
-                category: selectedCategory,
+                category: selectedCategory.categoryName,
+                categoryId: selectedCategory.categoryId,
                 limit: parseFloat(limitAmount),
+                type: limitType,
                 startDate,
                 endDate,
             });
@@ -48,14 +59,19 @@ function CategoryLimitsManagement({
     };
 
     const handleEditLimit = (limit) => {
-        setSelectedCategory(limit.category);
+        // Set selected category as an object with categoryId and categoryName
+        setSelectedCategory({
+            categoryId: limit.categoryId || limit.id,
+            categoryName: limit.category,
+        });
         setLimitAmount(limit.limit.toString());
+        setLimitType(limit.type || 'spend');
         setEditingId(limit.id);
         setShowModal(true);
     };
 
     const resetForm = () => {
-        setSelectedCategory('');
+        setSelectedCategory(null);
         setLimitAmount('');
         setEditingId(null);
     };
@@ -64,6 +80,11 @@ function CategoryLimitsManagement({
         resetForm();
         setShowModal(false);
     };
+
+    // Filter limits by type using useMemo for performance
+    const filteredLimits = useMemo(() => {
+        return limits.filter(limit => (limit.type || 'spend') === limitType);
+    }, [limits, limitType]);
 
     const getCategorySpent = (category) => {
         return categoryTotals[category] || 0;
@@ -77,7 +98,15 @@ function CategoryLimitsManagement({
     return (
         <div className={styles.limitsContainer}>
             <div className={styles.header}>
-                <h4>Category Spending Limits</h4>
+                <div>
+                    <h4>Category {limitType === 'income' ? 'Income' : 'Spending'} Limits</h4>
+                    <TransactionTypeSelector
+                        value={limitType}
+                        onChange={setLimitType}
+                        showLabel={false}
+                        variant="inline"
+                    />
+                </div>
                 <Button
                     variant="success"
                     size="sm"
@@ -92,11 +121,11 @@ function CategoryLimitsManagement({
 
             {loading ? (
                 <p className={styles.loadingText}>Loading limits...</p>
-            ) : limits.length === 0 ? (
-                <p className={styles.emptyText}>No spending limits set for this period</p>
+            ) : filteredLimits.length === 0 ? (
+                <p className={styles.emptyText}>No {limitType === 'income' ? 'income' : 'spending'} limits set for this period</p>
             ) : (
                 <ListGroup className={styles.limitsList}>
-                    {limits.map((limit) => {
+                    {filteredLimits.map((limit) => {
                         const spent = getCategorySpent(limit.category);
                         const percentage = getProgressPercentage(limit);
 
@@ -147,26 +176,34 @@ function CategoryLimitsManagement({
             )}
 
             {/* Modal for adding/editing limits */}
-            <Modal show={showModal} onHide={handleCloseModal} centered>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static">
                 <Modal.Header closeButton>
-                    <Modal.Title>{editingId ? 'Edit Limit' : 'Add Spending Limit'}</Modal.Title>
+                    <Modal.Title>{editingId ? 'Edit Limit' : `Add ${limitType === 'income' ? 'Income' : 'Spending'} Limit`}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Category</Form.Label>
-                            <Form.Select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
+                        <TransactionTypeSelector
+                            value={limitType}
+                            onChange={setLimitType}
+                            label="Limit Type"
+                            variant="stacked"
+                        />
+
+                        <CategorySelectDropdown
+                            value={selectedCategory}
+                            onChange={(selected) => setSelectedCategory(selected)}
+                            type={limitType}
+                            placeholder="Select a category..."
+                        >
+                            <button
+                                type="button"
+                                className={styles.addCategoryIconBtn}
+                                onClick={() => setShowCategoryModal(true)}
+                                title="Manage categories"
                             >
-                                <option value="">Select a category</option>
-                                {categories.map((cat) => (
-                                    <option key={cat} value={cat}>
-                                        {cat}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                                <Plus size={16} />
+                            </button>
+                        </CategorySelectDropdown>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Limit Amount</Form.Label>
@@ -186,12 +223,37 @@ function CategoryLimitsManagement({
                         Cancel
                     </Button>
                     <Button variant="primary" onClick={handleAddLimit}>
-                        {editingId ? 'Update Limit' : 'Add Limit'}
+                        {editingId ? 'Update Limit' : `Add ${limitType === 'income' ? 'Income' : 'Spending'} Limit`}
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <CategoryManagementModal
+                show={showCategoryModal}
+                onHide={() => setShowCategoryModal(false)}
+                type={limitType}
+            />
         </div>
     );
 }
+
+CategoryLimitsManagement.propTypes = {
+    categories: PropTypes.array,
+    limits: PropTypes.array.isRequired,
+    categoryTotals: PropTypes.object.isRequired,
+    startDate: PropTypes.string.isRequired,
+    endDate: PropTypes.string.isRequired,
+    onAddLimit: PropTypes.func.isRequired,
+    onUpdateLimit: PropTypes.func.isRequired,
+    onDeleteLimit: PropTypes.func.isRequired,
+    loading: PropTypes.bool,
+    error: PropTypes.string,
+};
+
+CategoryLimitsManagement.defaultProps = {
+    categories: [],
+    loading: false,
+    error: null,
+};
 
 export default CategoryLimitsManagement;

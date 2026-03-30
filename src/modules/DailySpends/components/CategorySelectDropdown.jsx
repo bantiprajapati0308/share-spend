@@ -1,51 +1,40 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Form, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
-import { useUserCategories } from '../hooks/useUserCategories';
+import useCategoryContext from '../hooks/useCategoryContext';
 
+/**
+ * Category Select Dropdown Component
+ * Displays categories filtered by transaction type (spend/income)
+ * Uses global CategoryContext to avoid fetching on every mount
+ * Supports children (like add category button)
+ */
 function CategorySelectDropdown({
     children,
     value,
     onChange,
     isMulti = false,
-    showOnlyEnabled = true,
+    type = 'spend', // 'spend' or 'income' - filter categories by type
     placeholder = 'Select a category...'
 }) {
-    const { fetchCategories, fetchEnabledCategories } = useUserCategories();
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { categories, loading, isInitialized } = useCategoryContext();
 
-    // Load categories on mount
-    useEffect(() => {
-        loadCategories();
-    }, []);
+    // Filter categories by type and enabled status using useMemo for performance
+    const filteredCategories = useMemo(() => {
+        if (!categories.length) return [];
 
-    const loadCategories = async () => {
-        try {
-            setLoading(true);
-            const data = showOnlyEnabled
-                ? await fetchEnabledCategories()
-                : await fetchCategories();
-
-            // Transform for react-select
-            const options = data.map((cat) => ({
+        return categories
+            .filter(cat => cat.isEnabled && cat.type === type)
+            .map((cat) => ({
                 value: cat.id,
                 label: `${cat.emoji} ${cat.name}`,
                 categoryId: cat.id,
                 categoryName: cat.name,
                 emoji: cat.emoji,
             }));
-
-            setCategories(options);
-        } catch (error) {
-            toast.error('Failed to load categories');
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [categories, type]);
 
     const customStyles = {
         control: (base) => ({
@@ -64,7 +53,8 @@ function CategorySelectDropdown({
         }),
     };
 
-    if (loading) {
+    // Show loading state only on first initialization
+    if (loading && !isInitialized) {
         return (
             <Form.Group>
                 <Form.Label>Category</Form.Label>
@@ -82,7 +72,7 @@ function CategorySelectDropdown({
             <div className='d-flex gap-2 align-items-center justify-content-between'>
                 <div className='w-100'>
                     <Select
-                        options={categories}
+                        options={filteredCategories}
                         value={value}
                         onChange={onChange}
                         isMulti={isMulti}
@@ -104,8 +94,14 @@ CategorySelectDropdown.propTypes = {
     value: PropTypes.object,
     onChange: PropTypes.func.isRequired,
     isMulti: PropTypes.bool,
-    showOnlyEnabled: PropTypes.bool,
+    type: PropTypes.oneOf(['spend', 'income']),
     placeholder: PropTypes.string,
+};
+
+CategorySelectDropdown.defaultProps = {
+    isMulti: false,
+    type: 'spend',
+    placeholder: 'Select a category...',
 };
 
 export default CategorySelectDropdown;
