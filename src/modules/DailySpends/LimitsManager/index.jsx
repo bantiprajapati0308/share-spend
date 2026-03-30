@@ -44,11 +44,6 @@ function LimitsManager() {
         }
     }, [loadDateRange]);
 
-    // Load date range on mount
-    useEffect(() => {
-        loadSavedDateRange();
-    }, [loadSavedDateRange]);
-
     // Use custom hook for limit management
     const {
         limits,
@@ -58,7 +53,22 @@ function LimitsManager() {
         addLimit,
         updateLimit,
         deleteLimit,
+        initialize, // Get the initialize function
     } = useLimitsManager(startDate, endDate);
+
+    // Load date range and data on mount (only once)
+    useEffect(() => {
+        loadSavedDateRange();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Initialize limits data once dates are available
+    useEffect(() => {
+        if (startDate && endDate) {
+            initialize(); // Call the lazy-load function once
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startDate, endDate]); // Only depends on dates, not functions
 
     /**
      * Handle add limit form submission

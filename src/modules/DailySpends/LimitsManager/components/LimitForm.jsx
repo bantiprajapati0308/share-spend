@@ -153,7 +153,6 @@ function LimitForm({
             <CategoryManagementModal
                 show={showCategoryModal}
                 onHide={() => setShowCategoryModal(false)}
-                type={limitType}
             />
         </>
     );

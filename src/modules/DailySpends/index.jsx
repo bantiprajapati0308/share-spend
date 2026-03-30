@@ -4,13 +4,11 @@ import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import { useUserCategories } from './hooks/useUserCategories';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
-import { getCategoryLimits, addCategoryLimit, updateCategoryLimit, deleteCategoryLimit } from '../../hooks/useCategoryLimits';
 import { getCategoryTotals, getBreakdownData } from '../../hooks/useCategoryBreakdown';
 import DailySpendsHeader from './components/DailySpendsHeader';
 import ReportActionButtons from './components/ReportActionButtons';
 import DateRangeAccordion from './components/DateRangeAccordion';
 import DualSummaryCards from './components/DualSummaryCards';
-import CategoryLimitsModalView from './components/CategoryLimitsModalView';
 import AddExpenseForm from './components/AddExpenseForm';
 import TransactionViewToggle from './components/TransactionViewToggle';
 import ExpenseList from './components/ExpenseList';
@@ -26,11 +24,6 @@ function DailySpends() {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [dateRangeLoaded, setDateRangeLoaded] = useState(false);
-    const [categoryLimits, setCategoryLimits] = useState([]);
-    const [categoryTotals, setCategoryTotals] = useState({});
-    const [limitsLoading, setLimitsLoading] = useState(false);
-    const [limitsError, setLimitsError] = useState(null);
-    const [showLimitsModal, setShowLimitsModal] = useState(false);
     const [userCategories, setUserCategories] = useState([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
@@ -58,18 +51,6 @@ function DailySpends() {
     useEffect(() => {
         loadUserCategories();
     }, []);
-
-    // Load category limits on mount
-    useEffect(() => {
-        loadCategoryLimits();
-    }, []);
-
-    // Update category totals when date range changes
-    useEffect(() => {
-        if (startDate && endDate) {
-            loadCategoryTotals();
-        }
-    }, [startDate, endDate]);
 
     const loadSavedDateRange = async () => {
         try {
@@ -102,20 +83,6 @@ function DailySpends() {
         }
     };
 
-    const loadCategoryLimits = async () => {
-        try {
-            setLimitsLoading(true);
-            const limits = await getCategoryLimits();
-            setCategoryLimits(limits);
-            setLimitsError(null);
-        } catch (err) {
-            console.error('Error loading category limits:', err);
-            setLimitsError(err.message);
-        } finally {
-            setLimitsLoading(false);
-        }
-    };
-
     const loadCategoryTotals = async () => {
         try {
             if (!startDate || !endDate) return;
@@ -123,7 +90,6 @@ function DailySpends() {
             const startDateStr = startDate.toISOString().split('T')[0];
             const endDateStr = endDate.toISOString().split('T')[0];
             const totals = await getCategoryTotals(startDateStr, endDateStr);
-            setCategoryTotals(totals);
         } catch (err) {
             console.error('Error loading category totals:', err);
         }
@@ -176,41 +142,9 @@ function DailySpends() {
         }
     };
 
-    const handleAddLimit = async (limitData) => {
-        try {
-            const limit = await addCategoryLimit(limitData);
-            setCategoryLimits([...categoryLimits, limit]);
-            toast.success(`Limit set for ${limitData.category}`);
-        } catch (err) {
-            toast.error(err.message || 'Failed to add limit');
-        }
-    };
-
-    const handleUpdateLimit = async (limitId, limitData) => {
-        try {
-            await updateCategoryLimit(limitId, limitData);
-            const updated = categoryLimits.map(l => l.id === limitId ? { id: limitId, ...limitData } : l);
-            setCategoryLimits(updated);
-            toast.success(`Limit updated for ${limitData.category}`);
-        } catch (err) {
-            toast.error(err.message || 'Failed to update limit');
-        }
-    };
-
-    const handleDeleteLimit = async (limitId) => {
-        try {
-            await deleteCategoryLimit(limitId);
-            setCategoryLimits(categoryLimits.filter(l => l.id !== limitId));
-            toast.success('Limit deleted');
-        } catch (err) {
-            toast.error(err.message || 'Failed to delete limit');
-        }
-    };
-
     const handleAddTransaction = async (newTransaction) => {
         try {
             await addTransaction(newTransaction);
-            await loadCategoryTotals();
         } catch (err) {
             toast.error(err.message || 'Failed to add transaction');
             throw err;
@@ -221,7 +155,6 @@ function DailySpends() {
         try {
             await deleteTransaction(id);
             toast.info('Transaction deleted');
-            await loadCategoryTotals();
         } catch (err) {
             toast.error(err.message || 'Failed to delete transaction');
         }
@@ -232,13 +165,18 @@ function DailySpends() {
             state: {
                 startDate,
                 endDate,
-                categoryLimits,
             }
         });
     };
 
     const handleOpenMasterReport = () => {
         navigate('/share-spend/master-report');
+    };
+
+    const handleOpenLimitsManager = () => {
+        navigate('/share-spend/limits-manager', {
+            state: { from: '/share-spend/daily-expenses' }
+        });
     };
 
     const displayedTransactions = getTransactionsByType(selectedType)
@@ -331,28 +269,12 @@ function DailySpends() {
                         endDate={endDate}
                     />
 
-                    {/* Category Limits Modal */}
-                    <CategoryLimitsModalView
-                        show={showLimitsModal}
-                        onHide={() => setShowLimitsModal(false)}
-                        categories={userCategories}
-                        limits={categoryLimits}
-                        categoryTotals={categoryTotals}
-                        startDate={startDate}
-                        endDate={endDate}
-                        onAddLimit={handleAddLimit}
-                        onUpdateLimit={handleUpdateLimit}
-                        onDeleteLimit={handleDeleteLimit}
-                        loading={limitsLoading}
-                        error={limitsError}
-                    />
-
                     {/* Add Transaction Form */}
                     <AddExpenseForm onAddExpense={handleAddTransaction} />
                     <ReportActionButtons
                         onBreakdownClick={handleOpenBreakdownReport}
                         onMasterClick={handleOpenMasterReport}
-                        onLimitsClick={() => setShowLimitsModal(true)}
+                        onLimitsClick={handleOpenLimitsManager}
                     />
                     {/* Transaction View Toggle */}
                     <TransactionViewToggle

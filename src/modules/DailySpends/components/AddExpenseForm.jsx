@@ -168,7 +168,6 @@ function AddExpenseForm({ onAddExpense }) {
             <CategoryManagementModal
                 show={showCategoryModal}
                 onHide={() => setShowCategoryModal(false)}
-                type={transactionType}
             />
         </form>
     );

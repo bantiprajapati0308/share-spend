@@ -231,7 +231,6 @@ function CategoryLimitsManagement({
             <CategoryManagementModal
                 show={showCategoryModal}
                 onHide={() => setShowCategoryModal(false)}
-                type={limitType}
             />
         </div>
     );
