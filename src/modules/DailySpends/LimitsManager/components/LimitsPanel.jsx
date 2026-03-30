@@ -90,7 +90,9 @@ function LimitsPanel({
                             </span>
                         </div>
                         <div className={styles.summaryRow}>
-                            <span className={styles.summaryLabel}>Total Spent</span>
+                            <span className={styles.summaryLabel}>
+                                {limitType === 'income' ? 'Total Actual' : 'Total Spent'}
+                            </span>
                             <span className={styles.summaryValue}>
                                 ${summary.totalSpent.toFixed(2)}
                             </span>
@@ -122,6 +124,7 @@ function LimitsPanel({
                                 spent={categoryTotals[limit.category] || 0}
                                 onEdit={onEditLimit}
                                 onDelete={onDeleteLimit}
+                                limitType={limitType}
                             />
                         ))}
                     </div>

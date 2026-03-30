@@ -59,6 +59,31 @@ export const getStatusText = (percentage) => {
 };
 
 /**
+ * Determine status badge color for income (reversed logic)
+ * Higher income % = good, lower income % = bad
+ * @param {number} percentage - Percentage of income target
+ * @returns {string} Bootstrap color variant
+ */
+export const getStatusVariantForIncome = (percentage) => {
+    if (percentage < 20) return 'danger';
+    if (percentage < 50) return 'warning';
+    if (percentage < 80) return 'info';
+    return 'success';
+};
+
+/**
+ * Determine status text for income (reversed logic)
+ * @param {number} percentage - Percentage of income target
+ * @returns {string} Status text
+ */
+export const getStatusTextForIncome = (percentage) => {
+    if (percentage >= 100) return 'Target Exceeded';
+    if (percentage >= 80) return 'Great Progress';
+    if (percentage >= 50) return 'Halfway There';
+    return 'Keep Going';
+};
+
+/**
  * Format currency value
  * @param {number} value - Value to format
  * @returns {string} Formatted currency

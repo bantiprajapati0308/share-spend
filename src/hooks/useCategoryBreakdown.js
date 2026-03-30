@@ -58,8 +58,11 @@ export const getExpensesByCategory = async (startDate, endDate) => {
  * GET: Calculate total spent per category for a date range
  * Returns object: { category: totalAmount, ... }
  * Converts Date objects to YYYY-MM-DD strings for proper date filtering
+ * @param {Date|string} startDate - Start date for filtering
+ * @param {Date|string} endDate - End date for filtering
+ * @param {string} type - Transaction type: 'spend' or 'income' (default: 'spend')
  */
-export const getCategoryTotals = async (startDate, endDate) => {
+export const getCategoryTotals = async (startDate, endDate, type = 'spend') => {
     try {
         const userId = auth.currentUser?.uid;
         if (!userId) {
@@ -71,10 +74,10 @@ export const getCategoryTotals = async (startDate, endDate) => {
         const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
         const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
 
-        // Query all spend transactions (date filtering done client-side to avoid composite index)
+        // Query transactions of specified type
         const expensesQuery = query(
             collection(db, "users", userId, "dailySpends"),
-            where("type", "==", "spend")
+            where("type", "==", type)
         );
 
         const snap = await getDocs(expensesQuery);

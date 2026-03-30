@@ -44,6 +44,8 @@ function LimitsManager() {
         }
     }, [loadDateRange]);
 
+    const currentLimitType = activeTab === 'spending' ? 'spend' : 'income';
+
     // Use custom hook for limit management
     const {
         limits,
@@ -53,8 +55,9 @@ function LimitsManager() {
         addLimit,
         updateLimit,
         deleteLimit,
-        initialize, // Get the initialize function
-    } = useLimitsManager(startDate, endDate);
+        initialize,
+        refreshCategoryTotals,
+    } = useLimitsManager(startDate, endDate, currentLimitType);
 
     // Load date range and data on mount (only once)
     useEffect(() => {
@@ -69,6 +72,14 @@ function LimitsManager() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [startDate, endDate]); // Only depends on dates, not functions
+
+    // Refresh category totals when tab changes (to show latest data)
+    useEffect(() => {
+        if (startDate && endDate) {
+            refreshCategoryTotals();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab]); // Refresh when switching tabs
 
     /**
      * Handle add limit form submission
@@ -128,8 +139,6 @@ function LimitsManager() {
         setShowLimitForm(false);
         setEditingLimit(null);
     };
-
-    const currentLimitType = activeTab === 'spending' ? 'spend' : 'income';
 
     return (
         <div className={styles.limitsManagerContainer}>
