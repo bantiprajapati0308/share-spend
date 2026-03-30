@@ -1,47 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { Form, Button, Modal, ListGroup, Badge, Alert, Spinner } from 'react-bootstrap';
 import { Trash2, Plus, Lock } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import styles from '../styles/DailySpends.module.scss';
+import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
+import TransactionTypeSelector from './common/TransactionTypeSelector';
 
-function CategoryManagementModal({ show, onHide }) {
+/**
+ * Category Management Modal
+ * Manages categories with support for spend/income types
+ * No useEffect - uses context for state management and instant updates
+ */
+function CategoryManagementModal({ show, onHide, type = 'spend' }) {
     const {
-        fetchCategories,
-        addCategory,
-        updateCategory,
+        categories,
+        loading: contextLoading,
+        addNewCategory,
+        updateCategoryInState,
+        removeCategoryFromState
+    } = useCategoryContext();
+
+    const {
         disableCategory,
         enableCategory,
         deleteCategory,
         isCategoryUsed,
     } = useUserCategories();
 
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [newCategoryEmoji, setNewCategoryEmoji] = useState('📝');
+    const [newCategoryType, setNewCategoryType] = useState(type);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Load categories when modal opens
-    useEffect(() => {
-        if (show) {
-            loadCategories();
-        }
-    }, [show]);
+    // Filter categories by type using useMemo for performance
+    const filteredCategories = useMemo(() => {
+        return categories.filter(cat => cat.type === type);
+    }, [categories, type]);
 
-    const loadCategories = async () => {
-        try {
-            setLoading(true);
-            const data = await fetchCategories();
-            setCategories(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-        } catch (error) {
-            toast.error('Failed to load categories');
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const enabledCategories = useMemo(() => {
+        return filteredCategories.filter(cat => cat.isEnabled);
+    }, [filteredCategories]);
+
+    const disabledCategories = useMemo(() => {
+        return filteredCategories.filter(cat => !cat.isEnabled);
+    }, [filteredCategories]);
 
     const handleAddCategory = async () => {
         if (!newCategoryName.trim()) {
@@ -51,10 +55,11 @@ function CategoryManagementModal({ show, onHide }) {
 
         try {
             setIsSubmitting(true);
-            const newCat = await addCategory(newCategoryName.trim(), newCategoryEmoji);
-            setCategories([newCat, ...categories]);
+            // addNewCategory updates context state immediately
+            await addNewCategory(newCategoryName.trim(), newCategoryEmoji, newCategoryType);
             setNewCategoryName('');
             setNewCategoryEmoji('📝');
+            setNewCategoryType(type);
             setShowAddModal(false);
             toast.success('Category added successfully');
         } catch (error) {
@@ -68,22 +73,12 @@ function CategoryManagementModal({ show, onHide }) {
     const handleToggleCategory = async (categoryId, isEnabled) => {
         try {
             if (!isEnabled) {
-                // Disabling category
                 await disableCategory(categoryId);
-                setCategories(
-                    categories.map((cat) =>
-                        cat.id === categoryId ? { ...cat, isEnabled: false } : cat
-                    )
-                );
+                updateCategoryInState(categoryId, { isEnabled: false });
                 toast.success('Category disabled');
             } else {
-                // Enabling category
                 await enableCategory(categoryId);
-                setCategories(
-                    categories.map((cat) =>
-                        cat.id === categoryId ? { ...cat, isEnabled: true } : cat
-                    )
-                );
+                updateCategoryInState(categoryId, { isEnabled: true });
                 toast.success('Category enabled');
             }
         } catch (error) {
@@ -107,7 +102,7 @@ function CategoryManagementModal({ show, onHide }) {
             }
 
             await deleteCategory(categoryId);
-            setCategories(categories.filter((cat) => cat.id !== categoryId));
+            removeCategoryFromState(categoryId);
             toast.success('Category deleted successfully');
         } catch (error) {
             toast.error(error.message || 'Failed to delete category');
@@ -115,14 +110,15 @@ function CategoryManagementModal({ show, onHide }) {
         }
     };
 
-    const enabledCategories = categories.filter((cat) => cat.isEnabled);
-    const disabledCategories = categories.filter((cat) => !cat.isEnabled);
+    const getTypeLabel = (categoryType) => {
+        return categoryType === 'income' ? 'Income' : 'Expense';
+    };
 
     return (
         <>
             <Modal show={show} onHide={onHide} size="lg" centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>📂 Manage Categories</Modal.Title>
+                    <Modal.Title>📂 Manage {getTypeLabel(type)} Categories</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Button
@@ -131,16 +127,16 @@ function CategoryManagementModal({ show, onHide }) {
                         onClick={() => setShowAddModal(true)}
                         className="mb-3"
                     >
-                        <Plus size={16} /> Add New Category
+                        <Plus size={16} /> Add New {getTypeLabel(type)} Category
                     </Button>
 
-                    {loading ? (
+                    {contextLoading ? (
                         <div className="text-center">
                             <Spinner animation="border" size="sm" />
                             <p className="mt-2">Loading categories...</p>
                         </div>
-                    ) : categories.length === 0 ? (
-                        <Alert variant="info">No categories yet. Create your first one!</Alert>
+                    ) : filteredCategories.length === 0 ? (
+                        <Alert variant="info">No {getTypeLabel(type).toLowerCase()} categories yet. Create your first one!</Alert>
                     ) : (
                         <>
                             {/* Enabled Categories */}
@@ -227,12 +223,19 @@ function CategoryManagementModal({ show, onHide }) {
             </Modal>
 
             {/* Add Category Modal */}
-            <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
+            <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Add New Category</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form.Group className="mb-3">
+                    <TransactionTypeSelector
+                        value={newCategoryType}
+                        onChange={setNewCategoryType}
+                        label="Category Type"
+                        variant="stacked"
+                    />
+
+                    <Form.Group className="mb-3 mt-3">
                         <Form.Label>Category Name</Form.Label>
                         <Form.Control
                             type="text"
@@ -277,5 +280,15 @@ function CategoryManagementModal({ show, onHide }) {
         </>
     );
 }
+
+CategoryManagementModal.propTypes = {
+    show: PropTypes.bool.isRequired,
+    onHide: PropTypes.func.isRequired,
+    type: PropTypes.oneOf(['spend', 'income']),
+};
+
+CategoryManagementModal.defaultProps = {
+    type: 'spend',
+};
 
 export default CategoryManagementModal;

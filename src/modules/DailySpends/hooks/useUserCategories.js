@@ -65,9 +65,10 @@ export const useUserCategories = () => {
      * Add a new category
      * @param {string} name - Category name
      * @param {string} emoji - Category emoji
+     * @param {string} type - Category type: 'spend' or 'income' (default: 'spend')
      * @returns {Promise<Object>} - Created category with id
      */
-    const addCategory = async (name, emoji = '📝') => {
+    const addCategory = async (name, emoji = '📝', type = 'spend') => {
         try {
             // Check if category name already exists
             const existing = query(
@@ -83,6 +84,7 @@ export const useUserCategories = () => {
             const newCategory = {
                 name,
                 emoji,
+                type, // 'spend' or 'income'
                 isEnabled: true,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),

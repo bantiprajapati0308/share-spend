@@ -1,0 +1,99 @@
+.typeSelector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    &.inline {
+        flex-direction: row;
+
+        .radioGroup {
+            display: flex;
+            gap: 1rem;
+        }
+    }
+
+    &.stacked {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .radioGroup {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+
+    .label {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .radioGroup {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .radioLabel {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+
+        input[type='radio'] {
+            cursor: pointer;
+            accent-color: #1e62d0;
+            width: 18px;
+            height: 18px;
+        }
+
+        .radioText {
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        &:hover {
+            .radioText {
+                color: #1e62d0;
+            }
+        }
+
+        input[type='radio']:checked+.radioText {
+            color: #1e62d0;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .typeSelector {
+        &.inline {
+            flex-direction: column;
+            align-items: flex-start;
+
+            .label {
+                width: 100%;
+            }
+
+            .radioGroup {
+                width: 100%;
+            }
+        }
+
+        .radioGroup {
+            gap: 0.75rem;
+        }
+
+        .radioLabel {
+            gap: 0.35rem;
+
+            .radioText {
+                font-size: 0.9rem;
+            }
+        }
+    }
+}

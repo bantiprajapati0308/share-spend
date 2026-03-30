@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { HouseDoor, Calendar, HandThumbsUp } from 'react-bootstrap-icons';
+import { HouseDoor, Calendar, HandThumbsUp, Speedometer2 } from 'react-bootstrap-icons';
 import styles from '../assets/scss/BottomNavigation.module.scss';
 
 function BottomNavigation() {
@@ -22,6 +22,15 @@ function BottomNavigation() {
             >
                 <Calendar size={24} />
                 <span className={styles.label}>Daily Spends</span>
+            </NavLink>
+
+            <NavLink
+                to="/share-spend/limits-manager"
+                className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+                style={{ textDecoration: 'none' }}
+            >
+                <Speedometer2 size={24} />
+                <span className={styles.label}>Limits</span>
             </NavLink>
 
             <NavLink
