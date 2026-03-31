@@ -1,0 +1,60 @@
+@import '../../assets/scss/variable';
+@import '../../assets/scss/mixin';
+
+.tabFilter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid $border-color;
+    padding-bottom: 1rem;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    margin-bottom: -1rem;
+
+    &:hover {
+        color: $primary-color;
+    }
+
+    &.active {
+        color: $primary-color;
+        border-bottom-color: $primary-color;
+    }
+
+    .label {
+        font-weight: 600;
+    }
+
+    .count {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: inherit;
+    }
+}
+
+@media (max-width: 576px) {
+    .tabFilter {
+        gap: 0.25rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .tab {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        margin-bottom: -0.75rem;
+    }
+}

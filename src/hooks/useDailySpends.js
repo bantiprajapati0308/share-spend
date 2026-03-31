@@ -102,7 +102,6 @@ export const deleteTransaction = async (transactionId) => {
         if (!userId) {
             throw new Error("User not authenticated");
         }
-
         await deleteDoc(doc(db, "users", userId, "dailySpends", transactionId));
         return true;
     } catch (error) {

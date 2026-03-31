@@ -29,7 +29,7 @@
 .summaryCard {
     background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
     border-radius: 1.5rem;
-    padding: 2rem;
+    padding: 0.625rem;
     color: white;
     margin-bottom: 2rem;
     box-shadow: $shadow-lg;
@@ -55,7 +55,7 @@
 .formSection {
     background: white;
     border-radius: 1.5rem;
-    padding: 2rem;
+    padding: 0.25rem;
     margin-bottom: 2rem;
     box-shadow: $shadow-md;
 

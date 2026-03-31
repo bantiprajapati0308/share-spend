@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '../styles/BorrowLend.module.scss';
-import { getCurrencySymbol } from '../../../Util';
+import TransactionTypeSelector from './common/TransactionTypeSelector';
+import { TRANSACTION_TYPES, getTransactionTypeLabel } from '../constants/transactionTypes';
 
 function AddTransactionForm({ onAddTransaction }) {
     const [personName, setPersonName] = useState('');
     const [amount, setAmount] = useState('');
-    const [type, setType] = useState('lent');
+    const [type, setType] = useState(TRANSACTION_TYPES.GAVE);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [dueDate, setDueDate] = useState('');
     const [description, setDescription] = useState('');
-    const currency = localStorage.getItem('defaultCurrency') || 'INR';
-    const currencySymbol = getCurrencySymbol(currency);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,68 +23,46 @@ function AddTransactionForm({ onAddTransaction }) {
             return;
         }
 
+        if (dueDate && new Date(dueDate) < new Date(date)) {
+            toast.error('Due date cannot be before transaction date');
+            return;
+        }
+
         const newTransaction = {
-            id: Date.now(),
             personName: personName,
             amount: parseFloat(amount),
             type: type,
             date: date,
+            dueDate: dueDate || null,
             description: description,
             createdAt: new Date().toISOString(),
         };
 
         onAddTransaction(newTransaction);
 
-        // Reset form
         setPersonName('');
         setAmount('');
-        setType('lent');
+        setType(TRANSACTION_TYPES.GAVE);
         setDate(new Date().toISOString().split('T')[0]);
+        setDueDate('');
         setDescription('');
-
-        toast.success(`Amount ${type === 'lent' ? 'lent' : 'borrowed'} successfully!`);
     };
 
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
-            <h3>Add New Transaction</h3>
-
-            <div className={styles.formGroup}>
-                <label>Transaction Type *</label>
-                <div className={styles.typeToggle}>
-                    <div>
-                        <input
-                            type="radio"
-                            id="lent"
-                            name="type"
-                            value="lent"
-                            checked={type === 'lent'}
-                            onChange={(e) => setType(e.target.value)}
-                        />
-                        <label htmlFor="lent" style={{ margin: 0, cursor: 'pointer' }}>
-                            I Lent Money
-                        </label>
-                    </div>
-                    <div>
-                        <input
-                            type="radio"
-                            id="borrowed"
-                            name="type"
-                            value="borrowed"
-                            checked={type === 'borrowed'}
-                            onChange={(e) => setType(e.target.value)}
-                        />
-                        <label htmlFor="borrowed" style={{ margin: 0, cursor: 'pointer' }}>
-                            I Borrowed Money
-                        </label>
-                    </div>
-                </div>
+            <div className={styles.formHeader}>
+                <h3>Add {getTransactionTypeLabel(type)}</h3>
+                <TransactionTypeSelector
+                    value={type}
+                    onChange={setType}
+                    showLabel={false}
+                />
             </div>
 
-            <Row>
-                <Col md={6}>
-                    <div className={styles.formGroup}>
-                        <label>Person's Name *</label>
+            <Row className="mt-3">
+                <Col xs={7} md={6}>
+                    <div className={styles.formGroup} >
+                        <label>{'Person\'s Name *'}</label>
                         <input
                             type="text"
                             placeholder="e.g., John Doe"
@@ -92,35 +71,45 @@ function AddTransactionForm({ onAddTransaction }) {
                         />
                     </div>
                 </Col>
-                <Col md={6}>
+                <Col xs={5} md={6}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <span style={{ marginRight: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold', color: '#1e62d0' }}>
-                                {currencySymbol}
-                            </span>
-                            <input
-                                type="number"
-                                placeholder="0.00"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                step="0.01"
-                                min="0"
-                                style={{ flex: 1 }}
-                            />
-                        </div>
+                        <input
+                            type="number"
+                            placeholder="0.00"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            step="0.01"
+                            min="0"
+                            style={{ flex: 1 }}
+                        />
                     </div>
                 </Col>
             </Row>
 
-            <div className={styles.formGroup}>
-                <label>Date</label>
-                <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                />
-            </div>
+            <Row>
+                <Col xs={6} md={6}>
+                    <div className={styles.formGroup}>
+                        <label>Date</label>
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                        />
+                    </div>
+                </Col>
+                <Col xs={6} md={6}>
+                    <div className={styles.formGroup}>
+                        <label>Due Date (Optional)</label>
+                        <input
+                            type="date"
+                            value={dueDate}
+                            onChange={(e) => setDueDate(e.target.value)}
+                            min={date}
+                        />
+                    </div>
+                </Col>
+            </Row>
 
             <div className={styles.formGroup}>
                 <label>Description (Optional)</label>
@@ -128,6 +117,7 @@ function AddTransactionForm({ onAddTransaction }) {
                     placeholder="Add any notes about this transaction..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
                 />
             </div>
 
@@ -138,5 +128,9 @@ function AddTransactionForm({ onAddTransaction }) {
         </form>
     );
 }
+
+AddTransactionForm.propTypes = {
+    onAddTransaction: PropTypes.func.isRequired,
+};
 
 export default AddTransactionForm;

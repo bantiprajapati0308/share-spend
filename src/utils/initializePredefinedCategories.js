@@ -67,7 +67,6 @@ export const initializePredefinedCategories = async () => {
             }
         }
 
-        console.log(`Successfully added ${addedCategories.length} predefined categories for user ${userId}`);
 
         return {
             success: true,
