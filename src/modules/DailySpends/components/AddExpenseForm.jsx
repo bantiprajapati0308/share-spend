@@ -4,7 +4,6 @@ import { Row, Col, Spinner } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '../styles/DailySpends.module.scss';
-import { getCurrencySymbol } from '../../../Util';
 import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
@@ -18,8 +17,6 @@ function AddExpenseForm({ onAddExpense }) {
     const [notes, setNotes] = useState('');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const currency = localStorage.getItem('defaultCurrency') || 'INR';
-    const currencySymbol = getCurrencySymbol(currency);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -72,53 +69,7 @@ function AddExpenseForm({ onAddExpense }) {
                 />
             </div>
 
-            <Row className="g-2">
-                <Col xs={12} sm={6} md={4}>
-                    <div className={styles.formGroup}>
-                        <label>Name *</label>
-                        <input
-                            type="text"
-                            placeholder="Coffee, Groceries..."
-                            value={expenseName}
-                            onChange={(e) => setExpenseName(e.target.value)}
-                        />
-                    </div>
-                </Col>
-                <Col xs={12} sm={6} md={3}>
-                    <div className={styles.formGroup}>
-                        <label>Amount *</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e62d0', minWidth: '20px' }}>
-                                {currencySymbol}
-                            </span>
-                            <input
-                                type="number"
-                                placeholder="0.00"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                step="0.01"
-                                min="0"
-                                style={{ flex: 1 }}
-                            />
-                        </div>
-                    </div>
-                </Col>
-                <Col xs={12} sm={6} md={2}>
-                    <div className={styles.formGroup}>
-                        <label>Date *</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => {
-                                const dateValue = e.target.value;
-                                if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-                                    setDate(dateValue);
-                                }
-                            }}
-                            required
-                        />
-                    </div>
-                </Col>
+            <Row className="g-1">
                 <Col xs={12} sm={6} md={3}>
                     <div className={styles.formGroup}>
 
@@ -139,6 +90,49 @@ function AddExpenseForm({ onAddExpense }) {
                         </CategorySelectDropdown>
                     </div>
                 </Col>
+                <Col xs={5} sm={6} md={3}>
+                    <div className={styles.formGroup}>
+                        <label>Amount *</label>
+                        <input
+                            type="number"
+                            placeholder="0.00"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            step="0.01"
+                            min="0"
+                            style={{ flex: 1 }}
+                        />
+                    </div>
+                </Col>
+                <Col xs={7} sm={6} md={4}>
+                    <div className={styles.formGroup}>
+                        <label>Name *</label>
+                        <input
+                            type="text"
+                            placeholder="Coffee, Groceries..."
+                            value={expenseName}
+                            onChange={(e) => setExpenseName(e.target.value)}
+                        />
+                    </div>
+                </Col>
+
+                <Col xs={12} sm={6} md={2}>
+                    <div className={styles.formGroup}>
+                        <label>Date *</label>
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => {
+                                const dateValue = e.target.value;
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                                    setDate(dateValue);
+                                }
+                            }}
+                            required
+                        />
+                    </div>
+                </Col>
+
             </Row>
 
             <div className={styles.formGroup} style={{ marginBottom: '0.75rem' }}>
