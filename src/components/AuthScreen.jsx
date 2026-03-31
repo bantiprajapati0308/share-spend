@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { auth, googleProvider } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { Button, Form, Alert, Card } from "react-bootstrap";
 import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
 import Logo from "../assets/images/logo.png"; // Use your logo
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ensurePredefinedCategories } from "../utils/initializePredefinedCategories";
 
-const AuthScreen = ({ onRegister }) => {
+const AuthScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -21,11 +22,19 @@ const AuthScreen = ({ onRegister }) => {
     try {
       if (isRegister) {
         await createUserWithEmailAndPassword(auth, email, password);
-        navigate("/share-spend/trip");
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        navigate("/share-spend/trip");
       }
+
+      // Initialize predefined categories for the user
+      try {
+        await ensurePredefinedCategories();
+      } catch (err) {
+        console.error('Error initializing predefined categories:', err);
+        // Don't fail login if category initialization fails
+      }
+
+      navigate("/share-spend/trip");
       setLoadingAuth(false);
     } catch (err) {
       setError(err.message);
@@ -38,9 +47,17 @@ const AuthScreen = ({ onRegister }) => {
     setLoadingAuth(true);
     try {
       await signInWithPopup(auth, googleProvider);
+
+      // Initialize predefined categories for the user
+      try {
+        await ensurePredefinedCategories();
+      } catch (err) {
+        console.error('Error initializing predefined categories:', err);
+        // Don't fail login if category initialization fails
+      }
+
       setLoadingAuth(false);
       navigate("/share-spend/trip");
-      onLogin && onLogin();
     } catch (err) {
       setError(err.message);
       setLoadingAuth(false);

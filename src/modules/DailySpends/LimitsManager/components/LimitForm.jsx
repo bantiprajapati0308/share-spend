@@ -95,7 +95,6 @@ function LimitForm({
                     <Form onSubmit={handleSubmit}>
                         {/* Category Selection */}
                         <Form.Group className="mb-3">
-                            <Form.Label>Category</Form.Label>
                             <CategorySelectDropdown
                                 value={selectedCategory}
                                 onChange={setSelectedCategory}
