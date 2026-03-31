@@ -102,7 +102,7 @@ function CategoryManagementModal({ show, onHide }) {
         }
     };
 
-    const handleDeleteCategory = async (categoryId) => {
+    const handleDeleteCategory = async (categoryId, categoryData) => {
         try {
             const isUsed = await isCategoryUsed(categoryId);
             if (isUsed) {
@@ -116,7 +116,7 @@ function CategoryManagementModal({ show, onHide }) {
                 return;
             }
 
-            await deleteCategory(categoryId);
+            await deleteCategory(categoryId, categoryData);
             removeCategoryFromState(categoryId);
             toast.success('Category deleted successfully');
         } catch (error) {
@@ -168,7 +168,7 @@ function CategoryManagementModal({ show, onHide }) {
                                     <Button
                                         variant="outline-danger"
                                         size="sm"
-                                        onClick={() => handleDeleteCategory(category.id)}
+                                        onClick={() => handleDeleteCategory(category.id, category)}
                                     >
                                         <Trash2 size={14} />
                                     </Button>
