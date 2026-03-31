@@ -1,31 +1,47 @@
 import React, { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useLendingTransactions } from './hooks/useLendingTransactions';
-import DashboardCards from './components/DashboardCards';
+import TopSection from './components/TopSection';
 import AddTransactionForm from './components/AddTransactionForm';
 import TransactionList from './components/TransactionList';
+import FullScreenLoader from '../../components/common/FullScreenLoader';
 import styles from './styles/BorrowLend.module.scss';
 import { toast } from 'react-toastify';
 
 function BorrowLend() {
     const [filterType, setFilterType] = useState('all');
+    const [showForm, setShowForm] = useState(false);
     const {
         transactions,
         addTransaction,
         deleteTransaction,
-        getTotalLent,
-        getTotalBorrowed,
+        getTotalGiven,
+        getTotalTaken,
         getNetBalance,
         getFilteredTransactions,
+        loading,
+        error,
     } = useLendingTransactions();
 
-    const handleAddTransaction = (newTransaction) => {
-        addTransaction(newTransaction);
+    const handleAddTransaction = async (newTransaction) => {
+        try {
+            await addTransaction(newTransaction);
+            setShowForm(false);
+            toast.success('Transaction added successfully');
+        } catch (err) {
+            console.error('Error adding transaction:', err);
+            toast.error('Failed to add transaction');
+        }
     };
 
-    const handleDeleteTransaction = (id) => {
-        deleteTransaction(id);
-        toast.info('Transaction deleted');
+    const handleDeleteTransaction = async (id) => {
+        try {
+            await deleteTransaction(id);
+            toast.info('Transaction deleted');
+        } catch (err) {
+            console.error('Error deleting transaction:', err);
+            toast.error('Failed to delete transaction');
+        }
     };
 
     const handleFilterChange = (type) => {
@@ -34,25 +50,51 @@ function BorrowLend() {
 
     const filteredTransactions = getFilteredTransactions(filterType);
 
+    if (loading) {
+        return <FullScreenLoader />;
+    }
+
+    if (error) {
+        return (
+            <Container className={styles.container}>
+                <Row>
+                    <Col lg={8} className="mx-auto">
+                        <div className={styles.header}>
+                            <h1>Borrow & Lending</h1>
+                        </div>
+                        <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
+                            <p>Error loading transactions: {error}</p>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        );
+    }
+
     return (
         <Container className={styles.container}>
             <Row>
                 <Col lg={8} className="mx-auto">
-                    {/* Header */}
-                    <div className={styles.header}>
-                        <h1>Borrow & Lending</h1>
-                        <p>Track money you've lent and borrowed from friends</p>
-                    </div>
-
-                    {/* Dashboard Cards */}
-                    <DashboardCards
-                        totalLent={getTotalLent()}
-                        totalBorrowed={getTotalBorrowed()}
+                    {/* Top Section with Greeting, Dashboard Cards, Add Button */}
+                    <TopSection
+                        totalGiven={getTotalGiven()}
+                        totalTaken={getTotalTaken()}
                         netBalance={getNetBalance()}
+                        onAddClick={() => setShowForm(!showForm)}
                     />
 
-                    {/* Add Transaction Form */}
-                    <AddTransactionForm onAddTransaction={handleAddTransaction} />
+                    {/* Add Transaction Form - Conditional */}
+                    {showForm && (
+                        <div className={styles.formWrapper}>
+                            <AddTransactionForm onAddTransaction={handleAddTransaction} />
+                            <button
+                                className={styles.closeFormButton}
+                                onClick={() => setShowForm(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    )}
 
                     {/* Transaction List */}
                     <TransactionList

@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { HouseDoor, Calendar, HandThumbsUp } from 'react-bootstrap-icons';
 import styles from '../assets/scss/BottomNavigation.module.scss';
@@ -30,7 +29,7 @@ function BottomNavigation() {
                 style={{ textDecoration: 'none' }}
             >
                 <HandThumbsUp size={24} />
-                <span className={styles.label}>Borrow/Lend</span>
+                <span className={styles.label}>Borrow/Lent</span>
             </NavLink>
         </nav>
     );

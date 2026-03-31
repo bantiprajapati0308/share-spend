@@ -117,7 +117,7 @@
 .formSection {
     background: white;
     border-radius: 1.5rem;
-    padding: 2rem;
+    padding: 0.25rem;
     margin-bottom: 2rem;
     box-shadow: $shadow-md;
 
@@ -234,8 +234,7 @@
 .transactionList {
     background: white;
     border-radius: 1.5rem;
-    padding: 2rem;
-    box-shadow: $shadow-md;
+    padding: 0.25rem;
 
     h3 {
         font-size: 1.5rem;
@@ -248,7 +247,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem;
+    padding: .25rem;
     border: 1px solid $border-color;
     border-radius: 1rem;
     margin-bottom: 1rem;
