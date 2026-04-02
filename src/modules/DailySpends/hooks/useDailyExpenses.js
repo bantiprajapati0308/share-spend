@@ -6,6 +6,11 @@ import {
     deleteTransaction,
     getTransactionSummary
 } from '../../../hooks/useDailySpends';
+import {
+    addBorrowLendRecord,
+    applyBorrowLendRepayment
+} from '../../BorrowLend/utils/borrowLendFirestore';
+import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
 
 export const useDailyExpenses = () => {
     const [transactions, setTransactions] = useState([]);
@@ -36,6 +41,39 @@ export const useDailyExpenses = () => {
             const result = await addTransaction(newTransaction);
             // Add to local state immediately
             setTransactions([result, ...transactions]);
+
+            const normalizedCategory = (newTransaction.category || '').toLowerCase();
+            const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
+            const dueDate = newTransaction.dueDate || null;
+            const transactionDate = newTransaction.date || new Date().toISOString().split('T')[0];
+
+            if (normalizedCategory === 'lent') {
+                await addBorrowLendRecord({
+                    personName,
+                    amount: newTransaction.amount,
+                    type: TRANSACTION_TYPES.GAVE,
+                    date: transactionDate,
+                    dueDate,
+                    description: newTransaction.notes || ''
+                });
+            } else if (normalizedCategory === 'borrowed') {
+                await addBorrowLendRecord({
+                    personName,
+                    amount: newTransaction.amount,
+                    type: TRANSACTION_TYPES.TOOK,
+                    date: transactionDate,
+                    dueDate,
+                    description: newTransaction.notes || ''
+                });
+            } else if (normalizedCategory === 'repayment') {
+                await applyBorrowLendRepayment({
+                    personName,
+                    repaymentAmount: newTransaction.amount,
+                    date: transactionDate,
+                    description: newTransaction.notes || ''
+                });
+            }
+
             return result;
         } catch (err) {
             console.error('Error adding transaction:', err);

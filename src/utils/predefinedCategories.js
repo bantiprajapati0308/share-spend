@@ -13,6 +13,7 @@ export const PREDEFINED_SPEND_CATEGORIES = [
     { name: 'Personal', emoji: '👤', type: 'spend', isPredefined: true },
     { name: 'Friend Spent', emoji: '👫', type: 'spend', isPredefined: true },
     { name: 'Lent', emoji: '🤝', type: 'spend', isPredefined: true },
+    { name: 'Borrowed Pay', emoji: '💳', type: 'spend', isPredefined: true },
     { name: 'Credit Cards Bill', emoji: '💰', type: 'spend', isPredefined: true },
 ];
 
@@ -20,9 +21,10 @@ export const PREDEFINED_INCOME_CATEGORIES = [
     { name: 'Salary', emoji: '💼', type: 'income', isPredefined: true },
     { name: 'Bonus', emoji: '🎉', type: 'income', isPredefined: true },
     { name: 'Borrowed', emoji: '📋', type: 'income', isPredefined: true },
-    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true },
+    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, isEnabled: true },
 ];
 
+export const NON_DELETABLE_CATEGORIES = ['Repayment', 'Borrowed', 'Lent', 'Borrowed Pay'];
 export const ALL_PREDEFINED_CATEGORIES = [
     ...PREDEFINED_SPEND_CATEGORIES,
     ...PREDEFINED_INCOME_CATEGORIES,

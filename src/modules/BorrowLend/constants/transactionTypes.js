@@ -6,21 +6,25 @@
 export const TRANSACTION_TYPES = {
     GAVE: 'gave',      // Money you gave away (Lend Money)
     TOOK: 'took',      // Money you received (Borrow Money)
+    REPAYMENT: 'repayment',
 };
 
 export const TRANSACTION_TYPE_LABELS = {
     [TRANSACTION_TYPES.GAVE]: 'Lend Money',
     [TRANSACTION_TYPES.TOOK]: 'Borrow Money',
+    [TRANSACTION_TYPES.REPAYMENT]: 'Repayment',
 };
 
 export const TRANSACTION_TYPE_EMOJIS = {
     [TRANSACTION_TYPES.GAVE]: '💰',
     [TRANSACTION_TYPES.TOOK]: '💸',
+    [TRANSACTION_TYPES.REPAYMENT]: '💵',
 };
 
 export const TRANSACTION_STATUS = {
     [TRANSACTION_TYPES.GAVE]: 'You Lent',
     [TRANSACTION_TYPES.TOOK]: 'You Owe',
+    [TRANSACTION_TYPES.REPAYMENT]: 'Repayment Received',
 };
 
 /**
