@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
+import { NON_DELETABLE_CATEGORIES } from '../../../utils/predefinedCategories';
 
 /**
  * Category Management Modal
@@ -103,6 +104,11 @@ function CategoryManagementModal({ show, onHide }) {
     };
 
     const handleDeleteCategory = async (categoryId, categoryData) => {
+        if (NON_DELETABLE_CATEGORIES.includes(categoryData.name)) {
+            toast.error('This category cannot be deleted.');
+            return;
+        }
+
         try {
             const isUsed = await isCategoryUsed(categoryId);
             if (isUsed) {

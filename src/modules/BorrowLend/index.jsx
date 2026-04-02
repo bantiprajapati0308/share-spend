@@ -15,6 +15,7 @@ function BorrowLend() {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const {
         transactions,
+        expandedTransactions,
         addTransaction,
         deleteTransaction,
         getTotalGiven,

@@ -4,48 +4,57 @@
  */
 
 import { Modal } from 'react-bootstrap';
-import { getCurrencySymbol } from '../../../Util';
 import { formatTransactionDate } from '../utils/borrowLendTableUtils';
+import styles from '../styles/BorrowLend.module.scss';
 import PropTypes from 'prop-types';
+import { tableIcon } from '../utils/borrowLendTableRenderers';
 
-function TransactionDetailsModal({ show, onHide, personName, transactions, currency, type }) {
-    if (!transactions || transactions.length === 0) {
+
+function TransactionDetailsModal({ show, onHide, selectedRow }) {
+    const { data, personName, status } = selectedRow;
+    if (!data || data.length === 0) {
         return null;
     }
 
-    const statusLabel = type === 'gave' ? 'Lent' : 'Borrowed';
-
+    const statusColors = {
+        'Partially Paid': '#e6cb35', // Green for lending
+        'Pending': '#f48b36'  // Red for borrowing
+    };
+    const individualStatusColor = {
+        'Repayment': '#3deb4c',
+        'Lent': '#4a90e2',
+    }
     return (
         <Modal show={show} onHide={onHide} size="lg" centered>
             <Modal.Header closeButton>
                 <Modal.Title>
-                    {personName} - {statusLabel} Transactions
+                    {personName} <span style={{ backgroundColor: statusColors[status] }} className={styles.modalStatus}>{status}</span>
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    {transactions.map((transaction, idx) => (
+                    {data.map((transaction, idx) => (
                         <div
                             key={transaction.id || idx}
                             style={{
                                 padding: '12px',
                                 marginBottom: '8px',
-                                borderLeft: '4px solid #1565c0',
+                                borderLeft: `4px solid ${individualStatusColor[transaction.payment_type] || '#ccc'}`,
                                 backgroundColor: '#f0f4ff',
                                 borderRadius: '4px'
                             }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <span style={{ fontWeight: 600, color: '#1565c0' }}>
-                                    {getCurrencySymbol(currency)}{(transaction.amount || 0).toFixed(2)}
+                                <span style={{ fontWeight: 600, color: `${individualStatusColor[transaction.payment_type] || '#ccc'}` }}>
+                                    {(transaction.amount || 0).toFixed(2)}<span style={{ marginLeft: '0.5rem' }}>{tableIcon(transaction.payment_type)}</span>
                                 </span>
                                 <span style={{ fontSize: '0.85rem', color: '#666' }}>
-                                    {formatTransactionDate(new Date(transaction.date))}
+                                    {formatTransactionDate(new Date(transaction.insert_date))}
                                 </span>
                             </div>
                             {transaction.dueDate && (
                                 <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '4px' }}>
-                                    Due: {formatTransactionDate(new Date(transaction.dueDate))}
+                                    Due: {formatTransactionDate(new Date(transaction.due_date))}
                                 </div>
                             )}
                             {transaction.description && (
@@ -59,7 +68,7 @@ function TransactionDetailsModal({ show, onHide, personName, transactions, curre
             </Modal.Body>
             <Modal.Footer>
                 <div style={{ textAlign: 'right', width: '100%' }}>
-                    <strong>Total: {getCurrencySymbol(currency)}{transactions.reduce((sum, t) => sum + (t.amount || 0), 0).toFixed(2)}</strong>
+                    <strong>Total: {data.reduce((sum, t) => sum + (t.payment_type === 'Lent' ? t.amount : -t.amount), 0).toFixed(2)}</strong>
                 </div>
             </Modal.Footer>
         </Modal>

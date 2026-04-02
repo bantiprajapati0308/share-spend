@@ -52,16 +52,17 @@ function BorrowLendTable({ transactions, currency }) {
 
     // Create renderer with click handler
     const renderRow = useMemo(() =>
-        createBorrowLendTableRenderer(currency, (item) => {
+        createBorrowLendTableRenderer(currency, (data, personName, status) => {
             // Only show modal if there are multiple transactions
-            if (item.transactions && item.transactions.length > 1) {
-                setSelectedRow(item);
+
+            if (data && data.length > 1) {
+                setSelectedRow({ data, personName, status });
             }
         })
         , [currency]);
 
     const handleCloseModal = () => setSelectedRow(null);
-
+    console.log(selectedRow, "selectedRow in table")
     // Tab switch handler
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -126,10 +127,7 @@ function BorrowLendTable({ transactions, currency }) {
                 <TransactionDetailsModal
                     show={!!selectedRow}
                     onHide={handleCloseModal}
-                    personName={selectedRow.personName}
-                    transactions={selectedRow.transactions}
-                    currency={currency}
-                    type={selectedRow.type}
+                    selectedRow={selectedRow}
                 />
             )}
         </>

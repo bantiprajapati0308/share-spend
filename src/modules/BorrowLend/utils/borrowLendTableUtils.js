@@ -13,38 +13,54 @@ import { TRANSACTION_TYPES, TRANSACTION_STATUS } from '../constants/transactionT
 export const groupTransactionsByName = (transactions) => {
     const grouped = {};
 
-    transactions.forEach(transaction => {
-        const name = transaction.personName;
+    transactions.forEach(record => {
+        const name = record.personName || 'Unknown';
+        const recType = record.type || TRANSACTION_TYPES.GAVE;
 
         if (!grouped[name]) {
             grouped[name] = {
                 personName: name,
-                totalAmount: 0,
+                type: recType,
+                data: [],
                 firstDate: null,
-                dueDate: null,
-                type: transaction.type,
-                transactions: []
+                dueDate: null
             };
         }
 
-        // Sum amounts
-        grouped[name].totalAmount += transaction.amount;
+        // Convert old / new structure to unified data entries
+        let entries = [];
 
-        // Store first date (earliest transaction)
-        if (!grouped[name].firstDate) {
-            grouped[name].firstDate = new Date(transaction.date);
-            grouped[name].dueDate = transaction.dueDate ? new Date(transaction.dueDate) : null;
-        } else {
-            const currentDate = new Date(transaction.date);
-            if (currentDate < grouped[name].firstDate) {
-                grouped[name].firstDate = currentDate;
-                if (transaction.dueDate) {
-                    grouped[name].dueDate = new Date(transaction.dueDate);
-                }
-            }
+        if (Array.isArray(record.data)) {
+            entries = record.data.map(entry => ({
+                amount: Number(entry.amount || 0),
+                insert_date: entry.insert_date || entry.date || '',
+                due_date: entry.due_date || entry.dueDate || null,
+                payment_type: entry.payment_type || (recType === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed'),
+                description: entry.description || ''
+            }));
+        } else if (record.amount != null) {
+            entries = [{
+                amount: Number(record.amount || 0),
+                insert_date: record.date || record.insert_date || '',
+                due_date: record.due_date || record.dueDate || null,
+                payment_type: recType === TRANSACTION_TYPES.GAVE ? 'Lent' : recType === TRANSACTION_TYPES.TOOK ? 'Borrowed' : 'Unknown',
+                description: record.description || ''
+            }];
         }
 
-        grouped[name].transactions.push(transaction);
+        grouped[name].data = grouped[name].data.concat(entries);
+
+        // Determine firstDate and dueDate based on earliest entries
+        grouped[name].data.forEach(entry => {
+            const entryDate = entry.insert_date ? new Date(entry.insert_date) : null;
+            if (entryDate && (!grouped[name].firstDate || entryDate < grouped[name].firstDate)) {
+                grouped[name].firstDate = entryDate;
+            }
+            const entryDue = entry.due_date ? new Date(entry.due_date) : null;
+            if (entryDue && (!grouped[name].dueDate || entryDue < grouped[name].dueDate)) {
+                grouped[name].dueDate = entryDue;
+            }
+        });
     });
 
     return Object.values(grouped);
@@ -101,11 +117,15 @@ export const getTransactionStatus = (type) => {
  * @param {string} type - Transaction type
  * @returns {Object} Style object with color
  */
-export const getStatusColor = (type) => {
-    if (type === TRANSACTION_TYPES.GAVE) {
+export const getStatusColor = (typeOrStatus) => {
+    if (typeOrStatus === TRANSACTION_TYPES.GAVE) {
         return { background: '#e8f5e9', color: '#2e7d32' };
-    } else if (type === TRANSACTION_TYPES.TOOK) {
+    } else if (typeOrStatus === TRANSACTION_TYPES.TOOK) {
         return { background: '#ffebee', color: '#c62828' };
+    } else if (typeOrStatus === 'Paid') {
+        return { background: '#e8f5e9', color: '#1b5e20' };
+    } else if (typeOrStatus === 'Partially Paid') {
+        return { background: '#fff8e1', color: '#ff6f00' };
     }
     return { background: '#f5f5f5', color: '#666' };
 };
@@ -118,13 +138,48 @@ export const getStatusColor = (type) => {
 export const prepareAggregatedTableData = (transactions) => {
     const grouped = groupTransactionsByName(transactions);
 
-    return grouped.map(item => ({
-        ...item,
-        totalDays: calculateTotalDays(item.firstDate),
-        displayAmount: item.totalAmount.toFixed(2),
-        displayFirstDate: formatTransactionDate(item.firstDate),
-        displayDueDate: formatTransactionDate(item.dueDate),
-        status: getTransactionStatus(item.type),
-        statusStyle: getStatusColor(item.type)
-    }));
+    return grouped.map(item => {
+        const entries = Array.isArray(item.data) ? item.data : [];
+
+        let totalLent = 0;
+        let totalBorrowed = 0;
+        let totalRepayment = 0;
+
+        entries.forEach(entry => {
+            const paymentType = (entry.payment_type || '').toLowerCase();
+            const value = Number(entry.amount || 0);
+
+            if (paymentType === 'lent') {
+                totalLent += value;
+            } else if (paymentType === 'borrowed') {
+                totalBorrowed += value;
+            } else if (paymentType === 'repayment' || paymentType === 'borrowed repayment') {
+                totalRepayment += value;
+            }
+        });
+
+        const baseTotal = item.type === TRANSACTION_TYPES.GAVE ? totalLent : totalBorrowed;
+        const remaining = Math.max(baseTotal - totalRepayment, 0);
+
+        let derivedStatus = 'Pending';
+        if (remaining <= 0 && baseTotal > 0) {
+            derivedStatus = 'Paid';
+        } else if (remaining > 0 && totalRepayment > 0) {
+            derivedStatus = 'Partially Paid';
+        }
+
+        return {
+            ...item,
+            totalDays: calculateTotalDays(item.firstDate),
+            displayAmount: remaining.toFixed(2),
+            displayFirstDate: formatTransactionDate(item.firstDate),
+            displayDueDate: formatTransactionDate(item.dueDate),
+            status: derivedStatus,
+            statusStyle: getStatusColor(derivedStatus),
+            totalLent,
+            totalBorrowed,
+            totalRepayment,
+            remaining
+        };
+    });
 };

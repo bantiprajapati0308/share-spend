@@ -14,6 +14,7 @@ function AddExpenseForm({ onAddExpense }) {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState(null);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [dueDate, setDueDate] = useState('');
     const [notes, setNotes] = useState('');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +35,11 @@ function AddExpenseForm({ onAddExpense }) {
             categoryName: category.categoryName,
             category: category.categoryName,
             date: date,
+            dueDate: dueDate || null,
             notes: notes,
+            isLent: category.categoryName.toLowerCase() === 'lent',
+            isBorrowed: category.categoryName.toLowerCase() === 'borrowed',
+            isRepayment: category.categoryName.toLowerCase() === 'repayment',
         };
 
         try {
@@ -57,7 +62,9 @@ function AddExpenseForm({ onAddExpense }) {
             setIsSubmitting(false);
         }
     };
-
+    const isLent = category && category.categoryName.toLowerCase() === 'lent';
+    const isRepayment = category && category.categoryName.toLowerCase() === 'repayment';
+    const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
@@ -116,7 +123,7 @@ function AddExpenseForm({ onAddExpense }) {
                     </div>
                 </Col>
 
-                <Col xs={12} sm={6} md={2}>
+                <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={2}>
                     <div className={styles.formGroup}>
                         <label>Date *</label>
                         <input
@@ -132,6 +139,24 @@ function AddExpenseForm({ onAddExpense }) {
                         />
                     </div>
                 </Col>
+                {(isLent || isBorrowed) && (
+                    <Col xs={6} sm={6} md={4}>
+                        <div className={styles.formGroup}>
+                            <label>Due Date</label>
+                            <input
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => {
+                                    const dateValue = e.target.value;
+                                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                                        setDueDate(dateValue);
+                                    }
+                                }}
+                                min={date}
+                            />
+                        </div>
+                    </Col>
+                )}
 
             </Row>
 
