@@ -4,6 +4,7 @@ import { useLendingTransactions } from './hooks/useLendingTransactions';
 import TopSection from './components/TopSection';
 import AddTransactionForm from './components/AddTransactionForm';
 import TransactionList from './components/TransactionList';
+import BorrowLendTable from './components/BorrowLendTable';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import styles from './styles/BorrowLend.module.scss';
 import { toast } from 'react-toastify';
@@ -11,6 +12,7 @@ import { toast } from 'react-toastify';
 function BorrowLend() {
     const [filterType, setFilterType] = useState('all');
     const [showForm, setShowForm] = useState(false);
+    const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const {
         transactions,
         addTransaction,
@@ -48,8 +50,6 @@ function BorrowLend() {
         setFilterType(type);
     };
 
-    const filteredTransactions = getFilteredTransactions(filterType);
-
     if (loading) {
         return <FullScreenLoader />;
     }
@@ -83,6 +83,17 @@ function BorrowLend() {
                         onAddClick={() => setShowForm(!showForm)}
                     />
 
+                    {/* BorrowLend Table - Aggregated View */}
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 600, color: '#1565c0' }}>
+                            Summary
+                        </h3>
+                        <BorrowLendTable
+                            transactions={transactions}
+                            currency={currency}
+                        />
+                    </div>
+
                     {/* Add Transaction Form - Conditional */}
                     {showForm && (
                         <div className={styles.formWrapper}>
@@ -98,7 +109,7 @@ function BorrowLend() {
 
                     {/* Transaction List */}
                     <TransactionList
-                        transactions={filteredTransactions}
+                        transactions={getFilteredTransactions(filterType)}
                         filterType={filterType}
                         onFilterChange={handleFilterChange}
                         onDelete={handleDeleteTransaction}
