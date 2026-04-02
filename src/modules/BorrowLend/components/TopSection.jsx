@@ -39,7 +39,7 @@ function TopSection({ totalGiven, totalTaken, netBalance, onAddClick }) {
             {/* Add Transaction Button */}
             <button className={styles.addButton} onClick={onAddClick}>
                 <span className={styles.icon}>+</span>
-                Add Transaction
+                New Transaction
             </button>
         </div>
     );

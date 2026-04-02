@@ -83,7 +83,11 @@ function BorrowLend() {
                         netBalance={getNetBalance()}
                         onAddClick={() => setShowForm(!showForm)}
                     />
-
+                    {showForm && (
+                        <div className={styles.formWrapper}>
+                            <AddTransactionForm onAddTransaction={handleAddTransaction} />
+                        </div>
+                    )}
                     {/* BorrowLend Table - Aggregated View */}
                     <div style={{ marginBottom: '2rem' }}>
                         <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 600, color: '#1565c0' }}>
@@ -96,17 +100,7 @@ function BorrowLend() {
                     </div>
 
                     {/* Add Transaction Form - Conditional */}
-                    {showForm && (
-                        <div className={styles.formWrapper}>
-                            <AddTransactionForm onAddTransaction={handleAddTransaction} />
-                            <button
-                                className={styles.closeFormButton}
-                                onClick={() => setShowForm(false)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    )}
+
 
                     {/* Transaction List */}
                     <TransactionList
