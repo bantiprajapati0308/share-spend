@@ -170,11 +170,11 @@ function DailySpends() {
     };
 
     const handleOpenMasterReport = () => {
-        navigate('/share-spend/master-report');
+        navigate('/share-spend/daily-expenses/master-report');
     };
 
     const handleOpenLimitsManager = () => {
-        navigate('/share-spend/limits-manager', {
+        navigate('/share-spend/daily-expenses/limits-manager', {
             state: { from: '/share-spend/daily-expenses' }
         });
     };
@@ -270,23 +270,21 @@ function DailySpends() {
                     />
 
                     {/* Add Transaction Form */}
-                    <AddExpenseForm onAddExpense={handleAddTransaction} />
-                    <ReportActionButtons
-                        onBreakdownClick={handleOpenBreakdownReport}
-                        onMasterClick={handleOpenMasterReport}
-                        onLimitsClick={handleOpenLimitsManager}
-                    />
+                    <AddExpenseForm onAddExpense={handleAddTransaction} onLimitsClick={handleOpenLimitsManager} />
                     {/* Transaction View Toggle */}
                     <TransactionViewToggle
                         selectedType={selectedType}
                         onTypeChange={setSelectedType}
                     />
-
                     {/* Transaction List */}
                     <ExpenseList
                         expenses={displayedTransactions}
                         onDelete={handleDeleteTransaction}
                         title={sectionTitle}
+                    />
+                    <ReportActionButtons
+                        onBreakdownClick={handleOpenBreakdownReport}
+                        onMasterClick={handleOpenMasterReport}
                     />
                 </Col>
             </Row>

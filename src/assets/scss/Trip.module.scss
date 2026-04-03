@@ -136,6 +136,20 @@
         gap: 0.7rem;
         align-items: stretch;
     }
+
+    // Fix date input styling on mobile
+    :global(.form-control[type="date"]) {
+        max-width: 280px;
+        width: 100%;
+        background-color: #ffffff;
+        color: #212529;
+    }
+}
+
+@media (max-width: 360px) {
+    :global(.form-control[type="date"]) {
+        max-width: 240px;
+    }
 }
 
 // Add more styles as needed

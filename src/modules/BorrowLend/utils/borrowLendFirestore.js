@@ -61,35 +61,22 @@ export const addBorrowLendRecord = async ({ personName, amount, type, date, dueD
     }
 };
 
-export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, date, description = '' }) => {
+export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, date, description = '', type, category }) => {
     try {
         const normalizedDate = date || new Date().toISOString().split('T')[0];
-
-        // Prefer to apply repayment to borrowed records (you owe someone) if exists, otherwise to lent records.
-        const lookupType = TRANSACTION_TYPES.TOOK;
-        const altType = TRANSACTION_TYPES.GAVE;
 
         const primaryQuery = query(
             getUserBorrowLendCollection(),
             where('personName', '==', personName),
-            where('type', '==', lookupType)
+            where('type', '==', type)
         );
 
         let snapshot = await getDocs(primaryQuery);
 
-        if (snapshot.empty) {
-            const altQuery = query(
-                getUserBorrowLendCollection(),
-                where('personName', '==', personName),
-                where('type', '==', altType)
-            );
-            snapshot = await getDocs(altQuery);
-        }
-
         if (!snapshot.empty) {
             const docRef = snapshot.docs[0];
             const recordType = docRef.data().type;
-            const paymentType = recordType === TRANSACTION_TYPES.TOOK ? 'Borrowed Repayment' : 'Repayment';
+            const paymentType = recordType === TRANSACTION_TYPES.TOOK ? 'Borrowed pay' : 'Repayment';
             const entry = {
                 amount: repaymentAmount,
                 insert_date: normalizedDate,
@@ -117,7 +104,7 @@ export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, da
             date: normalizedDate,
             dueDate: null,
             description: `${description} (Repayment adjustment)`,
-            payment_type: 'Repayment'
+            payment_type: category
         });
     } catch (error) {
         console.error('Error applying BorrowLend repayment:', error);

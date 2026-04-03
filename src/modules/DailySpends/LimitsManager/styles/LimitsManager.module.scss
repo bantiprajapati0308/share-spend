@@ -318,6 +318,18 @@
                 color: #e74c3c;
             }
         }
+
+        &.overLimitIndicator {
+            background: #fff5f5;
+
+            .label {
+                color: #e74c3c;
+            }
+
+            .amount {
+                color: #c82333;
+            }
+        }
     }
 
     @media (max-width: 576px) {

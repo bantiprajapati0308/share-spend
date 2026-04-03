@@ -207,12 +207,10 @@ export const createSettlementHandler = ({
 
             // 3. Save settlement to Firestore
             const settlementResult = await processSettlement(tripId, settlementData);
-            console.log('Settlement processed successfully:', settlementResult);
 
             // 4. Update trip balances in Firestore (optional)
             try {
                 await updateTripBalances(tripId, result.balances);
-                console.log('Trip balances updated successfully');
             } catch (balanceError) {
                 console.warn('Failed to update trip balances, but settlement was saved:', balanceError);
                 // Don't throw here - settlement was still successful

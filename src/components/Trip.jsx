@@ -15,7 +15,7 @@ function Trip() {
     const [tripName, setTripName] = useState('');
     const [description, setDescription] = useState('');
     const [organizer, setOrganizer] = useState('');
-    const [currency, setCurrency] = useState('');
+    const [currency, setCurrency] = useState('INR');
     const [date, setDate] = useState('');
     const [passcode, setPasscode] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -44,7 +44,7 @@ function Trip() {
             setTripName('');
             setDescription('');
             setOrganizer('');
-            setCurrency('');
+            setCurrency('INR');
             setDate('');
             setPasscode('');
         } catch (err) {

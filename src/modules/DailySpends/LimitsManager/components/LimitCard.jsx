@@ -20,8 +20,10 @@ import GradientProgressBar from '../../components/GradientProgressBar';
  */
 function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
     const percentage = calculateLimitPercentage(spent, limit.limit);
+    const progressPercentage = Math.min(percentage, 100);
     const remaining = calculateRemaining(spent, limit.limit);
     const overLimit = calculateOverLimit(spent, limit.limit);
+    const overPercent = limit.limit > 0 ? Math.round((overLimit / limit.limit) * 100) : 0;
 
     // Use different status logic for income vs spend
     const statusVariant = limitType === 'income'
@@ -69,7 +71,7 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
 
             {/* Progress bar */}
             <div className={styles.progressSection}>
-                <GradientProgressBar percentage={percentage} reverse={limitType === 'income'} />
+                <GradientProgressBar percentage={progressPercentage} reverse={limitType === 'income'} />
             </div>
 
             {/* Amount details */}
@@ -78,13 +80,13 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
                     <span className={styles.label}>
                         {limitType === 'income' ? 'Actual' : 'Spent'}
                     </span>
-                    <span className={styles.amount}>{formatCurrency(spent)}</span>
+                    <span className={styles.amount}>{spent.toFixed(2)}</span>
                 </div>
                 <div className={styles.amountGroup}>
                     <span className={styles.label}>
                         {limitType === 'income' ? 'Target Income' : 'Limit'}
                     </span>
-                    <span className={styles.amount}>{formatCurrency(limit.limit)}</span>
+                    <span className={styles.amount}>{limit.limit.toFixed(2)}</span>
                 </div>
                 <div className={`${styles.amountGroup} ${limitType === 'income' && percentage > 100 ? styles.incomeBenefit : percentage > 100 ? styles.overLimit : ''}`}>
                     <span className={styles.label}>
@@ -95,8 +97,8 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
                     </span>
                     <span className={styles.amount} style={limitType === 'income' && percentage > 100 ? { color: '#10b981', fontWeight: 'bold' } : {}}>
                         {limitType === 'income' && percentage > 100
-                            ? `+${formatCurrency(overLimit)}`
-                            : (percentage > 100 ? `-${formatCurrency(overLimit)}` : formatCurrency(remaining))
+                            ? `+${overLimit.toFixed(2)}`
+                            : (percentage > 100 ? `+${overLimit.toFixed(2)} (${overPercent}%)` : remaining.toFixed(2))
                         }
                     </span>
                 </div>

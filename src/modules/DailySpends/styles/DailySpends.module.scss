@@ -107,6 +107,7 @@
         font-size: 0.95rem;
         transition: all 0.3s ease;
         font-family: inherit;
+        background-color: #ffffff;
 
         &:focus {
             outline: none;
@@ -116,6 +117,29 @@
 
         &::placeholder {
             color: $text-secondary;
+        }
+    }
+
+    input[type="date"] {
+        color: $text-primary;
+
+        @media (max-width: 480px) {
+            max-width: 280px;
+            width: 100%;
+        }
+
+        @media (max-width: 360px) {
+            max-width: 240px;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px;
+
+            &:hover {
+                background-color: rgba(30, 98, 208, 0.1);
+            }
         }
     }
 
@@ -855,9 +879,6 @@
 // ==========================================
 
 .formHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: 0.75rem;
     flex-wrap: wrap;
     gap: 0.75rem;
