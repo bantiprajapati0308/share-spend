@@ -69,10 +69,22 @@ export const useDailyExpenses = () => {
                 await applyBorrowLendRepayment({
                     personName,
                     repaymentAmount: newTransaction.amount,
+                    type: TRANSACTION_TYPES.GAVE,
                     date: transactionDate,
-                    description: newTransaction.notes || ''
+                    description: newTransaction.notes || '',
+                    normalizedCategory
+                });
+            } else if (normalizedCategory === 'borrowed pay') {
+                await applyBorrowLendRepayment({
+                    personName,
+                    repaymentAmount: newTransaction.amount,
+                    type: TRANSACTION_TYPES.TOOK,
+                    date: transactionDate,
+                    description: newTransaction.notes || '',
+                    normalizedCategory
                 });
             }
+
 
             return result;
         } catch (err) {

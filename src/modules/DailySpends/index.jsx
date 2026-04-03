@@ -170,11 +170,11 @@ function DailySpends() {
     };
 
     const handleOpenMasterReport = () => {
-        navigate('/share-spend/master-report');
+        navigate('/share-spend/daily-expenses/master-report');
     };
 
     const handleOpenLimitsManager = () => {
-        navigate('/share-spend/limits-manager', {
+        navigate('/share-spend/daily-expenses/limits-manager', {
             state: { from: '/share-spend/daily-expenses' }
         });
     };

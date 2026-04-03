@@ -57,9 +57,9 @@ function App() {
               </ProtectedTripRoute>
             } />
             <Route path="/share-spend/daily-expenses" element={<DailySpends />} />
-            <Route path="/share-spend/limits-manager" element={<LimitsManager />} />
+            <Route path="/share-spend/daily-expenses/limits-manager" element={<LimitsManager />} />
             <Route path="/share-spend/breakdown-report" element={<BreakdownReport />} />
-            <Route path="/share-spend/master-report" element={<MasterReport />} />
+            <Route path="/share-spend/daily-expenses/master-report" element={<MasterReport />} />
             <Route path="/share-spend/lending" element={<BorrowLend />} />
             <Route path="*" element={<Navigate to="/share-spend/login" />} />
           </Routes>

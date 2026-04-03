@@ -153,7 +153,7 @@ export const prepareAggregatedTableData = (transactions) => {
                 totalLent += value;
             } else if (paymentType === 'borrowed') {
                 totalBorrowed += value;
-            } else if (paymentType === 'repayment' || paymentType === 'borrowed repayment') {
+            } else if (paymentType === 'repayment' || paymentType === 'borrowed pay') {
                 totalRepayment += value;
             }
         });

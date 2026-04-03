@@ -62,7 +62,6 @@ function BorrowLendTable({ transactions, currency }) {
         , [currency]);
 
     const handleCloseModal = () => setSelectedRow(null);
-    console.log(selectedRow, "selectedRow in table")
     // Tab switch handler
     const handleTabChange = (tab) => {
         setActiveTab(tab);

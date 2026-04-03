@@ -1,11 +1,11 @@
-import { 
-    collection, 
-    doc, 
-    addDoc, 
-    updateDoc, 
-    getDocs, 
-    query, 
-    where, 
+import {
+    collection,
+    doc,
+    addDoc,
+    updateDoc,
+    getDocs,
+    query,
+    where,
     orderBy,
     serverTimestamp,
     writeBatch
@@ -59,10 +59,6 @@ export const processSettlement = async (tripId, settlementData) => {
         // Save settlement to Firestore
         const settlementRef = await addDoc(collection(db, 'settlements'), settlementDoc);
 
-        console.log('Settlement saved to Firestore:', {
-            settlementId: settlementRef.id,
-            ...settlementDoc
-        });
 
         return {
             success: true,
@@ -99,7 +95,7 @@ export const updateTripBalances = async (tripId, newBalances) => {
 
         // Update the trip document with new calculated balances
         const tripRef = doc(db, 'trips', tripId);
-        
+
         // Prepare update data - only include fields that exist
         const updateData = {
             lastSettlementUpdate: serverTimestamp(),
@@ -118,14 +114,8 @@ export const updateTripBalances = async (tripId, newBalances) => {
         if (Object.keys(serializableBalances).length > 0) {
             updateData.calculatedBalances = serializableBalances; // Use different field name
         }
-        
-        await updateDoc(tripRef, updateData);
 
-        console.log('Trip metadata updated in Firestore:', {
-            tripId,
-            balances: serializableBalances,
-            updatedBy: user.email
-        });
+        await updateDoc(tripRef, updateData);
 
         return {
             success: true,
@@ -134,7 +124,7 @@ export const updateTripBalances = async (tripId, newBalances) => {
 
     } catch (error) {
         console.error('Failed to update trip metadata:', error);
-        
+
         // Provide more specific error messages
         if (error.code === 'not-found') {
             throw new Error('Trip not found. Settlement saved but trip metadata not updated.');
@@ -205,7 +195,7 @@ export const processBatchSettlements = async (tripId, settlementsArray) => {
         // Add all settlements to batch
         settlementsArray.forEach((settlementData) => {
             const settlementRef = doc(collection(db, 'settlements'));
-            
+
             batch.set(settlementRef, {
                 tripId,
                 amount: parseFloat(settlementData.amount),

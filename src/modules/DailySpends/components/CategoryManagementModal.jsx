@@ -1,12 +1,27 @@
 import { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Form, Button, Modal, ListGroup, Badge, Alert, Spinner, Accordion } from 'react-bootstrap';
-import { Trash2, Plus, Lock } from 'react-bootstrap-icons';
+import { Form, Button, Modal, ListGroup, Badge, Alert, Spinner, Accordion, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Trash2, Plus, Lock, Ban } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import { NON_DELETABLE_CATEGORIES } from '../../../utils/predefinedCategories';
+
+/**
+ * Get tooltip message for non-deletable categories
+ * @param {string} categoryName - Name of the category
+ * @returns {string} Tooltip message explaining the category's purpose
+ */
+const getCategoryTooltip = (categoryName) => {
+    const tooltips = {
+        'Lent': 'Use this category when you lend money to someone. It records the amount going out as a loan that you expect to be repaid.',
+        'Borrowed': 'Use this category when someone lends you money. It records the amount coming in as a loan that you need to repay.',
+        'Repayment': 'Use this category when someone repays the money you lent them. It records the repayment as income.',
+        'Borrowed Pay': 'Use this category when you repay money you borrowed. It records the repayment as an expense.'
+    };
+    return tooltips[categoryName] || 'This is a system category required for Borrow/Lend functionality and cannot be deleted.';
+};
 
 /**
  * Category Management Modal
@@ -44,23 +59,6 @@ function CategoryManagementModal({ show, onHide }) {
     const incomeCategories = useMemo(() => {
         return categories.filter(cat => cat.type === 'income');
     }, [categories]);
-
-    // Separate enabled and disabled categories for each type
-    const spendEnabledCategories = useMemo(() => {
-        return spendCategories.filter(cat => cat.isEnabled);
-    }, [spendCategories]);
-
-    const spendDisabledCategories = useMemo(() => {
-        return spendCategories.filter(cat => !cat.isEnabled);
-    }, [spendCategories]);
-
-    const incomeEnabledCategories = useMemo(() => {
-        return incomeCategories.filter(cat => cat.isEnabled);
-    }, [incomeCategories]);
-
-    const incomeDisabledCategories = useMemo(() => {
-        return incomeCategories.filter(cat => !cat.isEnabled);
-    }, [incomeCategories]);
 
     const handleAddCategory = async () => {
         if (!newCategoryName.trim()) {
@@ -137,48 +135,54 @@ function CategoryManagementModal({ show, onHide }) {
                 {categoryList.map((category) => (
                     <ListGroup.Item
                         key={category.id}
-                        className="d-flex justify-content-between align-items-center"
-                        style={disabled ? { opacity: 0.6 } : {}}
+                        className="d-flex justify-content-between align-items-center px-2"
+                        style={!category.isEnabled ? { opacity: 0.6 } : {}}
                     >
                         <div>
-                            {disabled && <Lock size={14} className="me-2" />}
-                            <span style={{ fontSize: '1.5rem', marginRight: '0.5rem' }}>
+
+                            <span style={{ fontSize: '0.825rem', marginRight: '0.05rem' }}>
                                 {category.emoji}
                             </span>
-                            <strong>{category.name}</strong>
-                            {disabled && (
-                                <Badge bg="secondary" className="ms-2">
-                                    Disabled
-                                </Badge>
-                            )}
+                            <strong>{category.name}</strong> {!category.isEnabled && <Ban size={14} />}
                         </div>
                         <div>
-                            {disabled ? (
-                                <Button
-                                    variant="outline-success"
-                                    size="sm"
-                                    onClick={() => handleToggleCategory(category.id, false)}
+                            <Form.Check
+                                type="switch"
+                                id={`switch-${category.id}`}
+                                checked={category.isEnabled}
+                                onChange={() => handleToggleCategory(category.id, category.isEnabled)}
+                                className="d-inline-block"
+                            />
+                            {NON_DELETABLE_CATEGORIES.includes(category.name) ? (
+                                <OverlayTrigger
+                                    placement="top"
+                                    overlay={
+                                        <Tooltip>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <Lock size={16} style={{ marginBottom: '4px' }} />
+                                                {getCategoryTooltip(category.name)}
+                                            </div>
+                                        </Tooltip>
+                                    }
                                 >
-                                    Enable
-                                </Button>
+                                    <span>
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            disabled
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    </span>
+                                </OverlayTrigger>
                             ) : (
-                                <>
-                                    <Button
-                                        variant="outline-warning"
-                                        size="sm"
-                                        onClick={() => handleToggleCategory(category.id, true)}
-                                        className="me-2"
-                                    >
-                                        Disable
-                                    </Button>
-                                    <Button
-                                        variant="outline-danger"
-                                        size="sm"
-                                        onClick={() => handleDeleteCategory(category.id, category)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
-                                </>
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDeleteCategory(category.id, category)}
+                                >
+                                    <Trash2 size={14} />
+                                </Button>
                             )}
                         </div>
                     </ListGroup.Item>
@@ -223,24 +227,12 @@ function CategoryManagementModal({ show, onHide }) {
                                             No spending categories yet
                                         </Alert>
                                     ) : (
-                                        <>
-                                            {spendEnabledCategories.length > 0 && (
-                                                <div className="mb-4">
-                                                    <h6 className="mb-3">
-                                                        Active ({spendEnabledCategories.length})
-                                                    </h6>
-                                                    {renderCategoryList(spendEnabledCategories)}
-                                                </div>
-                                            )}
-                                            {spendDisabledCategories.length > 0 && (
-                                                <div>
-                                                    <h6 className="mb-3">
-                                                        Disabled ({spendDisabledCategories.length})
-                                                    </h6>
-                                                    {renderCategoryList(spendDisabledCategories, true)}
-                                                </div>
-                                            )}
-                                        </>
+                                        <div>
+                                            <h6 className="mb-3">
+                                                All Categories ({spendCategories.length})
+                                            </h6>
+                                            {renderCategoryList(spendCategories)}
+                                        </div>
                                     )}
                                 </Accordion.Body>
                             </Accordion.Item>
@@ -256,24 +248,12 @@ function CategoryManagementModal({ show, onHide }) {
                                             No income categories yet
                                         </Alert>
                                     ) : (
-                                        <>
-                                            {incomeEnabledCategories.length > 0 && (
-                                                <div className="mb-4">
-                                                    <h6 className="mb-3">
-                                                        Active ({incomeEnabledCategories.length})
-                                                    </h6>
-                                                    {renderCategoryList(incomeEnabledCategories)}
-                                                </div>
-                                            )}
-                                            {incomeDisabledCategories.length > 0 && (
-                                                <div>
-                                                    <h6 className="mb-3">
-                                                        Disabled ({incomeDisabledCategories.length})
-                                                    </h6>
-                                                    {renderCategoryList(incomeDisabledCategories, true)}
-                                                </div>
-                                            )}
-                                        </>
+                                        <div>
+                                            <h6 className="mb-3">
+                                                All Categories ({incomeCategories.length})
+                                            </h6>
+                                            {renderCategoryList(incomeCategories)}
+                                        </div>
                                     )}
                                 </Accordion.Body>
                             </Accordion.Item>
