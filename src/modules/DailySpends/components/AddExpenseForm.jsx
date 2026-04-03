@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Spinner } from 'react-bootstrap';
+import { Row, Col, Spinner, Button } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '../styles/DailySpends.module.scss';
@@ -8,7 +8,7 @@ import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 
-function AddExpenseForm({ onAddExpense }) {
+function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -68,7 +68,14 @@ function AddExpenseForm({ onAddExpense }) {
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
-                <h3>➕ Add {transactionType === 'spend' ? 'Expense' : 'Income'}</h3>
+                <div className='d-flex align-items-center justify-content-between mb-4'> <h3 className='mb-0'>➕ Add {transactionType === 'spend' ? 'Expense' : 'Income'} </h3> <Button
+                    variant="link"
+                    onClick={onLimitsClick}
+                    className={styles.reportBtn}
+                    size="sm"
+                >
+                    Spending Limits
+                </Button></div>
                 <TransactionTypeSelector
                     value={transactionType}
                     onChange={setTransactionType}

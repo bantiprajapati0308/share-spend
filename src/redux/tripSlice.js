@@ -6,13 +6,13 @@ const initialState = {
         description: '',
         organizer: '',
         date: '',
-        currency: '',
+        currency: 'INR',
         id: '',
         passcode: '', // Add passcode to trip data
     },
     members: [],
     expenses: [],
-    currency: '',
+    currency: 'INR',
     passcodeAccess: {}, // Store passcode access per trip ID { tripId: boolean }
 };
 

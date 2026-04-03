@@ -7,11 +7,11 @@
  * Calculate the percentage of limit spent
  * @param {number} spent - Amount spent
  * @param {number} limit - Limit amount
- * @returns {number} Percentage (capped at 100)
+ * @returns {number} Percentage (can exceed 100 if over limit)
  */
 export const calculateLimitPercentage = (spent, limit) => {
     if (limit === 0) return 0;
-    return Math.min(Math.round((spent / limit) * 100), 100);
+    return Math.round((spent / limit) * 100);
 };
 
 /**
