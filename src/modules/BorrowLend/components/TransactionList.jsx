@@ -19,20 +19,26 @@ function TransactionList({ transactions, filterType, onFilterChange, onDelete })
     };
 
     return (
-        <div className={styles.transactionList}>
+        <div className={`${styles.transactionList}`}>
             <h3>Transaction History</h3>
 
             {transactions.length > 0 && (
-                <TabFilter
-                    tabs={buildTabs()}
-                    activeTab={filterType}
-                    onTabChange={onFilterChange}
-                />
+                <div className="mb-3">
+                    <TabFilter
+                        tabs={buildTabs()}
+                        activeTab={filterType}
+                        onTabChange={onFilterChange}
+                    />
+                </div>
             )}
 
             {transactions.length === 0 ? (
-                <div className={styles.noTransactions}>
-                    <p>No transactions yet. Start tracking your lending and borrowing above!</p>
+                <div className={`${styles.noTransactions} text-center py-4`}>
+                    <div className="mb-2">
+                        <i className="bi bi-wallet2" style={{ fontSize: '2.5rem', color: '#cbd5e1' }}></i>
+                    </div>
+                    <h6 className="text-muted mb-1">No transactions yet</h6>
+                    <p className="text-muted mb-0 small">Start tracking your lending and borrowing above!</p>
                 </div>
             ) : (
                 <div className={styles.transactionItemsContainer}>

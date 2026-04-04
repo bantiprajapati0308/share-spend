@@ -46,7 +46,6 @@ export const useDailyExpenses = () => {
         try {
             const result = await addTransaction(newTransaction);
             // Add to local state and maintain createdAt sorting
-            console.log("newTransaction:", newTransaction);
             const updatedTransactions = [result, ...transactions].sort((a, b) => {
                 const dateA = a.createdAt || new Date(0);
                 const dateB = b.createdAt || new Date(0);
