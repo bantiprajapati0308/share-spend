@@ -182,9 +182,6 @@
 
 .expenseList {
     background: white;
-    border-radius: 1rem;
-    padding: 1rem;
-    box-shadow: $shadow-sm;
 
     h3 {
         font-size: 1.1rem;
@@ -1433,19 +1430,15 @@
 // ==========================================
 
 .expenseList {
-    background: white;
-    border-radius: 1.25rem;
-    padding: 1.75rem;
-    box-shadow: $shadow-md;
 
     @media (max-width: 768px) {
         border-radius: 1rem;
-        padding: 1.5rem;
+        padding: .25rem;
     }
 
     @media (max-width: 480px) {
         border-radius: 0.875rem;
-        padding: 1.25rem;
+        padding: .25rem;
     }
 
     h3 {

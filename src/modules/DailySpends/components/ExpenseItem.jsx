@@ -1,25 +1,12 @@
 import React from 'react';
-import { Trash3 } from 'react-bootstrap-icons';
+import { BoxArrowDown, BoxArrowDownRight, BoxArrowUp, Trash3 } from 'react-bootstrap-icons';
 import styles from '../styles/DailySpends.module.scss';
 import { getCurrencySymbol } from '../../../Util';
 
 function ExpenseItem({ expense, onDelete }) {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
-
-    const getCategoryIcon = (category) => {
-        const icons = {
-            'Food': '🍔',
-            'Transport': '🚗',
-            'Entertainment': '🎬',
-            'Shopping': '🛍️',
-            'Utilities': '💡',
-            'Health': '🏥',
-            'Other': '📝'
-        };
-        return icons[category] || '📝';
-    };
-
+    const incomeTypeData = expense.type;
     return (
         <div className="d-flex align-items-center justify-content-between border-0 rounded-3 px-3 py-2 mb-2 bg-white shadow-sm">
 
@@ -30,12 +17,13 @@ function ExpenseItem({ expense, onDelete }) {
                 <div className="d-flex justify-content-between align-items-center">
                     <div className="fw-semibold text-dark text-truncate d-flex align-items-center gap-2">
                         <span className="fs-5">
-                            {getCategoryIcon(expense.category)}
+                            {expense.categoryIcon || '📝'}
                         </span>
                         {expense.name}
                     </div>
 
-                    <div className="fw-bold text-danger fs-6">
+                    <div className={`fw-bold ${incomeTypeData === 'income' ? 'text-success' : 'text-danger'} fs-6`}>
+                        {incomeTypeData === 'income' ? <BoxArrowDown size={18} className='me-1' /> : <BoxArrowUp size={18} className='me-1 mb-1' />}
                         {currencySymbol}{expense.amount.toFixed(2)}
                     </div>
                 </div>
@@ -70,7 +58,7 @@ function ExpenseItem({ expense, onDelete }) {
                 onClick={() => onDelete(expense.id)}
                 title="Delete expense"
             >
-                <Trash3 size={16} className="text-danger" />
+                <Trash3 size={18} className="text-danger" />
             </button>
         </div>
     );

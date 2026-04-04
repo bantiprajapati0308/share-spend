@@ -11,7 +11,7 @@ function TransactionItem({ transaction, onDelete }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
-
+    console.log('Rendering TransactionItem:', transaction);
     const handleDeleteClick = () => {
         setShowDeleteModal(true);
     };

@@ -29,7 +29,7 @@ function AddTransactionForm({ onAddTransaction }) {
         }
 
         const newTransaction = {
-            personName: personName,
+            personName,
             amount: parseFloat(amount),
             type: type,
             date: date,

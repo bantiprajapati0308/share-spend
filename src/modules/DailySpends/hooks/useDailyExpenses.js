@@ -24,7 +24,13 @@ export const useDailyExpenses = () => {
                 setLoading(true);
                 setError(null);
                 const data = await getTransactions();
-                setTransactions(data);
+                // Sort by createdAt in descending order (most recent first)
+                const sortedData = data.sort((a, b) => {
+                    const dateA = a.createdAt || new Date(0);
+                    const dateB = b.createdAt || new Date(0);
+                    return new Date(dateB) - new Date(dateA);
+                });
+                setTransactions(sortedData);
             } catch (err) {
                 console.error('Error fetching transactions:', err);
                 setError(err.message);
@@ -39,8 +45,14 @@ export const useDailyExpenses = () => {
     const addTransactionHandler = async (newTransaction) => {
         try {
             const result = await addTransaction(newTransaction);
-            // Add to local state immediately
-            setTransactions([result, ...transactions]);
+            // Add to local state and maintain createdAt sorting
+            console.log("newTransaction:", newTransaction);
+            const updatedTransactions = [result, ...transactions].sort((a, b) => {
+                const dateA = a.createdAt || new Date(0);
+                const dateB = b.createdAt || new Date(0);
+                return new Date(dateB) - new Date(dateA);
+            });
+            setTransactions(updatedTransactions);
 
             const normalizedCategory = (newTransaction.category || '').toLowerCase();
             const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
@@ -142,7 +154,13 @@ export const useDailyExpenses = () => {
         try {
             setLoading(true);
             const data = await getTransactions();
-            setTransactions(data);
+            // Sort by createdAt in descending order (most recent first)
+            const sortedData = data.sort((a, b) => {
+                const dateA = a.createdAt || new Date(0);
+                const dateB = b.createdAt || new Date(0);
+                return new Date(dateB) - new Date(dateA);
+            });
+            setTransactions(sortedData);
         } catch (err) {
             console.error('Error refreshing transactions:', err);
             setError(err.message);

@@ -2,6 +2,7 @@
  * BorrowLend Firestore helpers for DailySpends integration
  */
 
+import { v4 as uuidv4 } from 'uuid';
 import { db, auth } from '../../../firebase';
 import { collection, addDoc, getDocs, query, where, doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
@@ -30,6 +31,7 @@ export const addBorrowLendRecord = async ({ personName, amount, type, date, dueD
         const snapshot = await getDocs(personQuery);
 
         const entry = {
+            uuid: uuidv4(),
             amount,
             insert_date: insertDate,
             due_date: dueDate || null,
@@ -78,6 +80,7 @@ export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, da
             const recordType = docRef.data().type;
             const paymentType = recordType === TRANSACTION_TYPES.TOOK ? 'Borrowed pay' : 'Repayment';
             const entry = {
+                uuid: uuidv4(),
                 amount: repaymentAmount,
                 insert_date: normalizedDate,
                 due_date: null,

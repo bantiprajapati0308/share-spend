@@ -13,7 +13,7 @@ export const getTransactions = async () => {
 
         const transactionsQuery = query(
             collection(db, "users", userId, "dailySpends"),
-            orderBy("date", "desc")
+            orderBy("createdAt", "desc")
         );
         const snap = await getDocs(transactionsQuery);
         return snap.docs.map(doc => ({
@@ -39,7 +39,7 @@ export const getTransactionsByType = async (type) => {
         const transactionsQuery = query(
             collection(db, "users", userId, "dailySpends"),
             where("type", "==", type),
-            orderBy("date", "desc")
+            orderBy("createdAt", "desc")
         );
         const snap = await getDocs(transactionsQuery);
         return snap.docs.map(doc => ({
