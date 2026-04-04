@@ -1,45 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { db, auth } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, orderBy, query, updateDoc } from 'firebase/firestore';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 import { addBorrowLendRecord } from '../utils/borrowLendFirestore';
 
-// Normalize a record from Firestore to unified structure:
-const normalizeRecord = (docId, data) => {
-    const personName = data.personName || 'Unknown';
-    const type = data.type || TRANSACTION_TYPES.GAVE;
-
-    const entries = [];
-
-    if (Array.isArray(data.data) && data.data.length) {
-        data.data.forEach((entry) => {
-            entries.push({
-                amount: Number(entry.amount || 0),
-                insert_date: entry.insert_date || entry.date || '',
-                due_date: entry.due_date || entry.dueDate || null,
-                payment_type: entry.payment_type || (type === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed'),
-                description: entry.description || '',
-            });
-        });
-    } else if (data.amount != null) {
-        entries.push({
-            amount: Number(data.amount || 0),
-            insert_date: data.date || data.insert_date || new Date().toISOString().split('T')[0],
-            due_date: data.dueDate || data.due_date || null,
-            payment_type: type === TRANSACTION_TYPES.GAVE ? 'Lent' : type === TRANSACTION_TYPES.TOOK ? 'Borrowed' : 'Unknown',
-            description: data.description || '',
-        });
-    }
-
-    return {
-        id: docId,
-        userId: data.userId || auth.currentUser?.uid || '',
-        personName,
-        type,
-        data: entries,
-        createdAt: data.createdAt?.toDate?.() || data.createdAt || null,
-    };
-};
 
 const expandTransactionsFromRecords = (records) => {
     const expanded = [];
@@ -49,7 +13,8 @@ const expandTransactionsFromRecords = (records) => {
 
         entries.forEach((entry, idx) => {
             expanded.push({
-                id: `${record.id}-${idx}`,
+                id: entry.uuid || `${record.id}-${idx}`, // Use UUID as primary identifier, fallback to composite ID
+                uuid: entry.uuid,
                 docId: record.id,
                 personName: record.personName,
                 type: record.type,
@@ -92,9 +57,9 @@ export const useLendingTransactions = () => {
             );
 
             const snapshot = await getDocs(transactionsQuery);
-            const normalized = snapshot.docs.map((document) => normalizeRecord(document.id, document.data()));
-
-            setTransactions(normalized);
+            const data = snapshot.docs.map((document) => document.data());
+            console.log('Fetched and normalized transactions:', data);
+            setTransactions(data);
         } catch (err) {
             console.error('Error fetching lending transactions:', err);
             setError(err.message || 'Failed to load records');
@@ -127,18 +92,61 @@ export const useLendingTransactions = () => {
         }
     };
 
-    const deleteTransaction = async (transactionId) => {
+    const deleteTransaction = async (entryUuid) => {
+        console.log('Attempting to delete entry with UUID:', entryUuid);
         try {
             const userId = auth.currentUser?.uid;
             if (!userId) {
                 throw new Error('User not authenticated');
             }
 
-            await deleteDoc(doc(db, 'users', userId, 'borrowLend', String(transactionId)));
+            // Find the document containing the entry with the given UUID
+            const transactionsQuery = query(
+                collection(db, 'users', userId, 'borrowLend')
+            );
+
+            const snapshot = await getDocs(transactionsQuery);
+            let documentFound = null;
+            let entryIndex = -1;
+
+            // Search through all documents to find the one containing the UUID
+            snapshot.docs.forEach(document => {
+                const data = document.data();
+                if (Array.isArray(data.data)) {
+                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
+                    if (index !== -1) {
+                        documentFound = document;
+                        entryIndex = index;
+                    }
+                }
+            });
+
+            if (!documentFound) {
+                throw new Error(`Entry with UUID ${entryUuid} not found`);
+            }
+
+            const docData = documentFound.data();
+            const updatedDataArray = [...docData.data];
+
+            // Remove the entry with the matching UUID
+            updatedDataArray.splice(entryIndex, 1);
+
+            // If this was the last entry, delete the entire document
+            if (updatedDataArray.length === 0) {
+                await deleteDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id));
+                console.log('Deleted entire document as it was the last entry');
+            } else {
+                // Update the document with the modified data array
+                await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
+                    data: updatedDataArray
+                });
+                console.log('Updated document with entry removed');
+            }
+
             await fetchTransactions();
             return true;
         } catch (err) {
-            console.error('Error deleting lending transaction:', {
+            console.error('Error deleting lending transaction entry:', {
                 error: err.message,
                 code: err.code,
                 fullError: err

@@ -8,6 +8,7 @@ import BorrowLendTable from './components/BorrowLendTable';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import styles from './styles/BorrowLend.module.scss';
 import { toast } from 'react-toastify';
+import { addBorrowLendRecord } from './utils/borrowLendFirestore';
 
 function BorrowLend() {
     const [filterType, setFilterType] = useState('all');
@@ -15,8 +16,6 @@ function BorrowLend() {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const {
         transactions,
-        expandedTransactions,
-        addTransaction,
         deleteTransaction,
         getTotalGiven,
         getTotalTaken,
@@ -24,12 +23,14 @@ function BorrowLend() {
         getFilteredTransactions,
         loading,
         error,
+        refreshTransactions,
     } = useLendingTransactions();
 
     const handleAddTransaction = async (newTransaction) => {
         try {
-            await addTransaction(newTransaction);
+            await addBorrowLendRecord(newTransaction);
             setShowForm(false);
+            await refreshTransactions();
             toast.success('Transaction added successfully');
         } catch (err) {
             console.error('Error adding transaction:', err);
@@ -38,6 +39,7 @@ function BorrowLend() {
     };
 
     const handleDeleteTransaction = async (id) => {
+        console.log('Attempting to delete transaction with ID:', id);
         try {
             await deleteTransaction(id);
             toast.info('Transaction deleted');

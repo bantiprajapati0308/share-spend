@@ -26,20 +26,22 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
             toast.error('Please fill in all required fields');
             return;
         }
-
-        const newTransaction = {
+        const baseTransactionObj = {
             type: transactionType,
             name: expenseName,
             amount: parseFloat(amount),
             categoryId: category.categoryId,
             categoryName: category.categoryName,
             category: category.categoryName,
+            categoryIcon: category.emoji || '📝',
             date: date,
-            dueDate: dueDate || null,
             notes: notes,
-            isLent: category.categoryName.toLowerCase() === 'lent',
-            isBorrowed: category.categoryName.toLowerCase() === 'borrowed',
-            isRepayment: category.categoryName.toLowerCase() === 'repayment',
+        }
+        const isDueDate = category && (category.categoryName.toLowerCase() === 'lent' || category.categoryName.toLowerCase() === 'borrowed');
+
+        const newTransaction = {
+            ...baseTransactionObj,
+            ...(isDueDate ? { dueDate: dueDate || null } : {}),
         };
 
         try {

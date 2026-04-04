@@ -187,6 +187,7 @@ function DailySpends() {
             const rangeEndStr = endDate.toISOString().split('T')[0];
             return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr;
         });
+    console.log('Displayed transactions:', displayedTransactions);
     const sectionTitle = selectedType === 'spend' ? "Expenses" : "Income";
 
     // Show loader while loading date range

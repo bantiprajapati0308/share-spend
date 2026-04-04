@@ -1,0 +1,23 @@
+{
+    "personName": "name",
+    "type": "gave",
+    "userId": "userId",
+    "data": [
+        {
+            "uuid": "unique identifier for the record",
+            "amount": 3000,
+            "payment_type": "Lent",
+            "description": "amount of money borrowed or lent",
+            "due_date": "optional due date for repayment",
+            "insert_date": "date when the record was created"
+        },
+        {
+            "uuid": "unique identifier for the record",
+            "amount": 1500,
+            "payment_type": "Borrowed pay",
+            "description": "amount of money repaid",
+            "due_date": null,
+            "insert_date": "date when the repayment was made"
+        }
+    ]
+}

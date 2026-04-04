@@ -5,10 +5,10 @@ import ExpenseItem from './ExpenseItem';
 
 function ExpenseList({ expenses, onDelete, title = 'Your Expenses' }) {
     const isIncome = title.includes('Income');
+    console.log('Rendering ExpenseList with expenses:', expenses);
     const emptyMessage = isIncome
         ? 'No income added yet. Add your income above!'
         : 'No expenses yet. Start adding your daily expenses above!';
-
     return (
         <div className={styles.expenseList}>
             <h3>

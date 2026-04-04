@@ -168,6 +168,7 @@ function CategoryManagementModal({ show, onHide }) {
                                     <span>
                                         <Button
                                             variant="outline-danger"
+                                            className="border-0"
                                             size="sm"
                                             disabled
                                         >
@@ -176,8 +177,10 @@ function CategoryManagementModal({ show, onHide }) {
                                     </span>
                                 </OverlayTrigger>
                             ) : (
+
                                 <Button
                                     variant="outline-danger"
+                                    className="border-0"
                                     size="sm"
                                     onClick={() => handleDeleteCategory(category.id, category)}
                                 >

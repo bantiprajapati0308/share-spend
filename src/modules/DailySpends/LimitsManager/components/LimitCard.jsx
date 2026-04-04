@@ -97,7 +97,7 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
                     </span>
                     <span className={styles.amount} style={limitType === 'income' && percentage > 100 ? { color: '#10b981', fontWeight: 'bold' } : {}}>
                         {limitType === 'income' && percentage > 100
-                            ? `+${overLimit.toFixed(2)}`
+                            ? `+${overLimit.toFixed(2)} (${overPercent}%)`
                             : (percentage > 100 ? `+${overLimit.toFixed(2)} (${overPercent}%)` : remaining.toFixed(2))
                         }
                     </span>
