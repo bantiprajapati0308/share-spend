@@ -58,7 +58,6 @@ export const useLendingTransactions = () => {
 
             const snapshot = await getDocs(transactionsQuery);
             const data = snapshot.docs.map((document) => document.data());
-            console.log('Fetched and normalized transactions:', data);
             setTransactions(data);
         } catch (err) {
             console.error('Error fetching lending transactions:', err);
@@ -93,7 +92,6 @@ export const useLendingTransactions = () => {
     };
 
     const deleteTransaction = async (entryUuid) => {
-        console.log('Attempting to delete entry with UUID:', entryUuid);
         try {
             const userId = auth.currentUser?.uid;
             if (!userId) {
@@ -134,13 +132,11 @@ export const useLendingTransactions = () => {
             // If this was the last entry, delete the entire document
             if (updatedDataArray.length === 0) {
                 await deleteDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id));
-                console.log('Deleted entire document as it was the last entry');
             } else {
                 // Update the document with the modified data array
                 await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
                     data: updatedDataArray
                 });
-                console.log('Updated document with entry removed');
             }
 
             await fetchTransactions();

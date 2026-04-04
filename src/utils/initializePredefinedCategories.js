@@ -18,7 +18,6 @@ export const initializePredefinedCategories = async () => {
         const userId = auth.currentUser?.uid;
 
         if (!userId) {
-            console.log('User not authenticated. Skipping category initialization.');
             return { success: false, message: 'User not authenticated' };
         }
 
@@ -35,7 +34,6 @@ export const initializePredefinedCategories = async () => {
         );
 
         if (categoriesToAdd.length === 0) {
-            console.log('All predefined categories already exist for this user.');
             return {
                 success: true,
                 message: 'Categories already initialized',

@@ -39,7 +39,6 @@ function BorrowLend() {
     };
 
     const handleDeleteTransaction = async (id) => {
-        console.log('Attempting to delete transaction with ID:', id);
         try {
             await deleteTransaction(id);
             toast.info('Transaction deleted');
