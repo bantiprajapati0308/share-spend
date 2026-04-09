@@ -1,0 +1,165 @@
+// Tabs Component Styles
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.tabs {
+    margin-bottom: 2.5rem;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
+    }
+
+    :global(.nav-tabs) {
+        border-bottom: none;
+        gap: $spacing-sm;
+        padding: 0 $spacing-md;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: $radius-md $radius-md 0 0;
+        padding-top: $spacing-md;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: $spacing-md;
+            right: $spacing-md;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, #cbd5e1 20%, #cbd5e1 80%, transparent 100%);
+        }
+
+        :global(.nav-link) {
+            color: $text-secondary;
+            border: none;
+            border-radius: $radius-sm $radius-sm 0 0;
+            @include responsive-padding(1rem 1.5rem, 1rem 1.5rem);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: $transition-normal;
+            margin-bottom: 0;
+            position: relative;
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: transparent;
+                border-radius: $radius-sm $radius-sm 0 0;
+                transition: $transition-normal;
+            }
+
+            &:hover {
+                color: $text-primary;
+                background: $card-gradient;
+                transform: translateY(-2px);
+                box-shadow: $shadow-md;
+
+                &::before {
+                    background: linear-gradient(90deg, #cbd5e1 0%, #94a3b8 100%);
+                }
+            }
+
+            &.active {
+                color: $text-primary;
+                background: white;
+                box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+                font-weight: 700;
+                transform: translateY(-4px);
+                z-index: $z-dropdown;
+
+                &::before {
+                    background: $primary-gradient;
+                    height: 4px;
+                }
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -1px;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: white;
+                    z-index: 1;
+                }
+            }
+
+            // Tab Icons using Bootstrap icons or text
+            &[href="#category"] {
+                &::after {
+                    content: '📊';
+                    margin-right: $spacing-sm;
+                    position: static;
+                    background: none;
+                    height: auto;
+                }
+            }
+
+            &[href="#monthly"] {
+                &::after {
+                    content: '📅';
+                    margin-right: $spacing-sm;
+                    position: static;
+                    background: none;
+                    height: auto;
+                }
+            }
+
+            &[href="#recent"] {
+                &::after {
+                    content: '🕒';
+                    margin-right: $spacing-sm;
+                    position: static;
+                    background: none;
+                    height: auto;
+                }
+            }
+        }
+    }
+
+    .tabContent {
+        padding-top: 2.5rem;
+        background: white;
+        border-radius: 0 0 $radius-md $radius-md;
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: $tablet) {
+        :global(.nav-tabs) {
+            flex-wrap: wrap;
+
+            :global(.nav-link) {
+                padding: $spacing-sm $spacing-md;
+                font-size: 0.9rem;
+            }
+        }
+
+        .tabContent {
+            padding-top: $spacing-lg;
+        }
+    }
+}

@@ -56,7 +56,7 @@ function TransactionItem({ transaction, onDelete }) {
                                     <div className="d-flex align-items-center justify-content-between flex-wrap">
                                         <h6 className="mb-0 fw-bold text-dark fs-6">{transaction.personName}</h6>
                                         <span className={`badge ${styles.transactionBadge} ${styles[transaction.type]} ms-2`}>
-                                            {getTransactionStatus(transaction.type)}
+                                            {getTransactionStatus(transaction.paymentType)}
                                         </span>
                                     </div>
                                 </div>

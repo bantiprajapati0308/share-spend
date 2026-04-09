@@ -1,0 +1,34 @@
+// Global SCSS Index - Share-Spend Application
+// This file provides a centralized entry point for all global SCSS utilities
+// Usage: @use 'src/assets/scss' as *;
+
+// Forward all variables and mixins to make them available when importing this index
+@forward 'variables';
+@forward 'mixins';
+
+// Also provide direct access via 'scss' namespace
+// Usage: @use 'src/assets/scss' as scss; -> scss.$primary-color
+// Or:    @use 'src/assets/scss'; -> scss.$primary-color
+
+// Re-export commonly used items for convenience
+$primary: variables.$brand-primary;
+$secondary: variables.$brand-secondary;
+$success: variables.$success-600;
+$danger: variables.$danger-600;
+$warning: variables.$warning-600;
+
+$gradient-primary: variables.$gradient-primary;
+$gradient-secondary: variables.$gradient-secondary;
+
+$spacing-sm: variables.$spacing-sm;
+$spacing-md: variables.$spacing-md;
+$spacing-lg: variables.$spacing-lg;
+$spacing-xl: variables.$spacing-xl;
+
+$shadow-sm: variables.$shadow-sm;
+$shadow-md: variables.$shadow-md;
+$shadow-lg: variables.$shadow-lg;
+
+$mobile: variables.$mobile;
+$tablet: variables.$tablet;
+$desktop: variables.$desktop;

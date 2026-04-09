@@ -1,0 +1,108 @@
+// Master Report Styles - Modular Architecture
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'animations';
+@use 'bootstrap-enhancements';
+
+// Main container
+.reportContainer {
+  @include responsive-container;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: $background-gradient;
+  min-height: 100vh;
+
+  // Import component styles with proper scoping
+  @import 'header';
+  @import 'cards';
+  @import 'tabs';
+  @import 'tables';
+  @import 'modal';
+}
+
+// Responsive Design Adjustments
+@media (max-width: $large) {
+  .reportContainer .header {
+    .title h2 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: $desktop) {
+  .reportContainer {
+    .header {
+      flex-direction: column;
+      text-align: center;
+      gap: $spacing-md;
+
+      .backButtonWrapper {
+        width: 100%;
+        @include flex-center;
+        justify-content: flex-start;
+      }
+
+      .title {
+        width: 100%;
+
+        h2 {
+          font-size: 1.3rem;
+        }
+      }
+
+      .headerActions {
+        width: 100%;
+        justify-content: center;
+
+        .exportBtn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $tablet) {
+  .reportContainer {
+    padding: $spacing-md $spacing-sm;
+
+    .header {
+      padding-bottom: $spacing-md;
+    }
+
+    .modalBody {
+      padding: $spacing-md;
+
+      .detailsTable {
+        font-size: 0.85rem;
+
+        thead th,
+        tbody td {
+          padding: 0.75rem $spacing-sm;
+        }
+      }
+    }
+  }
+}
+
+// Utility classes that can be used throughout the application
+.gradientText {
+  @include gradient-text;
+}
+
+.cardHover {
+  @include card-hover;
+}
+
+.responsivePadding {
+  @include responsive-padding;
+}
+
+.flexCenter {
+  @include flex-center;
+}
+
+.flexBetween {
+  @include flex-between;
+}

@@ -1,0 +1,148 @@
+// Master Report Mixins - Extends Global Mixins
+@use '../../../../assets/scss/mixins' as global;
+@use 'variables' as *;
+
+// Re-export commonly used global mixins
+@mixin gradient-text($gradient: $primary-gradient) {
+  @include global.gradient-text($gradient);
+}
+
+@mixin card-hover($translateY: -8px, $scale: 1.02, $shadow: $shadow-xl) {
+  @include global.hover-lift($translateY, $scale, $shadow);
+}
+
+@mixin button-hover($translateY: -4px, $scale: 1.05) {
+  @include global.hover-lift($translateY, $scale);
+}
+
+@mixin flex-center {
+  @include global.flex-center;
+}
+
+@mixin flex-between {
+  @include global.flex-between;
+}
+
+@mixin responsive-padding($mobile-padding: $spacing-md, $desktop-padding: $spacing-xl) {
+  @include global.responsive-padding($mobile-padding, $desktop-padding);
+}
+
+@mixin responsive-container {
+  padding: $spacing-md $spacing-sm;
+
+  @media (min-width: $tablet) {
+    padding: $spacing-xl $spacing-md;
+  }
+}
+
+@mixin modal-overlay {
+  @include global.absolute-cover;
+  pointer-events: none;
+}
+
+@mixin gradient-border-top($height: 4px, $gradient: $primary-gradient) {
+  @include global.gradient-border-top($height, $gradient);
+}
+
+@mixin custom-scrollbar($width: 6px, $track-color: rgba(241, 245, 249, 0.8), $thumb-gradient: $primary-gradient) {
+  @include global.custom-scrollbar($width, $track-color, $thumb-gradient);
+}
+
+@mixin table-header($bg-gradient: $primary-gradient, $text-color: $text-white) {
+  @include global.table-header($bg-gradient, $text-color);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $secondary-gradient;
+  }
+
+  th {
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 25%;
+      bottom: 25%;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+@mixin table-row-hover($bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)) {
+  transition: $transition-fast;
+
+  &:hover {
+    background: $bg-gradient;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: $primary-gradient;
+      border-radius: 0 2px 2px 0;
+    }
+  }
+}
+
+@mixin badge-style($bg-gradient, $text-color, $border-color) {
+  @include global.badge-variant($bg-gradient, $text-color);
+  border: 1px solid $border-color;
+  box-shadow: $shadow-sm;
+  transition: $transition-fast;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+}
+
+@mixin loading-animation {
+  @include global.loading-animation(1s);
+  animation: spin 1s linear infinite, pulse 2s ease-in-out infinite alternate;
+}
+
+@mixin fade-in-up($delay: 0s) {
+  @include global.slide-in-up(0.6s, $delay);
+}
+
+@mixin float-animation($duration: 3s) {
+  animation: float $duration ease-in-out infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+}
+
+@mixin responsive-grid($mobile-cols: 1, $tablet-cols: 2, $desktop-cols: 3) {
+  @include global.responsive-grid($mobile-cols, $tablet-cols, $desktop-cols);
+}
+
+@mixin text-truncate {
+  @include global.text-truncate;
+}
+
+@mixin absolute-center {
+  @include global.absolute-center;
+}
+
+@mixin glass-effect($opacity: 0.1) {
+  @include global.glass-effect($opacity);
+}
