@@ -1,0 +1,208 @@
+// Tables Component Styles
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.tableWrapper {
+    background: white;
+    border-radius: $radius-sm;
+    @include responsive-padding;
+    box-shadow: $shadow-sm;
+    border: 1px solid #e2e8f0;
+    transition: $transition-normal;
+    margin-bottom: $spacing-md;
+
+    @media (min-width: $tablet) {
+        background: $card-gradient;
+        border-radius: $radius-lg;
+        box-shadow: $shadow-md;
+        @include glass-effect;
+    }
+
+    .sectionTitle {
+        margin: 0 0 0.75rem 0;
+        color: $text-primary;
+        font-weight: 700;
+        @include flex-center;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        @include gradient-text;
+
+        &::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: $primary-gradient;
+            border-radius: 2px;
+        }
+    }
+
+    .sectionSubtitle {
+        margin: 0 0 $spacing-xl 0;
+        color: $text-secondary;
+        font-size: 0.95rem;
+        font-style: italic;
+        padding-left: $spacing-lg;
+        border-left: 3px solid #e2e8f0;
+    }
+
+    .analysisTable {
+        margin: 0;
+        border-radius: $radius-md;
+        overflow: hidden;
+        box-shadow: $shadow-md;
+
+        thead {
+            @include table-header;
+        }
+
+        tbody {
+            background: white;
+
+            tr {
+                border-bottom: 1px solid #f1f5f9;
+                transition: $transition-normal;
+                position: relative;
+
+                &:nth-child(even) {
+                    background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
+                }
+
+                &.clickableRow {
+                    cursor: pointer;
+
+                    &::after {
+                        content: '👆';
+                        position: absolute;
+                        right: $spacing-md;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        opacity: 0;
+                        transition: $transition-normal;
+                        font-size: 0.9rem;
+                    }
+
+                    &:hover {
+                        &::after {
+                            opacity: 1;
+                        }
+
+                        &::before {
+                            width: 6px;
+                            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+                        }
+                    }
+                }
+
+                td {
+                    border: none;
+                    padding: 1.25rem $spacing-md;
+                    vertical-align: middle;
+                    transition: $transition-fast;
+
+                    &.categoryName,
+                    &.description {
+                        color: $text-primary;
+                        font-weight: 600;
+                        position: relative;
+                    }
+
+                    &.categoryName {
+                        font-size: 1rem;
+
+                        &::before {
+                            content: '';
+                            width: 8px;
+                            height: 8px;
+                            background: $primary-gradient;
+                            border-radius: 50%;
+                            display: inline-block;
+                            margin-right: 0.75rem;
+                            box-shadow: 0 2px 4px rgba(103, 126, 234, 0.3);
+                        }
+                    }
+
+                    &.dateCell {
+                        color: $text-secondary;
+                        font-size: 0.9rem;
+                        font-weight: 500;
+                        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+                    }
+
+                    &.rightAlign {
+                        text-align: right;
+
+                        &.income {
+                            color: $success-color;
+                            font-weight: 700;
+                            text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+                        }
+                    }
+
+                    &.centerAlign {
+                        text-align: center;
+                    }
+
+                    &.leftAlign {
+                        text-align: left;
+                    }
+
+                    .badge {
+                        &.spend {
+                            @include badge-style($danger-bg, #991b1b, #fca5a5);
+                        }
+
+                        &.income {
+                            @include badge-style($success-bg, #166534, #86efac);
+                        }
+                    }
+                }
+
+                &:last-child {
+                    border-bottom: none;
+                }
+            }
+        }
+    }
+}
+
+// Specific table animations
+.categoryTable {
+    .analysisTable tbody tr:hover .categoryName::before {
+        @include float-animation(1s);
+        box-shadow: 0 4px 8px rgba(103, 126, 234, 0.4);
+    }
+}
+
+.monthlyTable,
+.transactionsTable {
+    .analysisTable tbody tr {
+        @include fade-in-up;
+
+        @for $i from 1 through 20 {
+            &:nth-child(#{$i}) {
+                animation-delay: #{$i * 0.05}s;
+            }
+        }
+    }
+}
+
+// Responsive table adjustments
+@media (max-width: $tablet) {
+    .tableWrapper {
+        overflow-x: auto;
+
+        .sectionTitle {
+            font-size: 1rem;
+        }
+
+        .analysisTable {
+            font-size: 0.85rem;
+
+            thead th,
+            tbody td {
+                padding: 0.75rem $spacing-sm;
+            }
+        }
+    }
+}

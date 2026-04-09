@@ -1,0 +1,57 @@
+// Master Report Variables - Uses Global Variables
+@use '../../../../assets/scss/variables' as global;
+
+// Re-export commonly used global variables for convenience
+$primary-gradient: global.$gradient-primary;
+$secondary-gradient: global.$gradient-secondary;
+$success-gradient: global.$gradient-success;
+$danger-gradient: global.$gradient-danger;
+$warning-gradient: global.$gradient-warning;
+
+$background-gradient: global.$gradient-background;
+$card-gradient: global.$gradient-card;
+$modal-gradient: global.$gradient-modal;
+
+$text-primary: global.$text-primary;
+$text-secondary: global.$text-secondary;
+$text-muted: global.$text-tertiary;
+$text-white: global.$text-white;
+
+$success-color: global.$text-success;
+$success-bg: global.$gradient-success-bg;
+$danger-color: global.$text-danger;
+$danger-bg: global.$gradient-danger-bg;
+
+$spacing-xs: global.$spacing-1;
+$spacing-sm: global.$spacing-2;
+$spacing-md: global.$spacing-4;
+$spacing-lg: global.$spacing-6;
+$spacing-xl: global.$spacing-8;
+$spacing-xxl: global.$spacing-12;
+
+$radius-sm: global.$radius-lg;
+$radius-md: global.$radius-xl;
+$radius-lg: global.$radius-2xl;
+$radius-xl: global.$radius-3xl;
+
+$shadow-sm: global.$shadow-sm;
+$shadow-md: global.$shadow-md;
+$shadow-lg: global.$shadow-lg;
+$shadow-xl: global.$shadow-xl;
+
+$transition-fast: global.$transition-fast;
+$transition-normal: global.$transition-normal;
+$transition-slow: global.$transition-slow;
+
+$mobile: global.$mobile;
+$tablet: global.$tablet;
+$desktop: global.$desktop;
+$large: global.$wide;
+
+$z-dropdown: global.$z-dropdown;
+$z-sticky: global.$z-sticky;
+$z-fixed: global.$z-fixed;
+$z-modal-backdrop: global.$z-modal-backdrop;
+$z-modal: global.$z-modal;
+$z-popover: global.$z-popover;
+$z-tooltip: global.$z-tooltip;

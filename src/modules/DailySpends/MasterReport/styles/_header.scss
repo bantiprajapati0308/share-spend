@@ -1,0 +1,142 @@
+// Header Component Styles
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.header {
+    @include flex-between;
+    @include responsive-container;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+    background: white;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    flex-wrap: wrap;
+
+    @media (min-width: $tablet) {
+        gap: $spacing-xl;
+        margin-bottom: $spacing-xxl;
+        background: $card-gradient;
+        box-shadow: $shadow-lg;
+        @include glass-effect;
+        flex-wrap: nowrap;
+    }
+
+    @include gradient-border-top;
+
+    .backButton {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        @include flex-center;
+        gap: $spacing-sm;
+        transition: $transition-normal;
+        border-radius: $radius-md;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        box-shadow: $shadow-sm;
+
+        &:hover {
+            transform: translateX(-4px) translateY(-2px);
+            background: $primary-gradient;
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 8px 16px rgba(103, 126, 234, 0.3);
+        }
+    }
+
+    .title {
+        flex: 1;
+        text-align: center;
+        position: relative;
+
+        h2 {
+            margin: 0;
+            @include gradient-text;
+            font-weight: 800;
+            font-size: 2.2rem;
+            position: relative;
+
+            &::after {
+                content: '';
+                @include absolute-center;
+                bottom: -8px;
+                width: 60px;
+                height: 3px;
+                background: $primary-gradient;
+                border-radius: 2px;
+            }
+        }
+
+        .subtitle {
+            margin: $spacing-md 0 0 0;
+            color: $text-secondary;
+            font-size: 1rem;
+            font-weight: 500;
+            font-style: italic;
+        }
+    }
+
+    .headerActions {
+        @include flex-center;
+        gap: $spacing-md;
+    }
+
+    .exportBtn {
+        @include responsive-padding(0.75rem 2rem, 0.75rem 2rem);
+        font-weight: 600;
+        @include flex-center;
+        gap: 0.75rem;
+        transition: $transition-normal;
+        border-radius: $radius-md;
+        background: $success-gradient;
+        border: none;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+
+        @include button-hover;
+
+        &:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: $desktop) {
+        flex-direction: column;
+        text-align: center;
+        gap: $spacing-md;
+
+        .backButtonWrapper {
+            width: 100%;
+            @include flex-center;
+            justify-content: flex-start;
+        }
+
+        .title {
+            width: 100%;
+
+            h2 {
+                font-size: 1.3rem;
+
+                @media (min-width: $tablet) {
+                    font-size: 1.5rem;
+                }
+            }
+        }
+
+        .headerActions {
+            width: 100%;
+            justify-content: center;
+
+            .exportBtn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    }
+}
