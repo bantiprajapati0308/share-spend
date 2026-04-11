@@ -200,6 +200,16 @@ export const useLendingTransactions = () => {
         return expandedTransactions.filter(t => t.type === filterType);
     };
 
+    const getUniquePersonNames = () => {
+        const names = new Set();
+        transactions.forEach(record => {
+            if (record.personName && record.personName.trim()) {
+                names.add(record.personName.trim());
+            }
+        });
+        return Array.from(names).sort();
+    };
+
     return {
         transactions,
         expandedTransactions,
@@ -209,6 +219,7 @@ export const useLendingTransactions = () => {
         getTotalTaken,
         getNetBalance,
         getFilteredTransactions,
+        getUniquePersonNames,
         loading,
         error,
         refreshTransactions: fetchTransactions,
