@@ -6,7 +6,6 @@ import { useUserCategories } from './hooks/useUserCategories';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
 import { getCategoryTotals, getBreakdownData } from '../../hooks/useCategoryBreakdown';
 import DailySpendsHeader from './components/DailySpendsHeader';
-import ReportActionButtons from './components/ReportActionButtons';
 import DateRangeAccordion from './components/DateRangeAccordion';
 import DualSummaryCards from './components/DualSummaryCards';
 import AddExpenseForm from './components/AddExpenseForm';
@@ -169,10 +168,6 @@ function DailySpends() {
         });
     };
 
-    const handleOpenMasterReport = () => {
-        navigate('/share-spend/daily-expenses/master-report');
-    };
-
     const handleOpenLimitsManager = () => {
         navigate('/share-spend/daily-expenses/limits-manager', {
             state: { from: '/share-spend/daily-expenses' }
@@ -281,10 +276,6 @@ function DailySpends() {
                         expenses={displayedTransactions}
                         onDelete={handleDeleteTransaction}
                         title={sectionTitle}
-                    />
-                    <ReportActionButtons
-                        onBreakdownClick={handleOpenBreakdownReport}
-                        onMasterClick={handleOpenMasterReport}
                     />
                 </Col>
             </Row>
