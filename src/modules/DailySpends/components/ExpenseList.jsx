@@ -10,9 +10,10 @@ function ExpenseList({ expenses, onDelete, title = 'Your Expenses' }) {
         : 'No expenses yet. Start adding your daily expenses above!';
     return (
         <div className={styles.expenseList}>
-            <h3>
-                <Calendar size={24} className="me-2" />
-                {title}
+            <h3 className='d-flex justify-content-between align-items-center'>
+                <span> <Calendar size={24} className="me-2" />
+                    {title}</span>
+                {/* <button className={'btn btn-sm btn-outline-primary'}>View Analytics</button> */}
             </h3>
 
             {expenses.length === 0 ? (

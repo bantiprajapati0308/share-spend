@@ -1,0 +1,215 @@
+@use '../../../assets/scss/variables' as *;
+@use '../../../assets/scss/mixins' as *;
+
+// Variables specific to DualSummaryCards
+$summary-card-bg: linear-gradient(135deg, #e8f4f8 0%, #f5f9fc 100%);
+$summary-card-radius: 20px;
+$summary-card-padding: 1.5rem;
+$summary-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+$icon-size: 50px;
+$icon-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+$income-color: #4caf50;
+$expense-color: #e91e63;
+$saved-color: #2196f3;
+$overspent-color: #f44336;
+
+$progress-height: 12px;
+$progress-radius: 8px;
+
+// Mixins for reusable styles
+@mixin summary-icon($bg-color) {
+    background: linear-gradient(135deg, $bg-color 0%, lighten($bg-color, 10%) 100%);
+    box-shadow: $icon-shadow;
+}
+
+@mixin summary-value-color($color) {
+    color: $color;
+}
+
+// Main component styles
+.wrapper {
+    margin-bottom: 1.25rem;
+}
+
+.card {
+    background: $summary-card-bg;
+    border-radius: $summary-card-radius;
+    padding: $summary-card-padding;
+    box-shadow: $summary-card-shadow;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.iconCircle {
+    width: $icon-size;
+    height: $icon-size;
+    border-radius: 50%;
+
+    i {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    &.income {
+        @include summary-icon($income-color);
+    }
+
+    &.expense {
+        @include summary-icon($expense-color);
+    }
+
+    &.saved {
+        @include summary-icon($saved-color);
+    }
+
+    &.overspent {
+        @include summary-icon($overspent-color);
+        animation: pulse-warning 2s infinite;
+    }
+}
+
+.value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0.25rem 0 0.25rem;
+    letter-spacing: -0.5px;
+
+    @include summary-value-color($income-color);
+
+    &.expense {
+        @include summary-value-color($expense-color);
+    }
+
+    &.saved {
+        @include summary-value-color($saved-color);
+    }
+
+    &.overspent {
+        @include summary-value-color($overspent-color);
+        font-weight: 900;
+    }
+}
+
+.label {
+    font-size: 0.9rem;
+    color: $text-secondary;
+    font-weight: 500;
+    margin: 0;
+}
+
+.warningFlag {
+    color: $overspent-color;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+    animation: wave-flag 1.5s ease-in-out infinite;
+}
+
+.overspentPercentage {
+    font-size: 0.7rem;
+    color: $overspent-color;
+    font-weight: 600;
+    margin-top: 0.2rem;
+    background: rgba($overspent-color, 0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 8px;
+    border: 1px solid rgba($overspent-color, 0.2);
+}
+
+.progressContainer {
+    margin-top: 1.25rem;
+}
+
+.progressBar {
+    height: $progress-height;
+    background: linear-gradient(90deg,
+            rgba($income-color, 0.15) 0%,
+            rgba($expense-color, 0.15) 50%,
+            rgba($saved-color, 0.15) 100%);
+    border-radius: $progress-radius;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// Animations
+@keyframes pulse-warning {
+    0% {
+        box-shadow: $icon-shadow;
+    }
+
+    50% {
+        box-shadow: 0 3px 15px rgba($overspent-color, 0.4);
+    }
+
+    100% {
+        box-shadow: $icon-shadow;
+    }
+}
+
+@keyframes wave-flag {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(5deg);
+    }
+
+    75% {
+        transform: rotate(-5deg);
+    }
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, $income-color 0%, $expense-color 45%, $saved-color 100%);
+    border-radius: $progress-radius;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 50%);
+        border-radius: $progress-radius;
+    }
+}
+
+.percentage {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-primary;
+    min-width: 35px;
+}
+
+.overspentPercentage {
+    font-size: 14px;
+    ;
+}
+
+// Responsive design
+@media (max-width: 576px) {
+    .card {
+        padding: 1rem;
+    }
+
+    .iconCircle {
+        width: 45px;
+        height: 45px;
+
+        i {
+            font-size: 1.3rem;
+        }
+    }
+
+    .value {
+        font-size: 1.3rem;
+    }
+}
