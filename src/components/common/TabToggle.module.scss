@@ -1,0 +1,113 @@
+@import '../../assets/scss/variable';
+@import '../../assets/scss/mixin';
+
+.tabToggle {
+    display: flex;
+    gap: 0;
+    justify-content: flex-start;
+    border-bottom: 2px solid $border-color;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+}
+
+.toggleBtn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    background: transparent;
+    color: $text-secondary;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    margin: 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+
+    @media (max-width: 768px) {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        margin: 0 0.25rem;
+    }
+
+    @media (max-width: 480px) {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        margin: 0 0.1rem;
+    }
+
+    &:hover {
+        color: $primary-color;
+        background: rgba($primary-color, 0.05);
+    }
+
+    &.active {
+        color: $primary-color;
+        border-bottom-color: $primary-color;
+    }
+
+    .tabIcon {
+        font-size: 1rem;
+
+        @media (max-width: 480px) {
+            font-size: 0.9rem;
+        }
+    }
+
+    .tabLabel {
+        color: inherit;
+        font-weight: inherit;
+    }
+}
+
+// Small variant for inline usage
+.tabToggle.small {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid $border-color;
+
+    .toggleBtn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        margin: 0 0.25rem;
+
+        .tabIcon {
+            font-size: 0.85rem;
+        }
+    }
+}
+
+// Compact variant for limited space
+.tabToggle.compact {
+    gap: 0;
+    justify-content: center;
+
+    .toggleBtn {
+        padding: 0.5rem 1rem;
+        margin: 0;
+        border-right: 1px solid $border-color;
+        border-radius: 0;
+
+        &:first-child {
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+
+        &:last-child {
+            border-right: none;
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        &.active {
+            background: $primary-color;
+            color: white;
+            border-bottom-color: transparent;
+        }
+    }
+}
