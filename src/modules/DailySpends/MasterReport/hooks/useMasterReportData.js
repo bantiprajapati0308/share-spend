@@ -94,6 +94,55 @@ export function useMasterReportData() {
         return transactions.filter(tx => tx.type === 'income').length;
     };
 
+    // Time-based calculations
+    const getTodayData = () => {
+        const today = new Date();
+        const todayString = today.toISOString().split('T')[0];
+        
+        const todayTransactions = transactions.filter(tx => {
+            const txDate = new Date(tx.date || tx.createdAt);
+            return txDate.toISOString().split('T')[0] === todayString;
+        });
+        
+        const spent = todayTransactions
+            .filter(tx => tx.type === 'spend')
+            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+            
+        const income = todayTransactions
+            .filter(tx => tx.type === 'income')
+            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+            
+        const spendCount = todayTransactions.filter(tx => tx.type === 'spend').length;
+        const incomeCount = todayTransactions.filter(tx => tx.type === 'income').length;
+        
+        return { spent, income, spendCount, incomeCount, transactions: todayTransactions };
+    };
+    
+    const getThisWeekData = () => {
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 6); // Last 7 days (including today)
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        
+        const weekTransactions = transactions.filter(tx => {
+            const txDate = new Date(tx.date || tx.createdAt);
+            return txDate >= sevenDaysAgo && txDate <= today;
+        });
+        
+        const spent = weekTransactions
+            .filter(tx => tx.type === 'spend')
+            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+            
+        const income = weekTransactions
+            .filter(tx => tx.type === 'income')
+            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+            
+        const spendCount = weekTransactions.filter(tx => tx.type === 'spend').length;
+        const incomeCount = weekTransactions.filter(tx => tx.type === 'income').length;
+        
+        return { spent, income, spendCount, incomeCount, transactions: weekTransactions };
+    };
+
     // Get transactions for a specific category
     const getCategoryTransactions = (categoryName) => {
         return categoryBreakdown[categoryName]?.transactions || [];
@@ -111,7 +160,9 @@ export function useMasterReportData() {
             averageTransaction: getAverageTransaction(),
             topCategory: getTopCategory(),
             spendTransactionCount: getSpendTransactionCount(),
-            incomeTransactionCount: getIncomeTransactionCount()
+            incomeTransactionCount: getIncomeTransactionCount(),
+            today: getTodayData(),
+            thisWeek: getThisWeekData()
         },
         getCategoryTransactions
     };

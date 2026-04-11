@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { InfoCircle } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DataTable from './DataTable';
 import GradientProgressBar from '../../components/GradientProgressBar';
 import styles from '../styles/MasterReport.module.scss';
@@ -38,7 +40,7 @@ function CategoryBreakdownTab({
         },
         {
             key: 'amount',
-            header: 'Total Amount',
+            header: 'Total Amt.',
             align: 'right',
             render: (row) => (
                 <strong>
@@ -75,12 +77,25 @@ function CategoryBreakdownTab({
     return (
         <div className={styles.tabContent}>
             <div className={styles.tableWrapper}>
-                <h4 className={styles.sectionTitle}>
-                    Category-wise Analysis
-                </h4>
-                <p className={styles.sectionSubtitle}>
-                    Click on any category to view detailed transactions
-                </p>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <h4 className={`${styles.sectionTitle} mb-0`}>
+                        Category-wise Analysis
+                    </h4>
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={
+                            <Tooltip id="category-info-tooltip">
+                                Click on any category to view detailed transactions
+                            </Tooltip>
+                        }
+                    >
+                        <InfoCircle
+                            size={16}
+                            className="text-muted"
+                            style={{ cursor: 'help' }}
+                        />
+                    </OverlayTrigger>
+                </div>
                 <DataTable
                     columns={columns}
                     data={categoryData}

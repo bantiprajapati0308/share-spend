@@ -16,44 +16,44 @@ function DataTable({
     responsive = true
 }) {
     return (
-        <div className={styles.tableWrapper}>
-            <Table
-                hover={hoverable}
-                responsive={responsive}
-                className={`${styles.analysisTable} ${className}`}
-            >
-                <thead>
-                    <tr>
-                        {columns.map((column, index) => (
-                            <th
-                                key={index}
+
+        <Table
+            hover={hoverable}
+            responsive={responsive}
+            className={`${styles.analysisTable} ${className}`}
+        >
+            <thead>
+                <tr>
+                    {columns.map((column, index) => (
+                        <th
+                            key={index}
+                            className={column.align ? styles[`${column.align}Align`] : ''}
+                        >
+                            {column.header}
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {data.map((row, rowIndex) => (
+                    <tr
+                        key={row.key || rowIndex}
+                        onClick={onRowClick ? () => onRowClick(row, rowIndex) : undefined}
+                        className={onRowClick ? styles.clickableRow : ''}
+                    >
+                        {columns.map((column, colIndex) => (
+                            <td
+                                key={colIndex}
                                 className={column.align ? styles[`${column.align}Align`] : ''}
                             >
-                                {column.header}
-                            </th>
+                                {column.render ? column.render(row, rowIndex) : row[column.key]}
+                            </td>
                         ))}
                     </tr>
-                </thead>
-                <tbody>
-                    {data.map((row, rowIndex) => (
-                        <tr
-                            key={row.key || rowIndex}
-                            onClick={onRowClick ? () => onRowClick(row, rowIndex) : undefined}
-                            className={onRowClick ? styles.clickableRow : ''}
-                        >
-                            {columns.map((column, colIndex) => (
-                                <td
-                                    key={colIndex}
-                                    className={column.align ? styles[`${column.align}Align`] : ''}
-                                >
-                                    {column.render ? column.render(row, rowIndex) : row[column.key]}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
-        </div>
+                ))}
+            </tbody>
+        </Table>
+
     );
 }
 

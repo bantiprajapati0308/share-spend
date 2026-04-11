@@ -1,22 +1,18 @@
 import PropTypes from 'prop-types';
-import styles from '../styles/DailySpends.module.scss';
+import TabToggle from '../../../components/common/TabToggle';
 
 function TransactionViewToggle({ selectedType, onTypeChange }) {
+    const transactionTabs = [
+        { key: 'spend', label: 'Expenses', icon: '💸' },
+        { key: 'income', label: 'Income', icon: '💵' }
+    ];
+
     return (
-        <div className={styles.viewToggle}>
-            <button
-                className={`${styles.toggleBtn} ${selectedType === 'spend' ? styles.active : ''}`}
-                onClick={() => onTypeChange('spend')}
-            >
-                💸 Expenses
-            </button>
-            <button
-                className={`${styles.toggleBtn} ${selectedType === 'income' ? styles.active : ''}`}
-                onClick={() => onTypeChange('income')}
-            >
-                💵 Income
-            </button>
-        </div>
+        <TabToggle
+            tabs={transactionTabs}
+            activeTab={selectedType}
+            onTabChange={onTypeChange}
+        />
     );
 }
 

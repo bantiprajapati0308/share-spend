@@ -8,7 +8,7 @@ export { default as MasterReport } from './index.jsx';
 export { default as SummaryCard } from './components/SummaryCard';
 export { default as DataTable } from './components/DataTable';
 export { default as ReportHeader } from './components/ReportHeader';
-export { default as SummaryCardsSection } from './components/SummaryCardsSection';
+export { default as TimeSummaryCardsSection } from './components/TimeSummaryCardsSection';
 export { default as CategoryBreakdownTab } from './components/CategoryBreakdownTab';
 export { default as MonthlyBreakdownTab } from './components/MonthlyBreakdownTab';
 export { default as RecentTransactionsTab } from './components/RecentTransactionsTab';

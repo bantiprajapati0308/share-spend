@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Spinner, Button } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
@@ -20,6 +20,12 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const [personName, setPersonName] = useState('');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Clear category when transaction type changes to prevent wrong entries
+    useEffect(() => {
+        setCategory(null);
+        setPersonName(''); // Also clear person name when switching types
+    }, [transactionType]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
