@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Badge } from 'react-bootstrap';
 import styles from './DualSummaryCards.module.scss';
 import { getCurrencySymbol } from '../../../Util';
+import { useNavigate } from 'react-router-dom';
 
 function DualSummaryCards({
     totalSpend,
@@ -12,6 +13,10 @@ function DualSummaryCards({
     const isOverspent = savedAmount < 0;
     const displayAmount = Math.abs(savedAmount);
     const overspentPercentage = isOverspent ? ((Math.abs(savedAmount) / totalIncome) * 100) : 0;
+    const navigate = useNavigate();
+    const handleOpenMasterReport = () => {
+        navigate('/share-spend/daily-expenses/master-report');
+    };
 
     return (
         <div className={styles.wrapper}>
@@ -31,7 +36,7 @@ function DualSummaryCards({
                     </div>
 
                     {/* Expense */}
-                    <div className="d-flex flex-column align-items-center text-center">
+                    <div onClick={handleOpenMasterReport} className="d-flex flex-column align-items-center text-center">
                         <div className={`${styles.iconCircle} ${styles.expense} d-flex align-items-center justify-content-center`}>
                             <i className="bi bi-graph-up-arrow"></i>
                         </div>
