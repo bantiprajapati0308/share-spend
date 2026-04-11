@@ -7,6 +7,7 @@ import styles from '../styles/DailySpends.module.scss';
 import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
+import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 
 function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const [transactionType, setTransactionType] = useState('spend');
@@ -16,19 +17,27 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [dueDate, setDueDate] = useState('');
     const [notes, setNotes] = useState('');
+    const [personName, setPersonName] = useState('');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!expenseName.trim() || !amount || !category) {
+        if ((!isLendingTransaction && !expenseName.trim()) || !amount || !category) {
             toast.error('Please fill in all required fields');
             return;
         }
+
+        // Check if person name is required and provided
+        if (isLendingTransaction && !personName.trim()) {
+            toast.error('Please select or enter a person name');
+            return;
+        }
+
         const baseTransactionObj = {
             type: transactionType,
-            name: expenseName,
+            name: isLendingTransaction ? personName.trim() : expenseName,
             amount: parseFloat(amount),
             categoryId: category.categoryId,
             categoryName: category.categoryName,
@@ -53,6 +62,8 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
             setAmount('');
             setCategory(null);
             setDate(new Date().toISOString().split('T')[0]);
+            setDueDate('');
+            setPersonName('');
             setNotes('');
 
             const title = transactionType === 'spend' ? 'Expense' : 'Income';
@@ -67,6 +78,10 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const isLent = category && category.categoryName.toLowerCase() === 'lent';
     const isRepayment = category && category.categoryName.toLowerCase() === 'repayment';
     const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
+    const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
+
+    // Check if it's a lending-related transaction that requires person name
+    const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
@@ -106,7 +121,7 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                         </CategorySelectDropdown>
                     </div>
                 </Col>
-                <Col xs={5} sm={6} md={3}>
+                <Col xs={5} sm={6} md={isLendingTransaction ? 3 : 3}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
                         <input
@@ -120,7 +135,19 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                         />
                     </div>
                 </Col>
-                <Col xs={7} sm={6} md={4}>
+
+                {isLendingTransaction ? (
+                    <Col xs={7} sm={6} md={3}>
+                        <div className={styles.formGroup}>
+                            <label>Person Name *</label>
+                            <PersonNameDropdown
+                                value={personName}
+                                onChange={setPersonName}
+                                placeholder="Person name..."
+                            />
+                        </div>
+                    </Col>
+                ) : <Col xs={7} sm={6} md={3}>
                     <div className={styles.formGroup}>
                         <label>Name *</label>
                         <input
@@ -130,7 +157,9 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                             onChange={(e) => setExpenseName(e.target.value)}
                         />
                     </div>
-                </Col>
+                </Col>}
+
+
 
                 <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={2}>
                     <div className={styles.formGroup}>
