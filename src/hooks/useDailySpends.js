@@ -38,15 +38,21 @@ export const getTransactionsByType = async (type) => {
 
         const transactionsQuery = query(
             collection(db, "users", userId, "dailySpends"),
-            where("type", "==", type),
-            orderBy("createdAt", "desc")
+            where("type", "==", type)
         );
         const snap = await getDocs(transactionsQuery);
-        return snap.docs.map(doc => ({
+        const transactions = snap.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
             createdAt: doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt),
         }));
+
+        // Sort by date (newest first)
+        return transactions.sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB - dateA;
+        });
     } catch (error) {
         console.error("Error fetching transactions by type:", error);
         return [];
@@ -173,6 +179,15 @@ export const getTransactionsByCategory = async () => {
                 categories[category] = [];
             }
             categories[category].push(transaction);
+        });
+
+        // Sort transactions in each category by date (newest first)
+        Object.keys(categories).forEach(category => {
+            categories[category].sort((a, b) => {
+                const dateA = new Date(a.date || a.createdAt);
+                const dateB = new Date(b.date || b.createdAt);
+                return dateB - dateA;
+            });
         });
 
         return categories;

@@ -4,6 +4,7 @@ import { InfoCircle } from 'react-bootstrap-icons';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DataTable from './DataTable';
 import GradientProgressBar from '../../components/GradientProgressBar';
+import { DEFAULT_CURRENCY_SYMBOL } from '../../../../Util';
 import styles from '../styles/MasterReport.module.scss';
 
 /**
@@ -110,8 +111,12 @@ function CategoryBreakdownTab({
 CategoryBreakdownTab.propTypes = {
     categoryBreakdown: PropTypes.object.isRequired,
     totalSpent: PropTypes.number.isRequired,
-    currencySymbol: PropTypes.string.isRequired,
+    currencySymbol: PropTypes.string,
     onCategoryClick: PropTypes.func.isRequired
+};
+
+CategoryBreakdownTab.defaultProps = {
+    currencySymbol: DEFAULT_CURRENCY_SYMBOL
 };
 
 export default CategoryBreakdownTab;

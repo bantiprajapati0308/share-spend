@@ -1,7 +1,7 @@
 import React from 'react';
 import { BoxArrowDown, BoxArrowDownRight, BoxArrowUp, Trash3 } from 'react-bootstrap-icons';
 import styles from '../styles/DailySpends.module.scss';
-import { getCurrencySymbol } from '../../../Util';
+import { formatCurrencyINR, getCurrencySymbol } from '../../../Util';
 
 function ExpenseItem({ expense, onDelete }) {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
@@ -24,7 +24,7 @@ function ExpenseItem({ expense, onDelete }) {
 
                     <div className={`fw-bold ${incomeTypeData === 'income' ? 'text-success' : 'text-danger'} fs-6`}>
                         {incomeTypeData === 'income' ? <BoxArrowDown size={18} className='me-1' /> : <BoxArrowUp size={18} className='me-1 mb-1' />}
-                        {currencySymbol}{expense.amount.toFixed(2)}
+                        {formatCurrencyINR(expense.amount)}
                     </div>
                 </div>
 

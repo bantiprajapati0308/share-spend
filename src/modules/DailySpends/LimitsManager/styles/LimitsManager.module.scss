@@ -311,6 +311,27 @@
             color: #333;
         }
 
+        &.clickable {
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: #e9ecef;
+                border-color: #007bff;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+
+                .amount {
+                    color: #007bff;
+                }
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+
         &.overLimit {
             background: #ffe5e5;
 
@@ -455,11 +476,6 @@
 
     .header {
         margin-bottom: 1.5rem;
-
-        .headerContent {
-            flex-direction: column;
-            align-items: flex-start;
-        }
 
         .backButton {
             align-self: flex-start;

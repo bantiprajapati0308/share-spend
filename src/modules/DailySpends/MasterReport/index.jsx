@@ -90,7 +90,6 @@ function MasterReport({ currency = 'INR' }) {
             <TimeSummaryCardsSection
                 todayData={calculations.today}
                 thisWeekData={calculations.thisWeek}
-                currencySymbol={currencySymbol}
             />
 
             {/* Content based on state */}

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
 import { selectCurrency, setTrip } from '../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
-import { CURRENCY_ARRAY } from '../Util';
+import { CURRENCY_ARRAY, DEFAULT_CURRENCY } from '../Util';
 import { PeopleFill, Globe2, InfoCircle, ArrowRightCircle, Trash } from 'react-bootstrap-icons';
 import styles from '../assets/scss/Trip.module.scss';
 import ConfirmationModal from './common/ConfirmationModal';
@@ -15,7 +15,7 @@ function Trip() {
     const [tripName, setTripName] = useState('');
     const [description, setDescription] = useState('');
     const [organizer, setOrganizer] = useState('');
-    const [currency, setCurrency] = useState('INR');
+    const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
     const [date, setDate] = useState('');
     const [passcode, setPasscode] = useState('');
     const [showModal, setShowModal] = useState(false);

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { Badge } from 'react-bootstrap';
 import styles from './DualSummaryCards.module.scss';
-import { getCurrencySymbol } from '../../../Util';
+import { formatCurrencyINR } from '../../../Util';
 import { useNavigate } from 'react-router-dom';
 
 function DualSummaryCards({
@@ -30,7 +30,7 @@ function DualSummaryCards({
                             <i className="bi bi-wallet-fill"></i>
                         </div>
                         <div className={styles.value}>
-                            {Math.round(totalIncome).toLocaleString('en-IN')}
+                            {formatCurrencyINR(totalIncome, { showSymbol: false, decimals: 0 })}
                         </div>
                         <div className={styles.label}>Income</div>
                     </div>
@@ -41,7 +41,7 @@ function DualSummaryCards({
                             <i className="bi bi-graph-up-arrow"></i>
                         </div>
                         <div className={`${styles.value} ${styles.expense}`}>
-                            {Math.round(totalSpend).toLocaleString('en-IN')}
+                            {formatCurrencyINR(totalSpend, { showSymbol: false, decimals: 0 })}
                         </div>
                         <div className={styles.label}>Expense</div>
                     </div>
@@ -52,7 +52,7 @@ function DualSummaryCards({
                             <i className={isOverspent ? "bi bi-exclamation-triangle-fill" : "bi bi-piggy-bank-fill"}></i>
                         </div>
                         <div className={`${styles.value} ${isOverspent ? styles.overspent : styles.saved}`}>
-                            {Math.round(displayAmount).toLocaleString('en-IN')}
+                            {formatCurrencyINR(displayAmount, { showSymbol: false, decimals: 0 })}
                         </div>
                         <div className={styles.label}>
                             {isOverspent ? <span className={styles.overspentPercentage}>-{Math.round(overspentPercentage)}%</span> : null} {isOverspent ? 'Overspent' : 'Saved'}

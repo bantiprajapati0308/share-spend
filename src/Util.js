@@ -1,4 +1,24 @@
-export const getCurrencySymbol = (currency) => {
+// Default currency for the application
+export const DEFAULT_CURRENCY = 'INR';
+export const DEFAULT_CURRENCY_SYMBOL = '₹';
+
+// Format currency with INR locale and symbol
+export const formatCurrencyINR = (amount, options = {}) => {
+    const {
+        showSymbol = true,
+        decimals = 0,
+        locale = 'en-IN'
+    } = options;
+
+    const formattedAmount = Number(amount).toLocaleString(locale, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+
+    return showSymbol ? `${DEFAULT_CURRENCY_SYMBOL}${formattedAmount}` : formattedAmount;
+};
+
+export const getCurrencySymbol = (currency = DEFAULT_CURRENCY) => {
     switch (currency) {
         case 'USD':
             return '$';
@@ -9,7 +29,7 @@ export const getCurrencySymbol = (currency) => {
         case 'GBP':
             return '£';
         default:
-            return '';
+            return DEFAULT_CURRENCY_SYMBOL;
     }
 }
 

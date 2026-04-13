@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { InfoCircle } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DataTable from './DataTable';
+import { DEFAULT_CURRENCY_SYMBOL } from '../../../../Util';
 import styles from '../styles/MasterReport.module.scss';
 
 /**
@@ -54,8 +57,7 @@ function RecentTransactionsTab({
             align: 'right',
             render: (row) => (
                 <strong className={row.type === 'income' ? styles.income : ''}>
-                    {row.type === 'income' ? '+' : ''}
-                    {currencySymbol}{row.amount.toFixed(2)}
+                    <span className={row.type === 'income' ? 'text-success' : ''}>{currencySymbol}{row.amount.toFixed(0)}</span>
                 </strong>
             )
         },
@@ -73,12 +75,25 @@ function RecentTransactionsTab({
     return (
         <div className={styles.tabContent}>
             <div className={styles.tableWrapper}>
-                <h4 className={styles.sectionTitle}>
-                    Latest Transactions
-                </h4>
-                <p className={styles.sectionSubtitle}>
-                    Showing {Math.min(limit, transactions.length)} most recent transactions
-                </p>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                    <h4 className={`${styles.sectionTitle} mb-0`}>
+                        Latest Transactions
+                    </h4>
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={
+                            <Tooltip id="recent-transactions-info-tooltip">
+                                Showing {Math.min(limit, transactions.length)} most recent transactions
+                            </Tooltip>
+                        }
+                    >
+                        <InfoCircle
+                            size={16}
+                            className="text-muted"
+                            style={{ cursor: 'help' }}
+                        />
+                    </OverlayTrigger>
+                </div>
                 <DataTable
                     columns={columns}
                     data={recentTransactions}
@@ -91,8 +106,13 @@ function RecentTransactionsTab({
 
 RecentTransactionsTab.propTypes = {
     transactions: PropTypes.array.isRequired,
-    currencySymbol: PropTypes.string.isRequired,
+    currencySymbol: PropTypes.string,
     limit: PropTypes.number
+};
+
+RecentTransactionsTab.defaultProps = {
+    currencySymbol: DEFAULT_CURRENCY_SYMBOL,
+    limit: 50
 };
 
 export default RecentTransactionsTab;

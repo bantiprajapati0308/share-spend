@@ -70,17 +70,6 @@
                 &.clickableRow {
                     cursor: pointer;
 
-                    &::after {
-                        content: '👆';
-                        position: absolute;
-                        right: $spacing-md;
-                        top: 50%;
-                        transform: translateY(-50%);
-                        opacity: 0;
-                        transition: $transition-normal;
-                        font-size: 0.9rem;
-                    }
-
                     &:hover {
                         &::after {
                             opacity: 1;
