@@ -3,7 +3,7 @@
  * Handles all HTTP requests with configurable options
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = "https://faran.vercel.app";
 
 class ApiClient {
   /**
