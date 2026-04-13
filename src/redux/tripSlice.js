@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { DEFAULT_CURRENCY } from '../Util';
 
 const initialState = {
     trip: {
@@ -6,13 +7,13 @@ const initialState = {
         description: '',
         organizer: '',
         date: '',
-        currency: 'INR',
+        currency: DEFAULT_CURRENCY,
         id: '',
         passcode: '', // Add passcode to trip data
     },
     members: [],
     expenses: [],
-    currency: 'INR',
+    currency: DEFAULT_CURRENCY,
     passcodeAccess: {}, // Store passcode access per trip ID { tripId: boolean }
 };
 

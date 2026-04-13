@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import DataTable from './DataTable';
+import { DEFAULT_CURRENCY_SYMBOL } from '../../../../Util';
 import styles from '../styles/MasterReport.module.scss';
 
 /**
@@ -71,7 +72,11 @@ function MonthlyBreakdownTab({
 
 MonthlyBreakdownTab.propTypes = {
     monthlyBreakdown: PropTypes.object.isRequired,
-    currencySymbol: PropTypes.string.isRequired
+    currencySymbol: PropTypes.string
+};
+
+MonthlyBreakdownTab.defaultProps = {
+    currencySymbol: DEFAULT_CURRENCY_SYMBOL
 };
 
 export default MonthlyBreakdownTab;

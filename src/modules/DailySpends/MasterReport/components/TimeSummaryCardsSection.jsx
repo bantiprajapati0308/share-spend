@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { Wallet, CashCoin } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
+import { formatCurrencyINR } from '../../../../Util';
 import styles from '../styles/MasterReport.module.scss';
 
 /**
@@ -10,7 +11,7 @@ import styles from '../styles/MasterReport.module.scss';
  */
 function TimeSummaryCardsSection({ todayData, thisWeekData, currencySymbol }) {
     const formatAmount = (amount) => {
-        return amount.toFixed(2);
+        return formatCurrencyINR(amount);
     };
 
     const SummaryCard = ({ title, spent, income, spentCount, incomeCount }) => (
@@ -25,7 +26,7 @@ function TimeSummaryCardsSection({ todayData, thisWeekData, currencySymbol }) {
                         <div className={styles.cardContent}>
                             <div className={styles.cardLabel}>Spent</div>
                             <div className={styles.cardAmount}>
-                                {currencySymbol}{formatAmount(spent)}
+                                {formatAmount(spent)}
                             </div>
                             <div className={styles.cardSubtext}>
                                 {spentCount} transaction{spentCount !== 1 ? 's' : ''}
@@ -41,7 +42,7 @@ function TimeSummaryCardsSection({ todayData, thisWeekData, currencySymbol }) {
                         <div className={styles.cardContent}>
                             <div className={styles.cardLabel}>Income</div>
                             <div className={styles.cardAmount}>
-                                {currencySymbol}{formatAmount(income)}
+                                {formatAmount(income)}
                             </div>
                             <div className={styles.cardSubtext}>
                                 {incomeCount} transaction{incomeCount !== 1 ? 's' : ''}
@@ -62,7 +63,7 @@ function TimeSummaryCardsSection({ todayData, thisWeekData, currencySymbol }) {
                 spentCount={todayData.spendCount}
                 incomeCount={todayData.incomeCount}
             />
-            
+
             <SummaryCard
                 title="Last 7 Days"
                 spent={thisWeekData.spent}
@@ -87,7 +88,7 @@ TimeSummaryCardsSection.propTypes = {
         spendCount: PropTypes.number.isRequired,
         incomeCount: PropTypes.number.isRequired
     }).isRequired,
-    currencySymbol: PropTypes.string.isRequired
+    currencySymbol: PropTypes.string
 };
 
 export default TimeSummaryCardsSection;

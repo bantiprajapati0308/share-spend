@@ -4,8 +4,10 @@ import { ArrowLeft } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
 import useLimitsManager from './hooks/useLimitsManager';
 import { useSelectedDateRange } from '../hooks/useSelectedDateRange';
+import { getTransactionsByCategory, getTransactionsByType } from '../../../hooks/useDailySpends';
 import LimitsPanel from './components/LimitsPanel';
 import LimitForm from './components/LimitForm';
+import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
 import styles from './styles/LimitsManager.module.scss';
 import { toast } from 'react-toastify';
 
@@ -25,6 +27,11 @@ function LimitsManager() {
     const [showLimitForm, setShowLimitForm] = useState(false);
     const [editingLimit, setEditingLimit] = useState(null);
     const [formSubmitting, setFormSubmitting] = useState(false);
+
+    // Category Details Modal state
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [categoryTransactions, setCategoryTransactions] = useState([]);
 
     const loadSavedDateRange = useCallback(async () => {
         try {
@@ -81,6 +88,42 @@ function LimitsManager() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab]); // Refresh when switching tabs
 
+    /**
+     * Handle category click to show detailed transactions
+     */
+    const handleCategoryClick = async (categoryName) => {
+        try {
+            setSelectedCategory(categoryName);
+
+            // Get transactions based on current limit type
+            let transactions = [];
+
+            if (currentLimitType === 'income') {
+                const allIncomeTransactions = await getTransactionsByType('income');
+                transactions = allIncomeTransactions.filter(tx => tx.category === categoryName);
+            } else {
+                const allCategoriesTransactions = await getTransactionsByCategory();
+                transactions = allCategoriesTransactions[categoryName] || [];
+            }
+
+            // Filter by date range
+            const filteredTransactions = transactions.filter(transaction => {
+                const transactionDate = new Date(transaction.date || transaction.createdAt);
+                return startDate && endDate &&
+                    transactionDate >= startDate &&
+                    transactionDate <= endDate;
+            });
+
+            setCategoryTransactions(filteredTransactions);
+            setShowCategoryModal(true);
+        } catch (error) {
+            console.error('Error fetching category transactions:', error);
+            toast.error('Failed to load category transactions');
+            // Ensure modal state is reset on error
+            setShowCategoryModal(false);
+            setCategoryTransactions([]);
+        }
+    };
     /**
      * Handle add limit form submission
      */
@@ -202,6 +245,7 @@ function LimitsManager() {
                                             onAddLimit={handleOpenAddForm}
                                             onEditLimit={handleEditLimit}
                                             onDeleteLimit={handleDeleteLimit}
+                                            onCategoryClick={handleCategoryClick}
                                             loading={loading}
                                             error={error}
                                         />
@@ -220,6 +264,7 @@ function LimitsManager() {
                                             onAddLimit={handleOpenAddForm}
                                             onEditLimit={handleEditLimit}
                                             onDeleteLimit={handleDeleteLimit}
+                                            onCategoryClick={handleCategoryClick}
                                             loading={loading}
                                             error={error}
                                         />
@@ -239,6 +284,14 @@ function LimitsManager() {
                 initialLimit={editingLimit}
                 limitType={currentLimitType}
                 loading={formSubmitting}
+            />
+
+            {/* Category Details Modal */}
+            <CategoryDetailsModal
+                show={showCategoryModal}
+                onHide={() => setShowCategoryModal(false)}
+                categoryName={selectedCategory}
+                transactions={categoryTransactions}
             />
         </div>
     );

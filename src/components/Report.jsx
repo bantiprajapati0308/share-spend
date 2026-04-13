@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { getCurrencySymbol } from '../Util';
+import { getCurrencySymbol, DEFAULT_CURRENCY } from '../Util';
 import styles from '../assets/scss/Report.module.scss';
 import { useNavigate, useParams } from 'react-router-dom';
 import FullScreenLoader from './common/FullScreenLoader';
@@ -47,7 +47,7 @@ function Report() {
     // Basic state
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
-    const [currency, setCurrency] = useState('INR');
+    const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
     const [loadingReport, setLoadingReport] = useState(true);
 
     // Initialize states using utilities

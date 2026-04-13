@@ -13,12 +13,13 @@ import {
     formatCurrency,
 } from '../utils/limitsCalculations';
 import GradientProgressBar from '../../components/GradientProgressBar';
+import { formatCurrencyINR } from '../../../../Util';
 
 /**
  * LimitCard Component
  * Displays a single limit with progress and actions
  */
-function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
+function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCategoryClick }) {
     const percentage = calculateLimitPercentage(spent, limit.limit);
     const progressPercentage = Math.min(percentage, 100);
     const remaining = calculateRemaining(spent, limit.limit);
@@ -36,6 +37,12 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
     const handleDelete = () => {
         if (window.confirm(`Delete limit for "${limit.category}"?`)) {
             onDelete(limit.id);
+        }
+    };
+
+    const handleCategoryClick = () => {
+        if (onCategoryClick && typeof onCategoryClick === 'function') {
+            onCategoryClick(limit.category);
         }
     };
 
@@ -76,17 +83,21 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
 
             {/* Amount details */}
             <div className={styles.amountDetails}>
-                <div className={styles.amountGroup}>
+                <div
+                    className={`${styles.amountGroup} ${styles.clickable}`}
+                    onClick={handleCategoryClick}
+                    title={`View detailed transactions for ${limit.category}`}
+                >
                     <span className={styles.label}>
                         {limitType === 'income' ? 'Actual' : 'Spent'}
                     </span>
-                    <span className={styles.amount}>{spent.toFixed(2)}</span>
+                    <span className={styles.amount}>{formatCurrencyINR(spent)}</span>
                 </div>
                 <div className={styles.amountGroup}>
                     <span className={styles.label}>
                         {limitType === 'income' ? 'Target Income' : 'Limit'}
                     </span>
-                    <span className={styles.amount}>{limit.limit.toFixed(2)}</span>
+                    <span className={styles.amount}>{formatCurrencyINR(limit.limit)}</span>
                 </div>
                 <div className={`${styles.amountGroup} ${limitType === 'income' && percentage > 100 ? styles.incomeBenefit : percentage > 100 ? styles.overLimit : ''}`}>
                     <span className={styles.label}>
@@ -97,8 +108,8 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend' }) {
                     </span>
                     <span className={styles.amount} style={limitType === 'income' && percentage > 100 ? { color: '#10b981', fontWeight: 'bold' } : {}}>
                         {limitType === 'income' && percentage > 100
-                            ? `+${overLimit.toFixed(2)} (${overPercent}%)`
-                            : (percentage > 100 ? `+${overLimit.toFixed(2)} (${overPercent}%)` : remaining.toFixed(2))
+                            ? `+${formatCurrencyINR(overLimit)} (${overPercent}%)`
+                            : (percentage > 100 ? `+${formatCurrencyINR(overLimit)} (${overPercent}%)` : formatCurrencyINR(remaining))
                         }
                     </span>
                 </div>
@@ -118,6 +129,7 @@ LimitCard.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
     limitType: PropTypes.oneOf(['spend', 'income']),
+    onCategoryClick: PropTypes.func,
 };
 
 export default LimitCard;

@@ -6,6 +6,7 @@ import styles from '../styles/LimitsManager.module.scss';
 import LimitCard from './LimitCard';
 import EmptyState from './EmptyState';
 import { getLimitsSummary, sortLimitsByUrgency } from '../utils/limitsCalculations';
+import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyINR } from '../../../../Util';
 
 /**
  * LimitsPanel Component
@@ -18,8 +19,7 @@ function LimitsPanel({
     limitType = 'spend',
     onAddLimit,
     onEditLimit,
-    onDeleteLimit,
-    loading = false,
+    onDeleteLimit, onCategoryClick, loading = false,
     error = null,
 }) {
     const [expandSummary, setExpandSummary] = useState(false);
@@ -86,7 +86,7 @@ function LimitsPanel({
                         <div className={styles.summaryRow}>
                             <span className={styles.summaryLabel}>Total Budget</span>
                             <span className={styles.summaryValue}>
-                                ${summary.totalBudget.toFixed(2)}
+                                {formatCurrencyINR(summary.totalBudget)}
                             </span>
                         </div>
                         <div className={styles.summaryRow}>
@@ -94,7 +94,7 @@ function LimitsPanel({
                                 {limitType === 'income' ? 'Total Actual' : 'Total Spent'}
                             </span>
                             <span className={styles.summaryValue}>
-                                ${summary.totalSpent.toFixed(2)}
+                                {formatCurrencyINR(summary.totalSpent)}
                             </span>
                         </div>
                         <div className={styles.summaryRow}>
@@ -124,6 +124,7 @@ function LimitsPanel({
                                 spent={categoryTotals[limit.category] || 0}
                                 onEdit={onEditLimit}
                                 onDelete={onDeleteLimit}
+                                onCategoryClick={onCategoryClick || undefined}
                                 limitType={limitType}
                             />
                         ))}
@@ -141,6 +142,7 @@ LimitsPanel.propTypes = {
     onAddLimit: PropTypes.func.isRequired,
     onEditLimit: PropTypes.func.isRequired,
     onDeleteLimit: PropTypes.func.isRequired,
+    onCategoryClick: PropTypes.func,
     loading: PropTypes.bool,
     error: PropTypes.string,
 };
