@@ -1,5 +1,5 @@
-@import './mixin';
-@import './variable';
+@use './variables' as *;
+@use './mixins' as *;
 
 .positive {
     @include apply-status-styles($positive-color, $positive-background);

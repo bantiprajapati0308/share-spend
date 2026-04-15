@@ -1,5 +1,5 @@
-@import './variable';
-@import './mixin';
+@use './variables' as *;
+@use './mixins' as *;
 
 .container {
     padding-top: 2rem;

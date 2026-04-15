@@ -1,4 +1,4 @@
-@import './variable';
+@use './variables' as *;
 
 .bottomNav {
     position: fixed;

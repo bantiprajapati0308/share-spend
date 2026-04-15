@@ -298,6 +298,30 @@ $bg-warning: $warning-100;
 $border-light: $neutral-200;
 $border-medium: $neutral-300;
 $border-dark: $neutral-400;
+
+// ==========================================
+// LEGACY SEMANTIC COLORS (for backward compatibility)
+// ==========================================
+// Colors from old _variable.scss for compatibility
+$light-color: #f8f9fa;
+$dark-color: #1f2937;
+$positive-background: #d1fae5;
+$negative-background: #fee2e2;
+$positive-color: #059669;
+$negative-color: #dc2626;
+$text-light: #f3f4f6;
+$border-color: #e5e7eb;
+$background-color: #f9fafb;
+
+// Legacy color mappings (mapped to new design system)
+$primary-color: $primary-500;
+$primary-dark: $primary-800;
+$primary-light: $primary-400;
+$secondary-color: $neutral-500;
+$success-color: $success-500;
+$danger-color: $danger-500;
+$warning-color: $warning-500;
+$info-color: $primary-500;
 $border-success: $success-300;
 $border-danger: $danger-300;
 $border-warning: $warning-300;

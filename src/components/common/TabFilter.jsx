@@ -22,9 +22,6 @@ function TabFilter({ tabs, activeTab, onTabChange }) {
                     type="button"
                 >
                     <span className={styles.label}>{tab.label}</span>
-                    {tab.count !== undefined && (
-                        <span className={styles.count}>({tab.count})</span>
-                    )}
                 </button>
             ))}
         </div>
@@ -36,7 +33,6 @@ TabFilter.propTypes = {
         PropTypes.shape({
             id: PropTypes.string.isRequired,
             label: PropTypes.string.isRequired,
-            count: PropTypes.number,
         })
     ).isRequired,
     activeTab: PropTypes.string.isRequired,

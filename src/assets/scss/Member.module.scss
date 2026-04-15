@@ -1,3 +1,6 @@
+@use './variables' as *;
+@use './mixins' as *;
+
 .memberHeaderRow {
   display: flex;
   align-items: center;
@@ -183,9 +186,6 @@
     padding: 0.3rem 1rem;
   }
 }
-
-@import './variable';
-@import './mixin';
 
 
 .container {
