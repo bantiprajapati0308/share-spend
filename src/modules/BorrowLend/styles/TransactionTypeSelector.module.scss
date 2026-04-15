@@ -1,4 +1,4 @@
-@import '../../../assets/scss/variable';
+@use '../../../assets/scss/variables' as *;
 
 .typeSelector {
     display: flex;

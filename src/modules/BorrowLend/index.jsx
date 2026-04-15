@@ -3,6 +3,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import { useLendingTransactions } from './hooks/useLendingTransactions';
 import TopSection from './components/TopSection';
 import AddTransactionForm from './components/AddTransactionForm';
+import DueTrackingSection from './components/DueTracking';
 import TransactionList from './components/TransactionList';
 import BorrowLendTable from './components/BorrowLendTable';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
@@ -14,6 +15,8 @@ function BorrowLend() {
     const [filterType, setFilterType] = useState('all');
     const [showForm, setShowForm] = useState(false);
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
+    const dueTrackingHook = useLendingTransactions();
+
     const {
         transactions,
         deleteTransaction,
@@ -24,7 +27,7 @@ function BorrowLend() {
         loading,
         error,
         refreshTransactions,
-    } = useLendingTransactions();
+    } = dueTrackingHook;
 
     const handleAddTransaction = async (newTransaction) => {
         try {
@@ -89,6 +92,13 @@ function BorrowLend() {
                             <AddTransactionForm onAddTransaction={handleAddTransaction} />
                         </div>
                     )}
+
+                    {/* Due Tracking Section */}
+                    <DueTrackingSection
+                        dueTrackingHook={dueTrackingHook}
+                        currency={currency}
+                    />
+
                     {/* BorrowLend Table - Aggregated View */}
                     <div style={{ marginBottom: '2rem' }}>
                         <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 600, color: '#1565c0' }}>

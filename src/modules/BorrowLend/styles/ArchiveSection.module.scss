@@ -1,0 +1,164 @@
+// Archive Section Styles
+// Following existing theme patterns and variables
+@use '../../../assets/scss/variables' as *;
+@use '../../../assets/scss/mixins' as *;
+
+.archiveSection {
+    margin-top: $spacing-6;
+    border-top: 2px dashed $neutral-300;
+    padding-top: $spacing-4;
+}
+
+.archiveHeader {
+    cursor: pointer;
+    user-select: none;
+    background: linear-gradient(135deg, $neutral-100 0%, $neutral-200 100%);
+    border: 1px solid $neutral-300;
+    border-radius: $spacing-3;
+    padding: $spacing-3;
+    margin-bottom: $spacing-3;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, $neutral-200 0%, $neutral-300 100%);
+        border-color: $neutral-400;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    // Focus styles for accessibility
+    &:focus {
+        outline: 2px solid $primary-500;
+        outline-offset: 2px;
+    }
+}
+
+.headerContent {
+    @include flex-between;
+    width: 100%;
+}
+
+.headerText {
+    flex: 1;
+}
+
+.archiveTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $neutral-700;
+    margin-bottom: $spacing-1;
+    @include flex-start;
+    gap: $spacing-2;
+}
+
+.archiveSubtitle {
+    color: $neutral-600;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+}
+
+.toggleIcon {
+    @include flex-center;
+    color: $neutral-600;
+    transition: all 0.2s ease;
+
+    .archiveHeader:hover & {
+        color: $neutral-800;
+        transform: scale(1.1);
+    }
+}
+
+.archiveContent {
+    padding-top: $spacing-3;
+
+    // Animation for expanding content
+    .collapse.show & {
+        animation: contentSlideDown 0.3s ease-out;
+    }
+}
+
+.archiveInfo {
+    margin-top: $spacing-4;
+    padding: $spacing-3;
+    background: $neutral-100;
+    border-radius: $spacing-2;
+    border: 1px solid $neutral-200;
+    text-align: center;
+
+    small {
+        color: $neutral-600;
+        font-size: $font-size-sm;
+        line-height: $line-height-relaxed;
+    }
+}
+
+// Responsive Design
+@media (max-width: 576px) {
+    .archiveSection {
+        margin-top: $spacing-4;
+        padding-top: $spacing-3;
+    }
+
+    .archiveHeader {
+        padding: $spacing-2;
+    }
+
+    .archiveTitle {
+        font-size: $font-size-base;
+    }
+
+    .archiveSubtitle {
+        font-size: $font-size-xs;
+    }
+
+    .archiveInfo {
+        padding: $spacing-2;
+        margin-top: $spacing-3;
+
+        small {
+            font-size: $font-size-xs;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .headerContent {
+        // Stack header content on smaller screens if needed
+        gap: $spacing-2;
+    }
+}
+
+// Animations
+@keyframes contentSlideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        max-height: 1000px; // Large enough value for content
+        transform: translateY(0);
+    }
+}
+
+// Hover effect for archive content
+.archiveContent {
+    .row {
+        transition: all 0.2s ease;
+    }
+}
+
+// Special styling for collapsed state
+.archiveSection {
+    .collapse:not(.show) {
+        &.collapsing {
+            transition: height 0.3s ease;
+        }
+    }
+}
