@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { db, auth } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 import { addBorrowLendRecord } from '../utils/borrowLendFirestore';
 import {
@@ -9,6 +9,12 @@ import {
     getUpcomingTransactions,
     getOverdueTransactions
 } from '../utils/dueDateUtils';
+import {
+    archiveEntryByUuid,
+    unarchiveEntryByUuid,
+    toggleMarkAsDoneByUuid,
+    deleteEntryByUuid
+} from '../utils/firebaseOperations';
 
 
 const expandTransactionsFromRecords = (records) => {
@@ -102,63 +108,7 @@ export const useLendingTransactions = () => {
     };
 
     const deleteTransaction = async (entryUuid) => {
-        try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                throw new Error('User not authenticated');
-            }
-
-            // Find the document containing the entry with the given UUID
-            const transactionsQuery = query(
-                collection(db, 'users', userId, 'borrowLend')
-            );
-
-            const snapshot = await getDocs(transactionsQuery);
-            let documentFound = null;
-            let entryIndex = -1;
-
-            // Search through all documents to find the one containing the UUID
-            snapshot.docs.forEach(document => {
-                const data = document.data();
-                if (Array.isArray(data.data)) {
-                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
-                    if (index !== -1) {
-                        documentFound = document;
-                        entryIndex = index;
-                    }
-                }
-            });
-
-            if (!documentFound) {
-                throw new Error(`Entry with UUID ${entryUuid} not found`);
-            }
-
-            const docData = documentFound.data();
-            const updatedDataArray = [...docData.data];
-
-            // Remove the entry with the matching UUID
-            updatedDataArray.splice(entryIndex, 1);
-
-            // If this was the last entry, delete the entire document
-            if (updatedDataArray.length === 0) {
-                await deleteDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id));
-            } else {
-                // Update the document with the modified data array
-                await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
-                    data: updatedDataArray
-                });
-            }
-
-            await fetchTransactions();
-            return true;
-        } catch (err) {
-            console.error('Error deleting lending transaction entry:', {
-                error: err.message,
-                code: err.code,
-                fullError: err
-            });
-            throw err;
-        }
+        return deleteEntryByUuid(entryUuid, fetchTransactions);
     };
 
     const computeRecordTotals = (record) => {
@@ -245,182 +195,16 @@ export const useLendingTransactions = () => {
 
     // Archive functionality
     const archiveTransaction = async (entryUuid) => {
-        try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                throw new Error('User not authenticated');
-            }
-
-            // Find the document containing the entry with the given UUID
-            const transactionsQuery = query(
-                collection(db, 'users', userId, 'borrowLend')
-            );
-
-            const snapshot = await getDocs(transactionsQuery);
-            let documentFound = null;
-            let entryIndex = -1;
-
-            // Search through all documents to find the one containing the UUID
-            snapshot.docs.forEach(document => {
-                const data = document.data();
-                if (Array.isArray(data.data)) {
-                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
-                    if (index !== -1) {
-                        documentFound = document;
-                        entryIndex = index;
-                    }
-                }
-            });
-
-            if (!documentFound) {
-                throw new Error(`Entry with UUID ${entryUuid} not found`);
-            }
-
-            const docData = documentFound.data();
-            const updatedDataArray = [...docData.data];
-
-            // Update the entry with archived flag
-            updatedDataArray[entryIndex] = {
-                ...updatedDataArray[entryIndex],
-                archived: true,
-                archivedAt: new Date().toISOString()
-            };
-
-            // Update the document with the modified data array
-            await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
-                data: updatedDataArray
-            });
-
-            await fetchTransactions();
-            return true;
-        } catch (err) {
-            console.error('Error archiving transaction entry:', {
-                error: err.message,
-                code: err.code,
-                fullError: err
-            });
-            throw err;
-        }
+        return archiveEntryByUuid(entryUuid, fetchTransactions);
     };
 
     // Mark as done functionality
     const markTransactionAsDone = async (entryUuid) => {
-        try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                throw new Error('User not authenticated');
-            }
-
-            // Find the document containing the entry with the given UUID
-            const transactionsQuery = query(
-                collection(db, 'users', userId, 'borrowLend')
-            );
-
-            const snapshot = await getDocs(transactionsQuery);
-            let documentFound = null;
-            let entryIndex = -1;
-
-            // Search through all documents to find the one containing the UUID
-            snapshot.docs.forEach(document => {
-                const data = document.data();
-                if (Array.isArray(data.data)) {
-                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
-                    if (index !== -1) {
-                        documentFound = document;
-                        entryIndex = index;
-                    }
-                }
-            });
-
-            if (!documentFound) {
-                throw new Error(`Entry with UUID ${entryUuid} not found`);
-            }
-
-            const docData = documentFound.data();
-            const updatedDataArray = [...docData.data];
-            const currentEntry = updatedDataArray[entryIndex];
-
-            // Toggle markAsDone status
-            const newMarkAsDoneStatus = !(currentEntry.markAsDone || false);
-
-            // Update the entry with markAsDone flag
-            updatedDataArray[entryIndex] = {
-                ...currentEntry,
-                markAsDone: newMarkAsDoneStatus,
-                markedDoneAt: newMarkAsDoneStatus ? new Date().toISOString() : null
-            };
-
-            // Update the document with the modified data array
-            await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
-                data: updatedDataArray
-            });
-
-            await fetchTransactions();
-            return newMarkAsDoneStatus;
-        } catch (err) {
-            console.error('Error marking transaction as done:', {
-                error: err.message,
-                code: err.code,
-                fullError: err
-            });
-            throw err;
-        }
+        return toggleMarkAsDoneByUuid(entryUuid, fetchTransactions);
     };
 
     const unarchiveTransaction = async (entryUuid) => {
-        try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                throw new Error('User not authenticated');
-            }
-
-            // Find the document containing the entry with the given UUID
-            const transactionsQuery = query(
-                collection(db, 'users', userId, 'borrowLend')
-            );
-
-            const snapshot = await getDocs(transactionsQuery);
-            let documentFound = null;
-            let entryIndex = -1;
-
-            // Search through all documents to find the one containing the UUID
-            snapshot.docs.forEach(document => {
-                const data = document.data();
-                if (Array.isArray(data.data)) {
-                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
-                    if (index !== -1) {
-                        documentFound = document;
-                        entryIndex = index;
-                    }
-                }
-            });
-
-            if (!documentFound) {
-                throw new Error(`Entry with UUID ${entryUuid} not found`);
-            }
-
-            const docData = documentFound.data();
-            const updatedDataArray = [...docData.data];
-
-            // Remove archived flag from the entry
-            const { archived, archivedAt, ...entryWithoutArchive } = updatedDataArray[entryIndex];
-            updatedDataArray[entryIndex] = entryWithoutArchive;
-
-            // Update the document with the modified data array
-            await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
-                data: updatedDataArray
-            });
-
-            await fetchTransactions();
-            return true;
-        } catch (err) {
-            console.error('Error unarchiving transaction entry:', {
-                error: err.message,
-                code: err.code,
-                fullError: err
-            });
-            throw err;
-        }
+        return unarchiveEntryByUuid(entryUuid, fetchTransactions);
     };
 
     // Due tracking functionality
