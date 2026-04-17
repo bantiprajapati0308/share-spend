@@ -12,6 +12,7 @@ import { tableIcon } from '../utils/borrowLendTableRenderers';
 
 function TransactionDetailsModal({ show, onHide, selectedRow }) {
     const { data, personName, status } = selectedRow;
+    console.log(data, "data")
     if (!data || data.length === 0) {
         return null;
     }
@@ -56,11 +57,12 @@ function TransactionDetailsModal({ show, onHide, selectedRow }) {
                                         {formatTransactionDate(new Date(transaction.insert_date))}
                                     </span>
                                 </div>
-                                {transaction.dueDate && (
-                                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '4px' }}>
-                                        Due: {formatTransactionDate(new Date(transaction.due_date))}
-                                    </div>
-                                )}
+                                {transaction.due_date
+                                    && (
+                                        <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '4px' }}>
+                                            Due: {formatTransactionDate(new Date(transaction.due_date))}
+                                        </div>
+                                    )}
                                 {transaction.description && (
                                     <div style={{ fontSize: '0.85rem', color: '#555', fontStyle: 'italic' }}>
                                         {transaction.description}

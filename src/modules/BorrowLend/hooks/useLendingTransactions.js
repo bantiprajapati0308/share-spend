@@ -31,6 +31,8 @@ const expandTransactionsFromRecords = (records) => {
                 paymentType: entry.payment_type || (record.type === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed'),
                 archived: entry.archived || false,
                 archivedAt: entry.archivedAt || null,
+                markAsDone: entry.markAsDone || false,
+                markedDoneAt: entry.markedDoneAt || null,
             });
         });
     });
@@ -301,6 +303,70 @@ export const useLendingTransactions = () => {
         }
     };
 
+    // Mark as done functionality
+    const markTransactionAsDone = async (entryUuid) => {
+        try {
+            const userId = auth.currentUser?.uid;
+            if (!userId) {
+                throw new Error('User not authenticated');
+            }
+
+            // Find the document containing the entry with the given UUID
+            const transactionsQuery = query(
+                collection(db, 'users', userId, 'borrowLend')
+            );
+
+            const snapshot = await getDocs(transactionsQuery);
+            let documentFound = null;
+            let entryIndex = -1;
+
+            // Search through all documents to find the one containing the UUID
+            snapshot.docs.forEach(document => {
+                const data = document.data();
+                if (Array.isArray(data.data)) {
+                    const index = data.data.findIndex(entry => entry.uuid === entryUuid);
+                    if (index !== -1) {
+                        documentFound = document;
+                        entryIndex = index;
+                    }
+                }
+            });
+
+            if (!documentFound) {
+                throw new Error(`Entry with UUID ${entryUuid} not found`);
+            }
+
+            const docData = documentFound.data();
+            const updatedDataArray = [...docData.data];
+            const currentEntry = updatedDataArray[entryIndex];
+
+            // Toggle markAsDone status
+            const newMarkAsDoneStatus = !(currentEntry.markAsDone || false);
+
+            // Update the entry with markAsDone flag
+            updatedDataArray[entryIndex] = {
+                ...currentEntry,
+                markAsDone: newMarkAsDoneStatus,
+                markedDoneAt: newMarkAsDoneStatus ? new Date().toISOString() : null
+            };
+
+            // Update the document with the modified data array
+            await updateDoc(doc(db, 'users', userId, 'borrowLend', documentFound.id), {
+                data: updatedDataArray
+            });
+
+            await fetchTransactions();
+            return newMarkAsDoneStatus;
+        } catch (err) {
+            console.error('Error marking transaction as done:', {
+                error: err.message,
+                code: err.code,
+                fullError: err
+            });
+            throw err;
+        }
+    };
+
     const unarchiveTransaction = async (entryUuid) => {
         try {
             const userId = auth.currentUser?.uid;
@@ -359,7 +425,7 @@ export const useLendingTransactions = () => {
 
     // Due tracking functionality
     const getActiveTransactions = () => {
-        return expandedTransactions.filter(t => !t.archived);
+        return expandedTransactions.filter(t => !t.archived && !t.markAsDone);
     };
 
     const getArchivedTransactions = () => {
@@ -429,6 +495,7 @@ export const useLendingTransactions = () => {
         unarchiveTransaction,
         getActiveTransactions,
         getArchivedTransactions,
+        markTransactionAsDone,
         // Due tracking functionality
         getDueTrackingData,
         getDueTrackingByType,

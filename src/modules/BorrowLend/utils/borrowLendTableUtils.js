@@ -168,12 +168,28 @@ export const prepareAggregatedTableData = (transactions) => {
             derivedStatus = 'Partially Paid';
         }
 
+        // Find due date from data entries with payment_type 'Lent' or 'Borrowed'
+        const relevantEntries = entries.filter(entry => {
+            const paymentType = (entry.payment_type || '').toLowerCase();
+            return paymentType === 'lent' || paymentType === 'borrowed';
+        });
+
+        let earliestDueDate = null;
+        relevantEntries.forEach(entry => {
+            if (entry.due_date) {
+                const entryDue = new Date(entry.due_date);
+                if (!earliestDueDate || entryDue > earliestDueDate) {
+                    earliestDueDate = entryDue;
+                }
+            }
+        });
+
         return {
             ...item,
             totalDays: calculateTotalDays(item.firstDate),
             displayAmount: remaining.toFixed(2),
             displayFirstDate: formatTransactionDate(item.firstDate),
-            displayDueDate: formatTransactionDate(item.dueDate),
+            displayDueDate: formatTransactionDate(earliestDueDate),
             status: derivedStatus,
             statusStyle: getStatusColor(derivedStatus),
             totalLent,

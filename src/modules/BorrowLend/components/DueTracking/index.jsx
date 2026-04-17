@@ -24,6 +24,7 @@ function DueTrackingSection({ dueTrackingHook, currency = 'INR' }) {
         getArchivedTransactions,
         archiveTransaction,
         unarchiveTransaction,
+        markTransactionAsDone,
         loading
     } = dueTrackingHook;
 
@@ -125,6 +126,7 @@ function DueTrackingSection({ dueTrackingHook, currency = 'INR' }) {
                                                         transaction={transaction}
                                                         currencySymbol={currencySymbol}
                                                         onArchive={handleArchive}
+                                                        markTransactionAsDone={markTransactionAsDone}
                                                         isArchived={false}
                                                     />
                                                 </Col>
@@ -150,6 +152,7 @@ function DueTrackingSection({ dueTrackingHook, currency = 'INR' }) {
                                                         transaction={transaction}
                                                         currencySymbol={currencySymbol}
                                                         onArchive={handleArchive}
+                                                        markTransactionAsDone={markTransactionAsDone}
                                                         isArchived={false}
                                                     />
                                                 </Col>
