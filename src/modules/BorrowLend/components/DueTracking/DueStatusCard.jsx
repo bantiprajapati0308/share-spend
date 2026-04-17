@@ -13,6 +13,7 @@ import styles from '../../styles/DueStatusCard.module.scss';
  * @param {string} currencySymbol - Currency symbol to display
  * @param {function} onArchive - Callback when archive button is clicked
  * @param {function} onUnarchive - Callback when unarchive button is clicked
+ * @param {function} markTransactionAsDone - Callback when mark as done button is clicked
  * @param {boolean} isArchived - Whether this card is in archived state
  */
 function DueStatusCard({
@@ -20,6 +21,7 @@ function DueStatusCard({
     currencySymbol = '₹',
     onArchive,
     onUnarchive,
+    markTransactionAsDone,
     isArchived = false
 }) {
     const dueStatus = getDueStatus(transaction.dueDate);
@@ -49,7 +51,24 @@ function DueStatusCard({
             onArchive(transaction.uuid);
         }
     };
+    /**
+     * Handle mark as done/undone action
+     * Toggles the markAsDone status of the transaction
+     * @param {string} uuid - Transaction UUID
+     */
+    const markHandler = async (uuid) => {
+        if (!markTransactionAsDone) {
+            console.warn('markTransactionAsDone callback not provided');
+            return;
+        }
 
+        try {
+            await markTransactionAsDone(uuid);
+        } catch (error) {
+            console.error('Error updating transaction status:', error);
+            // You could add a toast notification here for user feedback
+        }
+    };
     return (
         <Card className={`${styles.dueCard} ${getStatusClass()}`}>
             <Card.Body className="p-2">
@@ -98,9 +117,19 @@ function DueStatusCard({
 
                         {/* Transaction Type Badge */}
                         <div className='d-flex justify-content-between align-items-center'>
-                            <div className={`${styles.typeIndicator} mt-1`}>
-                                <span className={`${styles.typeBadge} ${transaction.type === 'gave' ? styles.receivable : styles.payable}`}>
-                                    {transaction.type === 'gave' ? 'To Receive' : 'To Pay'}
+                            <div
+                                className={`${styles.typeIndicator} mt-1`}
+                                onClick={() => markHandler(transaction.uuid)}
+                                style={{ cursor: 'pointer' }}
+                                title={transaction.markAsDone ? `Mark as ${transaction.type === 'gave' ? 'not received' : 'unpaid'}` : `Mark as ${transaction.type === 'gave' ? 'received' : 'paid'}`}
+                            >
+                                <span className={`${styles.typeBadge} ${transaction.markAsDone ? styles.completed :
+                                    (transaction.type === 'gave' ? styles.receivable : styles.payable)
+                                    }`}>
+                                    {transaction.markAsDone ?
+                                        (transaction.type === 'gave' ? '✓ Received' : '✓ Paid') :
+                                        `Mark as ${transaction.type === 'gave' ? 'received' : 'paid'}`
+                                    }
                                 </span>
                             </div>
                             <button
@@ -135,10 +164,13 @@ DueStatusCard.propTypes = {
         type: PropTypes.oneOf(['gave', 'took']).isRequired,
         archived: PropTypes.bool,
         archivedAt: PropTypes.string,
+        markAsDone: PropTypes.bool,
+        markedDoneAt: PropTypes.string,
     }).isRequired,
     currencySymbol: PropTypes.string,
     onArchive: PropTypes.func,
     onUnarchive: PropTypes.func,
+    markTransactionAsDone: PropTypes.func,
     isArchived: PropTypes.bool,
 };
 

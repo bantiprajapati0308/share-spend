@@ -1,0 +1,301 @@
+// BorrowLendTable Clean & Professional Styles
+// Minimal, banking-style design following professional UI patterns
+@use '../../../assets/scss/variables' as *;
+@use '../../../assets/scss/mixins' as *;
+
+.tableContainer {
+    background: white;
+    border-radius: $spacing-3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: $spacing-5;
+    border: 1px solid $neutral-200;
+}
+
+// Clean Tab Navigation
+.tabNavigation {
+    display: flex;
+    background: #fafbfc;
+    border-bottom: 1px solid $neutral-200;
+    padding: $spacing-2;
+    gap: $spacing-1;
+
+    @include mobile-up {
+        flex-direction: column;
+        gap: $spacing-1;
+    }
+}
+
+.tabButton {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-3 $spacing-4;
+    border: 1px solid transparent;
+    border-radius: $spacing-2;
+    background: transparent;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-base;
+    transition: all 0.2s ease;
+    color: $neutral-600;
+    min-height: 44px;
+
+    @include mobile-up {
+        padding: $spacing-2 $spacing-3;
+        justify-content: center;
+    }
+
+    &:hover {
+        background: white;
+        border-color: $neutral-300;
+        color: $neutral-800;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.tabIcon {
+    font-size: 1.1rem;
+}
+
+.tabLabel {
+    font-weight: $font-weight-medium;
+}
+
+.tabCount {
+    background: $neutral-100;
+    color: $neutral-700;
+    border-radius: $spacing-2;
+    padding: 2px $spacing-2;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    min-width: 22px;
+    text-align: center;
+}
+
+// Active States - Clean and Minimal
+.activeGave {
+    background: white;
+    border-color: $success-400;
+    color: $success-700;
+    font-weight: $font-weight-semibold;
+    box-shadow: 0 1px 3px rgba(76, 175, 80, 0.15);
+
+    .tabCount {
+        background: $success-50;
+        color: $success-700;
+    }
+}
+
+.activeTook {
+    background: white;
+    border-color: $danger-400;
+    color: $danger-700;
+    font-weight: $font-weight-semibold;
+    box-shadow: 0 1px 3px rgba(244, 67, 54, 0.15);
+
+    .tabCount {
+        background: $danger-50;
+        color: $danger-700;
+    }
+}
+
+// Clean Table Wrapper
+.tableWrapper {
+    background: white;
+
+    // Clean professional table styling
+    :global(.table) {
+        margin-bottom: 0;
+
+        thead {
+            background: $neutral-50;
+
+            th {
+                border-bottom: 2px solid $neutral-200;
+                color: $neutral-800;
+                font-weight: $font-weight-semibold;
+                font-size: $font-size-sm;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+                padding: $spacing-3;
+            }
+        }
+
+        tbody {
+            tr {
+                transition: background-color 0.15s ease;
+
+                &:hover {
+                    background: #f8fafc;
+                }
+
+                td {
+                    border: none;
+                    border-bottom: 1px solid #f1f5f9;
+                    vertical-align: middle;
+                    padding: $spacing-3;
+                }
+            }
+        }
+    }
+}
+
+// Clean Row Styling Classes
+.personCell {
+    font-weight: $font-weight-semibold;
+    color: $neutral-900;
+
+    .personName {
+        display: flex;
+        align-items: center;
+        gap: $spacing-2;
+    }
+
+    .transactionBadge {
+        background: $primary-600;
+        color: white;
+        border-radius: $spacing-2;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-bold;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.amountCell {
+    font-weight: $font-weight-semibold;
+    color: $success-700;
+    font-size: 1.05rem;
+}
+
+.dateCell {
+    color: $neutral-700;
+    font-weight: $font-weight-normal;
+
+    .dateIcon {
+        margin-right: $spacing-1;
+        opacity: 0.6;
+    }
+}
+
+.dueDateCell {
+    font-weight: $font-weight-normal;
+    color: $neutral-700;
+
+    &.overdue {
+        color: $danger-700;
+        font-weight: $font-weight-medium;
+    }
+
+    &.upcoming {
+        color: $warning-700;
+        font-weight: $font-weight-medium;
+    }
+}
+
+.daysCell {
+    text-align: center;
+    font-weight: $font-weight-medium;
+    color: $neutral-800;
+
+    .daysCount {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+
+        .daysNumber {
+            font-weight: $font-weight-semibold;
+            color: $primary-600;
+        }
+
+        .daysLabel {
+            font-size: $font-size-xs;
+            color: $neutral-500;
+        }
+    }
+}
+
+.statusCell {
+    text-align: center;
+
+    .statusBadge {
+        display: inline-flex;
+        align-items: center;
+        gap: $spacing-1;
+        padding: 4px $spacing-2;
+        border-radius: $spacing-2;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+
+        &:hover {
+            transform: none; // Remove scaling effect
+        }
+    }
+
+    &.paid {
+        .statusBadge {
+            background: $success-50;
+            color: $success-700;
+            border: 1px solid $success-200;
+        }
+    }
+
+    &.partiallypaid {
+        .statusBadge {
+            background: $warning-50;
+            color: $warning-700;
+            border: 1px solid $warning-200;
+        }
+    }
+
+    &.pending {
+        .statusBadge {
+            background: $danger-50;
+            color: $danger-700;
+            border: 1px solid $danger-200;
+        }
+    }
+}
+
+// Responsive Design
+@include mobile-up {
+    .tableContainer {
+        border-radius: $spacing-2;
+        margin-bottom: $spacing-4;
+    }
+
+    .tabButton {
+        padding: $spacing-2;
+
+        .tabIcon {
+            font-size: 1rem;
+        }
+
+        .tabLabel {
+            font-size: $font-size-sm;
+        }
+    }
+
+    .tableWrapper {
+        :global(.table) {
+            font-size: $font-size-sm;
+
+            thead th {
+                padding: $spacing-2;
+                font-size: $font-size-xs;
+            }
+
+            tbody td {
+                padding: $spacing-2;
+            }
+        }
+    }
+}

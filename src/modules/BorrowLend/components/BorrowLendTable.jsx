@@ -1,15 +1,17 @@
 /**
  * BorrowLend Transactions Table
  * Displays aggregated lending/borrowing transactions in separate tables with tab switching
+ * Enhanced with beautiful status indicators, due dates, and creative styling
  */
 
 import { useMemo, useState } from 'react';
 import ReportTable from '../../../components/report/ReportTable';
 import { prepareAggregatedTableData } from '../utils/borrowLendTableUtils';
-import { createBorrowLendTableRenderer } from '../utils/borrowLendTableRenderers';
+import { createEnhancedBorrowLendRenderer } from '../utils/borrowLendTableRenderers';
 import TransactionDetailsModal from './TransactionDetailsModal';
 import PropTypes from 'prop-types';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
+import styles from '../styles/BorrowLendTable.module.scss';
 
 function BorrowLendTable({ transactions, currency }) {
     const [selectedRow, setSelectedRow] = useState(null);
@@ -39,22 +41,21 @@ function BorrowLendTable({ transactions, currency }) {
 
     // Select the appropriate data based on active tab
     const activeData = activeTab === 'gave' ? lentAggregatedData : borrowedAggregatedData;
-
-    // Create headers
+    console.log('Active Data:', activeData);
+    // Create clean professional headers
     const headers = useMemo(() => [
-        { label: 'Name', className: 'p-2' },
-        { label: 'Amount', className: 'p-2' },
-        { label: activeTab === 'gave' ? 'Lending Date' : 'Borrowed Date', className: 'p-2' },
-        { label: 'Due Date', className: 'p-2' },
-        { label: 'Total Days', className: 'p-2 text-center' },
-        { label: 'Status', className: 'p-2 text-center' }
+        { label: 'Person', className: 'p-3' },
+        { label: 'Amount', className: 'p-3' },
+        { label: activeTab === 'gave' ? 'Lent Date' : 'Borrowed Date', className: 'p-3' },
+        { label: 'Due Date', className: 'p-3' },
+        { label: 'Duration', className: 'p-3 text-center' },
+        { label: 'Status', className: 'p-3 text-center' }
     ], [activeTab]);
 
-    // Create renderer with click handler
+    // Create enhanced renderer with click handler
     const renderRow = useMemo(() =>
-        createBorrowLendTableRenderer(currency, (data, personName, status) => {
+        createEnhancedBorrowLendRenderer(currency, (data, personName, status) => {
             // Only show modal if there are multiple transactions
-
             if (data && data.length > 1) {
                 setSelectedRow({ data, personName, status });
             }
@@ -70,56 +71,40 @@ function BorrowLendTable({ transactions, currency }) {
 
     const isLendingTab = activeTab === 'gave';
     const emptyMessage = isLendingTab
-        ? "No lending transactions yet. Start by lending money!"
-        : "No borrowed transactions yet. Start by borrowing money!";
+        ? "No 'gave' transactions yet. Start by giving money!"
+        : "No 'took' transactions yet. Start by taking money!";
 
     return (
-        <>
-            {/* Tab Navigation */}
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #e0e0e0' }}>
+        <div className={styles.tableContainer}>
+            {/* Enhanced Tab Navigation */}
+            <div className={styles.tabNavigation}>
                 <button
                     onClick={() => handleTabChange('gave')}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        border: 'none',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        fontSize: '1rem',
-                        fontWeight: activeTab === 'gave' ? '600' : '500',
-                        color: activeTab === 'gave' ? '#1565c0' : '#999',
-                        borderBottom: activeTab === 'gave' ? '3px solid #1565c0' : 'none',
-                        transition: 'all 0.3s ease',
-                        marginBottom: '-2px'
-                    }}
+                    className={`${styles.tabButton} ${activeTab === 'gave' ? styles.activeGave : ''}`}
                 >
-                    Lending ({lentTransactions.length})
+                    <span className={styles.tabIcon}>📤</span>
+                    <span className={styles.tabLabel}>Gave</span>
+                    <span className={styles.tabCount}>({lentTransactions.length})</span>
                 </button>
                 <button
                     onClick={() => handleTabChange('took')}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        border: 'none',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        fontSize: '1rem',
-                        fontWeight: activeTab === 'took' ? '600' : '500',
-                        color: activeTab === 'took' ? '#c62828' : '#999',
-                        borderBottom: activeTab === 'took' ? '3px solid #c62828' : 'none',
-                        transition: 'all 0.3s ease',
-                        marginBottom: '-2px'
-                    }}
+                    className={`${styles.tabButton} ${activeTab === 'took' ? styles.activeTook : ''}`}
                 >
-                    Borrowing ({borrowedTransactions.length})
+                    <span className={styles.tabIcon}>📥</span>
+                    <span className={styles.tabLabel}>Took</span>
+                    <span className={styles.tabCount}>({borrowedTransactions.length})</span>
                 </button>
             </div>
 
-            {/* Table Content */}
-            <ReportTable
-                headers={headers}
-                data={activeData}
-                renderRow={renderRow}
-                emptyMessage={emptyMessage}
-            />
+            {/* Enhanced Table Content */}
+            <div className={styles.tableWrapper}>
+                <ReportTable
+                    headers={headers}
+                    data={activeData}
+                    renderRow={renderRow}
+                    emptyMessage={emptyMessage}
+                />
+            </div>
 
             {/* Transaction Details Modal */}
             {selectedRow && (
@@ -127,9 +112,10 @@ function BorrowLendTable({ transactions, currency }) {
                     show={!!selectedRow}
                     onHide={handleCloseModal}
                     selectedRow={selectedRow}
+                    currency={currency}
                 />
             )}
-        </>
+        </div>
     );
 }
 
