@@ -8,6 +8,7 @@ import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
+import TopCategories from './TopCategories';
 
 function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const [transactionType, setTransactionType] = useState('spend');
@@ -85,7 +86,6 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     const isRepayment = category && category.categoryName.toLowerCase() === 'repayment';
     const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
     const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
-
     // Check if it's a lending-related transaction that requires person name
     const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
     return (
@@ -126,6 +126,12 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                             </button>
                         </CategorySelectDropdown>
                     </div>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                    <TopCategories
+                        selectedCategory={(cat) => setCategory(cat)}
+                        transactionType={transactionType}
+                    />
                 </Col>
                 <Col xs={5} sm={6} md={isLendingTransaction ? 3 : 3}>
                     <div className={styles.formGroup}>
