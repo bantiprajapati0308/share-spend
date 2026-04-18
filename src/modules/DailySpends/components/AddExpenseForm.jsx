@@ -127,7 +127,7 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                         </CategorySelectDropdown>
                     </div>
                 </Col>
-                <Col xs={12} sm={6} md={3}>
+                <Col className="mb-2" xs={12} sm={6} md={3}>
                     <TopCategories
                         selectedCategory={(cat) => setCategory(cat)}
                         transactionType={transactionType}
