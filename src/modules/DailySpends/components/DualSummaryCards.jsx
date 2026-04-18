@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-import { Badge } from 'react-bootstrap';
-import styles from './DualSummaryCards.module.scss';
+import styles from '../styles/DualSummaryCards.module.scss';
 import { formatCurrencyINR } from '../../../Util';
 import { useNavigate } from 'react-router-dom';
 

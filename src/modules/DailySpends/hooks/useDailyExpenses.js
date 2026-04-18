@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     getTransactions,
     getTransactionsByType,
@@ -168,6 +168,49 @@ export const useDailyExpenses = () => {
         }
     };
 
+    // GET: Get top 3 categories for both spend and income types (Memoized for performance)
+    const getTopCategories = useMemo(() => {
+        try {
+            const spendCategories = {};
+            const incomeCategories = {};
+
+            // Group transactions by type and category, count entries
+            transactions.forEach(transaction => {
+                const category = transaction.category || 'Other';
+                const type = transaction.type;
+
+                if (type === 'spend') {
+                    spendCategories[category] = (spendCategories[category] || 0) + 1;
+                } else if (type === 'income') {
+                    incomeCategories[category] = (incomeCategories[category] || 0) + 1;
+                }
+            });
+
+            // Sort and get top 5 for spend categories
+            const topSpendCategories = Object.entries(spendCategories)
+                .sort(([, countA], [, countB]) => countB - countA)
+                .slice(0, 5)
+                .map(([category]) => (category));
+
+            // Sort and get top 5 for income categories
+            const topIncomeCategories = Object.entries(incomeCategories)
+                .sort(([, countA], [, countB]) => countB - countA)
+                .slice(0, 5)
+                .map(([category]) => (category));
+
+            return {
+                spend: topSpendCategories,
+                income: topIncomeCategories
+            };
+        } catch (error) {
+            console.error("Error getting top categories:", error);
+            return {
+                spend: [],
+                income: []
+            };
+        }
+    }, [transactions]); // Only recalculate when transactions change
+
     return {
         transactions,
         addTransaction: addTransactionHandler,
@@ -177,6 +220,7 @@ export const useDailyExpenses = () => {
         getSpendPercentage,
         getTransactionsByType: getTransactionsByTypeLocal,
         getExpensesByCategory,
+        getTopCategories,
         refreshTransactions,
         loading,
         error,

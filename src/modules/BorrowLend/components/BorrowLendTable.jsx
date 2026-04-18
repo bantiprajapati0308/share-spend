@@ -41,7 +41,6 @@ function BorrowLendTable({ transactions, currency }) {
 
     // Select the appropriate data based on active tab
     const activeData = activeTab === 'gave' ? lentAggregatedData : borrowedAggregatedData;
-    console.log('Active Data:', activeData);
     // Create clean professional headers
     const headers = useMemo(() => [
         { label: 'Person', className: 'p-3' },

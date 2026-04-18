@@ -17,7 +17,6 @@ function CategoryDetailsModal({
     if (!transactions || transactions.length === 0) {
         return null;
     }
-    console.log(transactions, "transactions in modal");
     // Calculate statistics for the category
     const totalAmount = transactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
 

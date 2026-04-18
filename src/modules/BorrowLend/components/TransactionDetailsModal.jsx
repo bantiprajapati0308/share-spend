@@ -12,7 +12,6 @@ import { tableIcon } from '../utils/borrowLendTableRenderers';
 
 function TransactionDetailsModal({ show, onHide, selectedRow }) {
     const { data, personName, status } = selectedRow;
-    console.log(data, "data")
     if (!data || data.length === 0) {
         return null;
     }
