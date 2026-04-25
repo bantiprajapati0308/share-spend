@@ -154,12 +154,8 @@ function MasterReport({ currency = 'INR' }) {
                     <StackedBarChart
                         data={getWeeklyBreakdownData()}
                         categories={getUniqueCategories()}
-                        title="Monthly Expense Breakdown by Weeks"
-                        subtitle={
-                            getTotalCategoriesCount() > 6
-                                ? `Top 6 categories + Others for ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-                                : `Expenses by category for each week of ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
-                        }
+                        title="Breakdown by Weeks"
+
                         size="medium"
                         loading={loading}
                         currency="₹"
@@ -171,19 +167,6 @@ function MasterReport({ currency = 'INR' }) {
                             // Optional: Navigate to category details or show modal
                         }}
                     />
-                    <div className="mt-2 text-muted text-center" style={{ fontSize: '0.75rem' }}>
-                        <i className="bi bi-info-circle me-1"></i>
-                        {getTotalCategoriesCount() > 6 ? (
-                            <>
-                                Showing top 6 categories by amount. "Other" includes: {getOtherCategoriesList().join(', ')}
-                                • Total: {getTotalCategoriesCount()} categories
-                            </>
-                        ) : (
-                            <>
-                                Click legend items to show/hide categories • Total: {getTotalCategoriesCount()} categories
-                            </>
-                        )}
-                    </div>
                 </div>
             )}
 
