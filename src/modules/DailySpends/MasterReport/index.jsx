@@ -12,7 +12,7 @@ import CategoryBreakdownTab from './components/CategoryBreakdownTab';
 import MonthlyBreakdownTab from './components/MonthlyBreakdownTab';
 import RecentTransactionsTab from './components/RecentTransactionsTab';
 import CategoryDetailsModal from './components/CategoryDetailsModal';
-import { StackedBarChart } from '../../../components/charts';
+import ChartsCarousel from './components/ChartsCarousel';
 import { Chart } from 'chart.js';
 
 // Hooks and Utils
@@ -58,12 +58,25 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
 
     const currencySymbol = getCurrencySymbol(currency);
 
+    // Prepare pie chart data from category breakdown
+    const getCategoryChartData = () => {
+        return Object.entries(categoryBreakdown).map(([category, data]) => ({
+            category: category,
+            amount: data.amount
+        })).sort((a, b) => b.amount - a.amount);
+    };
+
     // Handle category row click
     const handleCategoryClick = (categoryName) => {
         const categoryTransactions = getCategoryTransactions(categoryName);
         setSelectedCategory(categoryName);
         setSelectedCategoryTransactions(categoryTransactions);
         setShowCategoryModal(true);
+    };
+
+    // Handle pie chart slice click
+    const handlePieSliceClick = (sliceData) => {
+        handleCategoryClick(sliceData.label);
     };
 
     // Handle modal close
@@ -102,28 +115,25 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                         family: "'Inter', sans-serif",
                     },
                     usePointStyle: true,
-                    textAlign: 'left',
-                    generateLabels: function (chart) {
-                        const original = Chart.defaults.plugins.legend.labels.generateLabels;
-                        const labels = original.call(this, chart);
-
-                        // Truncate long category names for compact display
-                        labels.forEach(label => {
-                            if (label.text && label.text.length > 12) {
-                                label.text = label.text.substring(0, 12) + '...';
-                            }
-                        });
-
-                        return labels;
-                    }
+                    textAlign: 'left'
                 },
                 maxHeight: 50,
                 onClick: (evt, legendItem, legend) => {
                     // Toggle dataset visibility
-                    const index = legendItem.datasetIndex;
+                    const index = legendItem.datasetIndex !== undefined ? legendItem.datasetIndex : legendItem.index;
                     const chart = legend.chart;
-                    const meta = chart.getDatasetMeta(index);
-                    meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+
+                    if (legendItem.datasetIndex !== undefined) {
+                        // For stacked bar chart (multiple datasets)
+                        const meta = chart.getDatasetMeta(index);
+                        meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+                    } else {
+                        // For pie chart (single dataset, multiple data points)
+                        const meta = chart.getDatasetMeta(0);
+                        if (meta.data[index]) {
+                            meta.data[index].hidden = !meta.data[index].hidden;
+                        }
+                    }
                     chart.update();
                 }
             }
@@ -131,6 +141,27 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
         layout: {
             padding: {
                 bottom: 5
+            }
+        }
+    };
+
+    // Same options for pie chart (reuse the working stacked bar chart legend config)
+    const pieChartOptions = {
+        ...chartOptions,
+        plugins: {
+            ...chartOptions.plugins,
+            legend: {
+                ...chartOptions.plugins.legend,
+                onClick: (evt, legendItem, legend) => {
+                    // Specific pie chart legend click handler
+                    const index = legendItem.index;
+                    const chart = legend.chart;
+                    const meta = chart.getDatasetMeta(0);
+                    if (meta.data[index]) {
+                        meta.data[index].hidden = !meta.data[index].hidden;
+                        chart.update();
+                    }
+                }
             }
         }
     };
@@ -151,26 +182,23 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                 thisWeekData={calculations.thisWeek}
             />
 
-            {/* Monthly Expense Breakdown Chart by Weeks */}
+            {/* Charts Carousel */}
             {!loading && transactions.length > 0 && (
-                <div className="mb-4" style={{ position: 'relative' }}>
-                    <StackedBarChart
-                        data={getWeeklyBreakdownData()}
-                        categories={getUniqueCategories()}
-                        title="Breakdown by Weeks"
-
-                        size="medium"
-                        loading={loading}
-                        currency="₹"
-                        showValues={true}
-                        customOptions={chartOptions}
-                        className={getUniqueCategories().length > 4 ? "multi-category-legend-chart" : "compact-legend-chart"}
-                        colorPalette="default"
-                        onBarClick={(data) => {
-                            // Optional: Navigate to category details or show modal
-                        }}
-                    />
-                </div>
+                <ChartsCarousel
+                    pieChartData={getCategoryChartData()}
+                    stackedBarData={getWeeklyBreakdownData()}
+                    categories={getUniqueCategories()}
+                    chartOptions={chartOptions}
+                    pieChartOptions={pieChartOptions}
+                    onPieSliceClick={handlePieSliceClick}
+                    onBarClick={(data) => {
+                        // Optional: Navigate to category details or show modal
+                    }}
+                    loading={loading}
+                    startDate={startDate}
+                    endDate={endDate}
+                    currency="₹"
+                />
             )}
 
             {/* Content based on state */}
