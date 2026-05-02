@@ -4,8 +4,10 @@ import { getTransactions } from '../../../../hooks/useDailySpends';
 /**
  * Custom hook for Master Report data management
  * Handles data fetching, processing, and calculations
+ * @param {Date} startDate - Start date for filtering (optional)
+ * @param {Date} endDate - End date for filtering (optional)
  */
-export function useMasterReportData() {
+export function useMasterReportData(startDate = null, endDate = null) {
     const [transactions, setTransactions] = useState([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState({});
     const [monthlyBreakdown, setMonthlyBreakdown] = useState({});
@@ -16,7 +18,21 @@ export function useMasterReportData() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const data = await getTransactions();
+                const allData = await getTransactions();
+
+                // Filter data by date range if provided
+                let filteredData = allData;
+                if (startDate && endDate) {
+                    const startDateStr = startDate.toISOString().split('T')[0];
+                    const endDateStr = endDate.toISOString().split('T')[0];
+
+                    filteredData = allData.filter(tx => {
+                        const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+                        return txDateStr >= startDateStr && txDateStr <= endDateStr;
+                    });
+                }
+
+                const data = filteredData;
                 setTransactions(data);
 
                 // Process category breakdown
@@ -56,7 +72,7 @@ export function useMasterReportData() {
         };
 
         fetchData();
-    }, []);
+    }, [startDate, endDate]);
 
     // Helper calculations
     const getTotalSpent = () => {

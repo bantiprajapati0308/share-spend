@@ -6,6 +6,7 @@ import DataTable from './DataTable';
 import GradientProgressBar from '../../components/GradientProgressBar';
 import { DEFAULT_CURRENCY_SYMBOL } from '../../../../Util';
 import styles from '../styles/MasterReport.module.scss';
+import { formatAmount, formatPercentage } from '../../../../utils/helper';
 
 /**
  * Category Breakdown Tab Component
@@ -23,9 +24,9 @@ function CategoryBreakdownTab({
         .map(([category, data]) => ({
             key: category,
             category: category,
-            amount: data.amount,
+            amount: formatAmount(data.amount),
             count: data.count,
-            percentage: Math.round((data.amount / totalSpent) * 100)
+            percentage: formatPercentage((data.amount / totalSpent) * 100)
         }));
 
     // Define table columns
@@ -45,7 +46,7 @@ function CategoryBreakdownTab({
             align: 'right',
             render: (row) => (
                 <strong>
-                    {currencySymbol}{row.amount.toFixed(2)}
+                    {row.amount}
                 </strong>
             )
         },

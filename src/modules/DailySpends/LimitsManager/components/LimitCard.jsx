@@ -14,17 +14,18 @@ import {
 } from '../utils/limitsCalculations';
 import GradientProgressBar from '../../components/GradientProgressBar';
 import { formatCurrencyINR } from '../../../../Util';
+import { formatPercentage } from '../../../../utils/helper';
 
 /**
  * LimitCard Component
  * Displays a single limit with progress and actions
  */
 function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCategoryClick }) {
-    const percentage = calculateLimitPercentage(spent, limit.limit);
+    const percentage = formatPercentage(calculateLimitPercentage(spent, limit.limit));
     const progressPercentage = Math.min(percentage, 100);
     const remaining = calculateRemaining(spent, limit.limit);
     const overLimit = calculateOverLimit(spent, limit.limit);
-    const overPercent = limit.limit > 0 ? Math.round((overLimit / limit.limit) * 100) : 0;
+    const overPercent = limit.limit > 0 ? formatPercentage(calculateLimitPercentage(overLimit, limit.limit)) : 0;
 
     // Use different status logic for income vs spend
     const statusVariant = limitType === 'income'
