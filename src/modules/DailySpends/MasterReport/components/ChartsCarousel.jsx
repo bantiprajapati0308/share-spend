@@ -51,7 +51,6 @@ function ChartsCarousel({
                             ...pieChartOptions,
                             responsive: true,
                             maintainAspectRatio: false,
-                            devicePixelRatio: 1,
                             layout: {
                                 padding: {
                                     left: 5,
@@ -86,7 +85,6 @@ function ChartsCarousel({
                             ...chartOptions,
                             responsive: true,
                             maintainAspectRatio: false,
-                            devicePixelRatio: 1,
                             layout: {
                                 padding: {
                                     left: 5,
