@@ -13,6 +13,7 @@ export { default as CategoryBreakdownTab } from './components/CategoryBreakdownT
 export { default as MonthlyBreakdownTab } from './components/MonthlyBreakdownTab';
 export { default as RecentTransactionsTab } from './components/RecentTransactionsTab';
 export { default as CategoryDetailsModal } from './components/CategoryDetailsModal';
+export { default as ChartsCarousel } from './components/ChartsCarousel';
 
 // Hooks
 export { useMasterReportData } from './hooks/useMasterReportData';

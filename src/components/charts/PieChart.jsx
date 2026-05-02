@@ -42,8 +42,14 @@ const PieChart = ({
             ...customOptions,
             plugins: {
                 ...PIE_CHART_OPTIONS.plugins,
+                ...(customOptions.plugins || {}),
+                legend: {
+                    ...PIE_CHART_OPTIONS.plugins?.legend,
+                    ...(customOptions.plugins?.legend || {}),
+                },
                 tooltip: {
                     ...PIE_CHART_OPTIONS.plugins?.tooltip,
+                    ...(customOptions.plugins?.tooltip || {}),
                     callbacks: {
                         label: (context) => {
                             const label = context.label || '';
@@ -57,7 +63,7 @@ const PieChart = ({
                                 return `${label}: ${formatCurrency(value, currency)}`;
                             }
                         },
-                        ...customOptions.plugins?.tooltip?.callbacks,
+                        ...(customOptions.plugins?.tooltip?.callbacks || {}),
                     },
                 },
             },
