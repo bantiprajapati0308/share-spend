@@ -24,8 +24,11 @@ import { generateMasterReportCSV, downloadCSV } from './utils/masterReportUtils'
  * Master Report Component
  * Refactored into modular components following DRY principles
  * Implements category details modal on row click
+ * @param {string} currency - Currency type (default: 'INR')
+ * @param {Date} startDate - Start date for filtering (optional)
+ * @param {Date} endDate - End date for filtering (optional)
  */
-function MasterReport({ currency = 'INR' }) {
+function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('category');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -51,7 +54,7 @@ function MasterReport({ currency = 'INR' }) {
         getUniqueCategories,
         getTotalCategoriesCount,
         getOtherCategoriesList
-    } = useMasterReportData();
+    } = useMasterReportData(startDate, endDate);
 
     const currencySymbol = getCurrencySymbol(currency);
 
@@ -232,7 +235,9 @@ function MasterReport({ currency = 'INR' }) {
 }
 
 MasterReport.propTypes = {
-    currency: PropTypes.string
+    currency: PropTypes.string,
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date)
 };
 
 export default MasterReport;

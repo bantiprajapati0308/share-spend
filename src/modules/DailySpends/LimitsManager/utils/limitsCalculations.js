@@ -3,6 +3,8 @@
  * Handles percentage calculations, status determination, and formatting
  */
 
+import { formatPercentage } from "../../../../utils/helper";
+
 /**
  * Calculate the percentage of limit spent
  * @param {number} spent - Amount spent
@@ -11,7 +13,7 @@
  */
 export const calculateLimitPercentage = (spent, limit) => {
     if (limit === 0) return 0;
-    return Math.round((spent / limit) * 100);
+    return (spent / limit) * 100;
 };
 
 /**
@@ -171,7 +173,7 @@ export const getLimitsSummary = (limits, categoryTotals) => {
 
     return {
         ...summary,
-        averageUsage: Math.round(summary.totalPercentage / summary.totalLimits),
+        averageUsage: formatPercentage(summary.totalPercentage / summary.totalLimits),
     };
 };
 

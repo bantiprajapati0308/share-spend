@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth } from './firebase';
 import TopBar from './components/TopBar';
 import BottomNavigation from './components/BottomNavigation';
@@ -13,11 +13,18 @@ import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
 import LimitsManager from './modules/DailySpends/LimitsManager';
 import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
-import MasterReport from './modules/DailySpends/components/MasterReport';
+import MasterReport from './modules/DailySpends/MasterReport';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
 import { CategoryProvider } from './modules/DailySpends/context/CategoryContext.jsx';
+
+// MasterReport wrapper to handle location state
+function MasterReportWrapper() {
+  const location = useLocation();
+  const { startDate, endDate } = location.state || {};
+  return <MasterReport startDate={startDate} endDate={endDate} />;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -59,7 +66,7 @@ function App() {
             <Route path="/share-spend/daily-expenses" element={<DailySpends />} />
             <Route path="/share-spend/daily-expenses/limits-manager" element={<LimitsManager />} />
             <Route path="/share-spend/breakdown-report" element={<BreakdownReport />} />
-            <Route path="/share-spend/daily-expenses/master-report" element={<MasterReport />} />
+            <Route path="/share-spend/daily-expenses/master-report" element={<MasterReportWrapper />} />
             <Route path="/share-spend/lending" element={<BorrowLend />} />
             <Route path="*" element={<Navigate to="/share-spend/login" />} />
           </Routes>

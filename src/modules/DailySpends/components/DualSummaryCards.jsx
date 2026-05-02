@@ -2,11 +2,14 @@ import PropTypes from 'prop-types';
 import styles from '../styles/DualSummaryCards.module.scss';
 import { formatCurrencyINR } from '../../../Util';
 import { useNavigate } from 'react-router-dom';
+import { formatPercentage } from '../../../utils/helper';
 
 function DualSummaryCards({
     totalSpend,
     totalIncome,
     spendPercentage,
+    startDate,
+    endDate,
 }) {
     const savedAmount = parseFloat(totalIncome) - parseFloat(totalSpend);
     const isOverspent = savedAmount < 0;
@@ -14,9 +17,10 @@ function DualSummaryCards({
     const overspentPercentage = isOverspent ? ((Math.abs(savedAmount) / totalIncome) * 100) : 0;
     const navigate = useNavigate();
     const handleOpenMasterReport = () => {
-        navigate('/share-spend/daily-expenses/master-report');
+        navigate('/share-spend/daily-expenses/master-report', {
+            state: { startDate, endDate }
+        });
     };
-
     return (
         <div className={styles.wrapper}>
             {/* Compact Horizontal Summary */}
@@ -68,7 +72,7 @@ function DualSummaryCards({
                         ></div>
                     </div>
                     <div className={styles.percentage}>
-                        {Math.round(spendPercentage)}%
+                        {formatPercentage(spendPercentage)}%
                     </div>
                 </div>
             </div>

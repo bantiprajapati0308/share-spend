@@ -123,7 +123,7 @@ function DailySpends() {
     const getDateRangePercentage = () => {
         const totalIncome = getDateRangeIncome();
         const totalSpend = getDateRangeSummary();
-        return totalIncome > 0 ? Math.round((totalSpend / totalIncome) * 100) : 0;
+        return totalIncome > 0 ? (totalSpend / totalIncome) * 100 : 0;
     };
 
     const handleDateRangeChange = async (newRange) => {
