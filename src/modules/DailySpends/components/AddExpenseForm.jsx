@@ -10,7 +10,7 @@ import TransactionTypeSelector from './common/TransactionTypeSelector';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import TopCategories from './TopCategories';
 
-function AddExpenseForm({ onAddExpense, onLimitsClick }) {
+function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -27,6 +27,37 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
         setCategory(null);
         setPersonName(''); // Also clear person name when switching types
     }, [transactionType]);
+
+    // Populate form fields when editing
+    useEffect(() => {
+        if (isEditMode && editingTransaction) {
+            setTransactionType(editingTransaction.type || 'spend');
+            setExpenseName(editingTransaction.name || '');
+            setAmount(editingTransaction.amount?.toString() || '');
+            // Reconstruct category object from editing data
+            const categoryObj = {
+                categoryId: editingTransaction.categoryId,
+                categoryName: editingTransaction.categoryName || editingTransaction.category,
+                emoji: editingTransaction.categoryIcon || '📝',
+                label: `${editingTransaction.categoryIcon} ${editingTransaction.categoryName}`,
+            };
+            setCategory(categoryObj);
+
+            setDate(editingTransaction.date || new Date().toISOString().split('T')[0]);
+            setDueDate(editingTransaction.dueDate || '');
+            setNotes(editingTransaction.notes || '');
+
+            // Check if it's a lending transaction and set person name
+            const categoryName = (editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
+            const isLendingType = ['lent', 'repayment', 'borrowed', 'borrowed pay'].includes(categoryName);
+            if (isLendingType) {
+                setPersonName(editingTransaction.name || '');
+                setExpenseName(''); // Clear expense name for lending transactions
+            } else {
+                setPersonName('');
+            }
+        }
+    }, [isEditMode, editingTransaction]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,22 +93,39 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
 
         try {
             setIsSubmitting(true);
-            await onAddExpense(newTransaction);
 
-            // Reset form only on success
-            setExpenseName('');
-            setAmount('');
-            setCategory(null);
-            setDate(new Date().toISOString().split('T')[0]);
-            setDueDate('');
-            setPersonName('');
-            setNotes('');
+            if (isEditMode) {
+                await onUpdateExpense(newTransaction);
 
-            const title = transactionType === 'spend' ? 'Expense' : 'Income';
-            toast.success(`${title} added successfully!`);
+                // Clear form after successful update
+                setExpenseName('');
+                setAmount('');
+                setCategory(null);
+                setDate(new Date().toISOString().split('T')[0]);
+                setDueDate('');
+                setPersonName('');
+                setNotes('');
+
+                const title = transactionType === 'spend' ? 'Expense' : 'Income';
+                toast.success(`${title} updated successfully!`);
+            } else {
+                await onAddExpense(newTransaction);
+
+                // Reset form only on success (and only when adding, not editing)
+                setExpenseName('');
+                setAmount('');
+                setCategory(null);
+                setDate(new Date().toISOString().split('T')[0]);
+                setDueDate('');
+                setPersonName('');
+                setNotes('');
+
+                const title = transactionType === 'spend' ? 'Expense' : 'Income';
+                toast.success(`${title} added successfully!`);
+            }
         } catch (error) {
-            console.error('Error adding transaction:', error);
-            toast.error(error.message || 'Failed to add transaction. Please try again.');
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} transaction:`, error);
+            toast.error(error.message || `Failed to ${isEditMode ? 'update' : 'add'} transaction. Please try again.`);
         } finally {
             setIsSubmitting(false);
         }
@@ -91,14 +139,19 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
             <div className={styles.formHeader}>
-                <div className='d-flex align-items-center justify-content-between mb-4'> <h3 className='mb-0'>➕ Add {transactionType === 'spend' ? 'Expense' : 'Income'} </h3> <Button
-                    variant="link"
-                    onClick={onLimitsClick}
-                    className={styles.reportBtn}
-                    size="sm"
-                >
-                    Spending Limits
-                </Button></div>
+                <div className='d-flex align-items-center justify-content-between mb-4'>
+                    <h3 className='mb-0'>
+                        {isEditMode ? '✏️' : '➕'} {isEditMode ? 'Edit' : 'Add'} {transactionType === 'spend' ? 'Expense' : 'Income'}
+                    </h3>
+                    <Button
+                        variant="link"
+                        onClick={onLimitsClick}
+                        className={styles.reportBtn}
+                        size="sm"
+                    >
+                        Spending Limits
+                    </Button>
+                </div>
                 <TransactionTypeSelector
                     value={transactionType}
                     onChange={setTransactionType}
@@ -220,19 +273,32 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
                 />
             </div>
 
-            <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? (
-                    <>
-                        <Spinner animation="border" size="sm" style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
-                        Adding...
-                    </>
-                ) : (
-                    <>
-                        <Plus size={18} style={{ marginRight: '0.4rem' }} />
-                        Add
-                    </>
+            <div className="d-flex gap-2">
+                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                    {isSubmitting ? (
+                        <>
+                            <Spinner animation="border" size="sm" style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
+                            {isEditMode ? 'Updating...' : 'Adding...'}
+                        </>
+                    ) : (
+                        <>
+                            <Plus size={18} style={{ marginRight: '0.4rem' }} />
+                            {isEditMode ? 'Update' : 'Add'}
+                        </>
+                    )}
+                </button>
+
+                {isEditMode && (
+                    <button
+                        type="button"
+                        className={`${styles.submitBtn} ${styles.cancelBtn}`}
+                        onClick={onCancelEdit}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </button>
                 )}
-            </button>
+            </div>
 
             <CategoryManagementModal
                 show={showCategoryModal}
@@ -244,6 +310,11 @@ function AddExpenseForm({ onAddExpense, onLimitsClick }) {
 
 AddExpenseForm.propTypes = {
     onAddExpense: PropTypes.func.isRequired,
+    onUpdateExpense: PropTypes.func,
+    onLimitsClick: PropTypes.func,
+    editingTransaction: PropTypes.object,
+    isEditMode: PropTypes.bool,
+    onCancelEdit: PropTypes.func,
 };
 
 export default AddExpenseForm;

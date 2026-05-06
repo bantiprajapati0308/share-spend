@@ -1,9 +1,9 @@
 import React from 'react';
-import { BoxArrowDown, BoxArrowDownRight, BoxArrowUp, Trash3 } from 'react-bootstrap-icons';
+import { BoxArrowDown, BoxArrowDownRight, BoxArrowUp, Trash3, PencilSquare } from 'react-bootstrap-icons';
 import styles from '../styles/DailySpends.module.scss';
 import { formatCurrencyINR, getCurrencySymbol } from '../../../Util';
 
-function ExpenseItem({ expense, onDelete }) {
+function ExpenseItem({ expense, onDelete, onEdit }) {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
     const incomeTypeData = expense.type;
@@ -51,15 +51,28 @@ function ExpenseItem({ expense, onDelete }) {
                 </div>
             </div>
 
-            {/* Delete Button */}
-            <button
-                className="btn btn-sm btn-light border-0 ms-2 d-flex align-items-center justify-content-center"
-                style={{ width: '32px', height: '32px' }}
-                onClick={() => onDelete(expense.id)}
-                title="Delete expense"
-            >
-                <Trash3 size={18} className="text-danger" />
-            </button>
+            {/* Action Buttons */}
+            <div className="d-flex gap-1 ms-2">
+                {/* Edit Button */}
+                <button
+                    className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
+                    style={{ width: '32px', height: '32px' }}
+                    onClick={() => onEdit(expense)}
+                    title="Edit expense"
+                >
+                    <PencilSquare size={16} className="text-warning" />
+                </button>
+
+                {/* Delete Button */}
+                <button
+                    className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
+                    style={{ width: '32px', height: '32px' }}
+                    onClick={() => onDelete(expense.id)}
+                    title="Delete expense"
+                >
+                    <Trash3 size={18} className="text-danger" />
+                </button>
+            </div>
         </div>
     );
 }

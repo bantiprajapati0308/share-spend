@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
@@ -26,10 +26,16 @@ function DailySpends() {
     const [userCategories, setUserCategories] = useState([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
+    // Edit functionality state
+    const [editingTransaction, setEditingTransaction] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const addFormRef = useRef(null);
+
     const {
         transactions,
         addTransaction,
         deleteTransaction,
+        updateTransaction,
         getTotalSpend,
         getTotalIncome,
         getSpendPercentage,
@@ -159,6 +165,37 @@ function DailySpends() {
         }
     };
 
+    const handleEditTransaction = async (transaction) => {
+        // Set edit mode and populate form
+        setEditingTransaction(transaction);
+        setIsEditMode(true);
+
+        // Scroll to form
+        if (addFormRef.current) {
+            addFormRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    };
+
+    const handleUpdateTransaction = async (updatedTransaction) => {
+        try {
+            await updateTransaction(editingTransaction.id, updatedTransaction);
+            // Clear edit mode
+            setEditingTransaction(null);
+            setIsEditMode(false);
+        } catch (err) {
+            toast.error(err.message || 'Failed to update transaction');
+            throw err;
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingTransaction(null);
+        setIsEditMode(false);
+    };
+
     const handleOpenBreakdownReport = () => {
         navigate('/share-spend/breakdown-report', {
             state: {
@@ -265,7 +302,16 @@ function DailySpends() {
                     />
 
                     {/* Add Transaction Form */}
-                    <AddExpenseForm onAddExpense={handleAddTransaction} onLimitsClick={handleOpenLimitsManager} />
+                    <div ref={addFormRef}>
+                        <AddExpenseForm
+                            onAddExpense={handleAddTransaction}
+                            onUpdateExpense={handleUpdateTransaction}
+                            onLimitsClick={handleOpenLimitsManager}
+                            editingTransaction={editingTransaction}
+                            isEditMode={isEditMode}
+                            onCancelEdit={handleCancelEdit}
+                        />
+                    </div>
                     {/* Transaction View Toggle */}
                     <TransactionViewToggle
                         selectedType={selectedType}
@@ -275,6 +321,7 @@ function DailySpends() {
                     <ExpenseList
                         expenses={displayedTransactions}
                         onDelete={handleDeleteTransaction}
+                        onEdit={handleEditTransaction}
                         title={sectionTitle}
                     />
                 </Col>
