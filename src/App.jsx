@@ -18,6 +18,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
 import { CategoryProvider } from './modules/DailySpends/context/CategoryContext.jsx';
+import FullScreenLoader from './components/common/FullScreenLoader';
 
 // MasterReport wrapper to handle location state
 function MasterReportWrapper() {
@@ -29,11 +30,20 @@ function MasterReportWrapper() {
 function App() {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(setUser);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setIsAuthLoading(false); // Auth check complete
+    });
     return () => unsubscribe();
   }, []);
+
+  // Show loader while Firebase checks authentication
+  if (isAuthLoading) {
+    return <FullScreenLoader />;
+  }
 
   if (!user) {
     return showRegister
