@@ -5,7 +5,7 @@ import ExpenseItem from './ExpenseItem';
 import SortingComponent from '../../../components/common/SortingComponent';
 import { sortExpenses, SORT_TYPES } from '../../../utils/sortingUtils';
 
-function ExpenseList({ expenses, onDelete, title = 'Your Expenses' }) {
+function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
     const [currentSort, setCurrentSort] = useState(SORT_TYPES.DATE_NEWEST);
 
     const isIncome = title.includes('Income');
@@ -51,6 +51,7 @@ function ExpenseList({ expenses, onDelete, title = 'Your Expenses' }) {
                             key={expense.id}
                             expense={expense}
                             onDelete={onDelete}
+                            onEdit={onEdit}
                         />
                     ))}
                 </>

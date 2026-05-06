@@ -4,6 +4,7 @@ import {
     getTransactionsByType,
     addTransaction,
     deleteTransaction,
+    updateTransaction,
     getTransactionSummary
 } from '../../../hooks/useDailySpends';
 import {
@@ -114,6 +115,20 @@ export const useDailyExpenses = () => {
         }
     };
 
+    const updateTransactionHandler = async (id, updatedTransaction) => {
+        try {
+            const result = await updateTransaction(id, updatedTransaction);
+            // Update local state
+            setTransactions(transactions.map(t =>
+                t.id === id ? { ...t, ...updatedTransaction, id } : t
+            ));
+            return result;
+        } catch (err) {
+            console.error('Error updating transaction:', err);
+            throw err;
+        }
+    };
+
     const getTotalSpend = () => {
         return transactions
             .filter(t => t.type === 'spend')
@@ -215,6 +230,7 @@ export const useDailyExpenses = () => {
         transactions,
         addTransaction: addTransactionHandler,
         deleteTransaction: deleteTransactionHandler,
+        updateTransaction: updateTransactionHandler,
         getTotalSpend,
         getTotalIncome,
         getSpendPercentage,
