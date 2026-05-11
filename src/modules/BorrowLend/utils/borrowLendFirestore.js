@@ -78,7 +78,7 @@ export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, da
         if (!snapshot.empty) {
             const docRef = snapshot.docs[0];
             const recordType = docRef.data().type;
-            const paymentType = recordType === TRANSACTION_TYPES.TOOK ? 'Borrowed pay' : 'Repayment';
+            const paymentType = recordType === TRANSACTION_TYPES.TOOK ? 'borrowed pay' : 'Repayment';
             const entry = {
                 uuid: uuidv4(),
                 amount: repaymentAmount,
