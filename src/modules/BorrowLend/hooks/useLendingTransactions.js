@@ -46,6 +46,18 @@ const expandTransactionsFromRecords = (records) => {
     return expanded.sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
+const normalizePaymentType = (paymentType) =>
+    String(paymentType || '').trim().toLowerCase();
+
+const isRepaymentPaymentType = (paymentType) => {
+    const normalized = normalizePaymentType(paymentType);
+    return (
+        normalized === 'repayment' ||
+        normalized === 'borrowed pay' ||
+        normalized.includes('repay')
+    );
+};
+
 export const useLendingTransactions = () => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -119,11 +131,11 @@ export const useLendingTransactions = () => {
         let totalRepayment = 0;
 
         entries.forEach(entry => {
-            const paymentType = (entry.payment_type || '').toLowerCase();
+            const paymentType = normalizePaymentType(entry.payment_type);
             const value = Number(entry.amount || 0);
             if (paymentType === 'lent') totalLent += value;
             else if (paymentType === 'borrowed') totalBorrowed += value;
-            else if (paymentType === 'repayment' || paymentType === 'borrowed repayment') totalRepayment += value;
+            else if (isRepaymentPaymentType(paymentType)) totalRepayment += value;
         });
 
         const outstanding = record.type === TRANSACTION_TYPES.GAVE
