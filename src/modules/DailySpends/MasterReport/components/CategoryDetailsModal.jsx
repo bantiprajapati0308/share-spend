@@ -48,7 +48,7 @@ function CategoryDetailsModal({
             <Modal.Header closeButton className="border-bottom-0 pb-2">
                 <Modal.Title className={`${styles.modalTitle} w-100`}>
                     <div className="d-flex align-items-center justify-content-between w-100">
-                        <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex align-items-center ">
                             <div className={styles.categoryIcon}>
                                 <div className="outline rounded-circle p-2 text-white d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }}>
                                     <span style={{ fontSize: '18px' }}>
@@ -57,17 +57,12 @@ function CategoryDetailsModal({
                                 </div>
                             </div>
                             <div>
-                                <div className="d-flex align-items-center gap-2 mb-1">
+                                <div className="d-flex align-items-center gap-2">
                                     <h6 className="mb-0 fw-semibold text-dark">{categoryName}</h6>
                                     <Badge bg="primary" className="rounded-pill">
                                         {transactions.length}
                                     </Badge>
                                 </div>
-                            </div>
-                        </div>
-                        <div className="text-end">
-                            <div className="h4 fw-bold text-success mb-0" style={{ fontSize: '22px', color: '#28a745 !important' }}>
-                                {formatCurrency(totalAmount)}
                             </div>
                         </div>
                     </div>
@@ -106,7 +101,7 @@ function CategoryDetailsModal({
                                     <div className={`${styles.brandIcon} me-3`}>
                                         <div className="bg-light rounded p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
                                             <span className="text-muted fw-bold" style={{ fontSize: '12px' }}>
-                                                {(transaction.description || transaction.name || categoryName).charAt(0).toUpperCase()}
+                                                {idx + 1}
                                             </span>
                                         </div>
                                     </div>
@@ -136,6 +131,12 @@ function CategoryDetailsModal({
                     })}
                 </div>
             </Modal.Body>
+            <Modal.Footer className="border-top pt-2 justify-content-between">
+                <h3 className="d-block text-muted mb-1 ms-4">Total:</h3>
+                <div className="h5 fw-bold text-danger mb-0" style={{ fontSize: '18px' }}>
+                    {formatCurrency(totalAmount)}
+                </div>
+            </Modal.Footer>
         </Modal>
     );
 }

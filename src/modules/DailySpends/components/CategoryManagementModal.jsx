@@ -51,13 +51,23 @@ function CategoryManagementModal({ show, onHide }) {
     const [newCategoryType, setNewCategoryType] = useState('spend');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const sortCategoriesByEnabled = (categoryList) => {
+        return [...categoryList].sort((firstCategory, secondCategory) => {
+            if (firstCategory.isEnabled === secondCategory.isEnabled) {
+                return 0;
+            }
+
+            return firstCategory.isEnabled ? -1 : 1;
+        });
+    };
+
     // Get categories by type
     const spendCategories = useMemo(() => {
-        return categories.filter(cat => cat.type === 'spend');
+        return sortCategoriesByEnabled(categories.filter(cat => cat.type === 'spend'));
     }, [categories]);
 
     const incomeCategories = useMemo(() => {
-        return categories.filter(cat => cat.type === 'income');
+        return sortCategoriesByEnabled(categories.filter(cat => cat.type === 'income'));
     }, [categories]);
 
     const handleAddCategory = async () => {
@@ -131,7 +141,7 @@ function CategoryManagementModal({ show, onHide }) {
 
     const renderCategoryList = (categoryList, disabled = false) => {
         return (
-            <ListGroup>
+            <ListGroup style={{ maxHeight: '368px', overflowY: 'auto' }}>
                 {categoryList.map((category) => (
                     <ListGroup.Item
                         key={category.id}

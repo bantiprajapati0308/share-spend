@@ -4,6 +4,13 @@
 @use 'animations';
 @use 'bootstrap-enhancements';
 
+// Import component styles with proper scoping
+@import 'header';
+@import 'cards';
+@import 'tabs';
+@import 'tables';
+@import 'modal';
+
 // Main container
 .reportContainer {
   @include responsive-container;
@@ -12,12 +19,7 @@
   background: $background-gradient;
   min-height: 100vh;
 
-  // Import component styles with proper scoping
-  @import 'header';
-  @import 'cards';
-  @import 'tabs';
-  @import 'tables';
-  @import 'modal';
+
 }
 
 // Time Summary Cards Styles

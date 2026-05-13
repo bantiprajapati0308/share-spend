@@ -1,10 +1,9 @@
-.topCategoriesContainer {
+.lastUsedCategoriesContainer {
     display: flex;
     gap: 0.75rem;
     padding: 0;
     margin: 0;
 
-    // Responsive design
     @media (max-width: 768px) {
         gap: 0.5rem;
     }
@@ -26,8 +25,8 @@
     min-height: 80px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 
-    // Background color variations for different categories
     &:nth-child(1) {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
@@ -43,13 +42,11 @@
         box-shadow: 0 4px 12px rgba(79, 172, 254, 0.25);
     }
 
-    // Hover effect
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
 
-    // Subtle pattern overlay
     &::before {
         content: '';
         position: absolute;

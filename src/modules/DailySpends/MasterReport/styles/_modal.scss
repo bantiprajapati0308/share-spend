@@ -15,7 +15,7 @@
     .modal-content {
         border: none;
         border-radius: 16px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        // box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         background: #f8f9fa;
 
@@ -74,6 +74,9 @@
     overflow-y: auto;
 
     .transactionsList {
+        max-height: 450px;
+        overflow-y: auto;
+
         .transactionItem {
             background: #ffffff;
             transition: background-color 0.15s ease;

@@ -170,8 +170,6 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
         <div className={styles.reportContainer}>
             {/* Header */}
             <ReportHeader
-                title="Master Report"
-                subtitle="Complete transaction history and analytics"
                 onBack={() => navigate(-1)}
                 onExport={handleExport}
             />
