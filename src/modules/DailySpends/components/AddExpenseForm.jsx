@@ -8,9 +8,11 @@ import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
-import TopCategories from './TopCategories';
+import LastUsedCategories from './LastUsedCategories';
+import AmountInput from '../../../utils/AmountInput';
+import { evaluateAmountExpression } from '../../../utils/amountExpression';
 
-function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit }) {
+function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit, lastUsedCategories }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -62,7 +64,7 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if ((!isLendingTransaction && !expenseName.trim()) || !amount || !category) {
+        if ((!isLendingTransaction && !expenseName.trim()) || !amount.trim() || !category) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -73,10 +75,20 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
             return;
         }
 
+        let parsedAmount;
+
+        try {
+            parsedAmount = evaluateAmountExpression(amount);
+            setAmount(String(parsedAmount));
+        } catch (error) {
+            toast.error(error.message || 'Invalid amount expression.');
+            return;
+        }
+
         const baseTransactionObj = {
             type: transactionType,
             name: isLendingTransaction ? personName.trim() : expenseName,
-            amount: parseFloat(amount),
+            amount: parsedAmount,
             categoryId: category.categoryId,
             categoryName: category.categoryName,
             category: category.categoryName,
@@ -181,21 +193,20 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
                     </div>
                 </Col>
                 <Col className="mb-2" xs={12} sm={6} md={3}>
-                    <TopCategories
-                        selectedCategory={(cat) => setCategory(cat)}
+                    <LastUsedCategories
+                        onCategorySelect={(cat) => setCategory(cat)}
                         transactionType={transactionType}
+                        lastUsedCategories={lastUsedCategories}
                     />
                 </Col>
                 <Col xs={5} sm={6} md={isLendingTransaction ? 3 : 3}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
-                        <input
-                            type="number"
-                            placeholder="0.00"
+                        <AmountInput
+                            placeholder="0.00 or 10+5"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            step="0.01"
-                            min="0"
+                            onValueChange={setAmount}
+                            onInvalidExpression={(message) => toast.error(message)}
                             style={{ flex: 1 }}
                         />
                     </div>
@@ -315,6 +326,10 @@ AddExpenseForm.propTypes = {
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
+    lastUsedCategories: PropTypes.shape({
+        spend: PropTypes.arrayOf(PropTypes.string),
+        income: PropTypes.arrayOf(PropTypes.string),
+    }).isRequired,
 };
 
 export default AddExpenseForm;

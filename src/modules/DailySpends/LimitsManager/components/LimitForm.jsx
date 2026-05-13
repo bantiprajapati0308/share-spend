@@ -6,6 +6,8 @@ import CategorySelectDropdown from '../../components/CategorySelectDropdown';
 import CategoryManagementModal from '../../components/CategoryManagementModal';
 import styles from '../styles/LimitsManager.module.scss';
 import { validateLimitInput } from '../utils/limitsCalculations';
+import AmountInput from '../../../../utils/AmountInput';
+import { evaluateAmountExpression } from '../../../../utils/amountExpression';
 
 /**
  * LimitForm Component
@@ -52,10 +54,20 @@ function LimitForm({
         e.preventDefault();
         setValidationError(null);
 
+        let normalizedAmount = limitAmount;
+
+        try {
+            normalizedAmount = String(evaluateAmountExpression(limitAmount));
+            setLimitAmount(normalizedAmount);
+        } catch (error) {
+            setValidationError(error.message || 'Invalid amount expression.');
+            return;
+        }
+
         // Validate input
         const validation = validateLimitInput(
             selectedCategory?.categoryName,
-            limitAmount
+            normalizedAmount
         );
 
         if (!validation.isValid) {
@@ -67,7 +79,7 @@ function LimitForm({
         const limitData = {
             category: selectedCategory.categoryName,
             categoryId: selectedCategory.categoryId,
-            limit: parseFloat(limitAmount),
+            limit: parseFloat(normalizedAmount),
             type: limitType,
         };
 
@@ -115,13 +127,12 @@ function LimitForm({
                         {/* Limit Amount */}
                         <Form.Group className="mb-3">
                             <Form.Label>Limit Amount</Form.Label>
-                            <Form.Control
-                                type="number"
-                                placeholder="e.g., 500.00"
+                            <AmountInput
+                                placeholder="e.g., 500.00 or 200+50"
                                 value={limitAmount}
-                                onChange={(e) => setLimitAmount(e.target.value)}
-                                step="0.01"
-                                min="0"
+                                onValueChange={setLimitAmount}
+                                onInvalidExpression={setValidationError}
+                                className="form-control"
                                 required
                             />
                             <Form.Text className="text-muted">

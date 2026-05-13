@@ -36,6 +36,7 @@ function DailySpends() {
         addTransaction,
         deleteTransaction,
         updateTransaction,
+        getLastUsedCategories,
         getTotalSpend,
         getTotalIncome,
         getSpendPercentage,
@@ -310,6 +311,7 @@ function DailySpends() {
                             editingTransaction={editingTransaction}
                             isEditMode={isEditMode}
                             onCancelEdit={handleCancelEdit}
+                            lastUsedCategories={getLastUsedCategories}
                         />
                     </div>
                     {/* Transaction View Toggle */}

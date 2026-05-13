@@ -183,42 +183,35 @@ export const useDailyExpenses = () => {
         }
     };
 
-    // GET: Get top 3 categories for both spend and income types (Memoized for performance)
-    const getTopCategories = useMemo(() => {
+    // GET: Get the most recently used unique categories for both spend and income types
+    const getLastUsedCategories = useMemo(() => {
         try {
-            const spendCategories = {};
-            const incomeCategories = {};
+            const spendCategories = [];
+            const incomeCategories = [];
+            const seenSpendCategories = new Set();
+            const seenIncomeCategories = new Set();
 
-            // Group transactions by type and category, count entries
-            transactions.forEach(transaction => {
+            transactions.forEach((transaction) => {
                 const category = transaction.category || 'Other';
                 const type = transaction.type;
 
-                if (type === 'spend') {
-                    spendCategories[category] = (spendCategories[category] || 0) + 1;
-                } else if (type === 'income') {
-                    incomeCategories[category] = (incomeCategories[category] || 0) + 1;
+                if (type === 'spend' && !seenSpendCategories.has(category)) {
+                    seenSpendCategories.add(category);
+                    spendCategories.push(category);
+                }
+
+                if (type === 'income' && !seenIncomeCategories.has(category)) {
+                    seenIncomeCategories.add(category);
+                    incomeCategories.push(category);
                 }
             });
 
-            // Sort and get top 5 for spend categories
-            const topSpendCategories = Object.entries(spendCategories)
-                .sort(([, countA], [, countB]) => countB - countA)
-                .slice(0, 5)
-                .map(([category]) => (category));
-
-            // Sort and get top 5 for income categories
-            const topIncomeCategories = Object.entries(incomeCategories)
-                .sort(([, countA], [, countB]) => countB - countA)
-                .slice(0, 5)
-                .map(([category]) => (category));
-
             return {
-                spend: topSpendCategories,
-                income: topIncomeCategories
+                spend: spendCategories.slice(0, 3),
+                income: incomeCategories.slice(0, 3)
             };
         } catch (error) {
-            console.error("Error getting top categories:", error);
+            console.error('Error getting last used categories:', error);
             return {
                 spend: [],
                 income: []
@@ -236,7 +229,7 @@ export const useDailyExpenses = () => {
         getSpendPercentage,
         getTransactionsByType: getTransactionsByTypeLocal,
         getExpensesByCategory,
-        getTopCategories,
+        getLastUsedCategories,
         refreshTransactions,
         loading,
         error,

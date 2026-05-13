@@ -4,21 +4,15 @@ import { ArrowLeft, Download } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
 import styles from '../styles/MasterReport.module.scss';
 
-/**
- * Reusable report header component
- * Provides back navigation, title, and action buttons
- */
+
 function ReportHeader({
-    title,
-    subtitle,
     onBack,
     onExport,
     exportLabel = "Export CSV",
-    children
 }) {
     return (
         <div className={styles.header}>
-            <div className={styles.backButtonWrapper}>
+            <div className={`${styles.backButtonWrapper} d-flex justify-content-between align-items-center`}>
                 <Button
                     variant="outline-secondary"
                     onClick={onBack}
@@ -26,19 +20,6 @@ function ReportHeader({
                 >
                     <ArrowLeft size={18} /> Back
                 </Button>
-            </div>
-
-            <div className={styles.title}>
-                <h2>{title}</h2>
-                {subtitle && (
-                    <p className={styles.subtitle}>
-                        {subtitle}
-                    </p>
-                )}
-            </div>
-
-            <div className={styles.headerActions}>
-                {children}
                 {onExport && (
                     <Button
                         variant="success"
