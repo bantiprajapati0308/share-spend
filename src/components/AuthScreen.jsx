@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider, db } from "../firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { ensurePredefinedCategories } from "../utils/initializePredefinedCategories";
 import { emailService } from "../services";
 import { toast } from "react-toastify";
+import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const AuthScreen = () => {
   const [email, setEmail] = useState("");
@@ -49,11 +51,37 @@ const AuthScreen = () => {
     setError("");
     setLoadingAuth(true);
     try {
+      let userCredential;
       if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
         sendEmailToUser(email, username);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      }
+
+      const user = userCredential.user;
+
+      // Store/update user profile in Firestore
+      if (isRegister) {
+        // On registration, create user profile with provided username
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          firstName: username.split(" ")[0] || username,
+          lastName: username.split(" ").slice(1).join(" ") || "",
+          displayName: username,
+          photoURL: "",
+          age: null,
+          dateOfBirth: null,
+          phoneNumber: user.phoneNumber || null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+          authProvider: "email",
+        });
+      } else {
+        // On login, just update last login
+        await updateLastLogin(user.uid);
       }
 
       // Initialize predefined categories for the user
@@ -81,6 +109,9 @@ const AuthScreen = () => {
 
       console.log("Google sign-in successful:", { user });
 
+      // Create or get user profile
+      await createOrUpdateUserProfile(user);
+
       // Check if this is a new user by comparing creation time with current time
       const isNewUser =
         user.metadata?.creationTime === user.metadata?.lastSignInTime;
@@ -94,6 +125,9 @@ const AuthScreen = () => {
       if (isNewUser || isRecentlyCreated) {
         const name = user.displayName || username || user.email || "User";
         await sendEmailToUser(user.email, name);
+      } else {
+        // On re-login, update last login timestamp
+        await updateLastLogin(user.uid);
       }
 
       // Initialize predefined categories for the user
