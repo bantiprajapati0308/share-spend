@@ -12,6 +12,7 @@ import CategoryBreakdownTab from './components/CategoryBreakdownTab';
 import MonthlyBreakdownTab from './components/MonthlyBreakdownTab';
 import RecentTransactionsTab from './components/RecentTransactionsTab';
 import CategoryDetailsModal from './components/CategoryDetailsModal';
+import TimeSummaryDetailModal from './components/TimeSummaryDetailModal';
 import ChartsCarousel from './components/ChartsCarousel';
 import { Chart } from 'chart.js';
 
@@ -34,6 +35,12 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedCategoryTransactions, setSelectedCategoryTransactions] = useState([]);
+
+    // Time summary modal state
+    const [showTimeSummaryModal, setShowTimeSummaryModal] = useState(false);
+    const [timeSummaryModalTitle, setTimeSummaryModalTitle] = useState('');
+    const [timeSummaryModalTransactions, setTimeSummaryModalTransactions] = useState([]);
+    const [timeSummaryModalIsIncome, setTimeSummaryModalIsIncome] = useState(false);
 
     // Tab configuration
     const reportTabs = [
@@ -166,6 +173,38 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
         }
     };
 
+    // Handle time summary card click
+    const handleTimeSummaryCardClick = (period, type) => {
+        let txs = [];
+        let title = '';
+        let isIncome = type === 'income';
+        if (period === 'today') {
+            // Normalize both dates to UTC YYYY-MM-DD string
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            txs = transactions.filter(tx => {
+                const txDate = new Date(tx.date || tx.createdAt);
+                const txDateStr = txDate.toISOString().split('T')[0];
+                return tx.type === type && txDateStr === todayStr;
+            });
+            title = type === 'income' ? 'Today Income' : 'Today Spend';
+        } else if (period === 'week') {
+            const today = new Date();
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 6);
+            weekAgo.setHours(0, 0, 0, 0);
+            txs = transactions.filter(tx => {
+                const txDate = new Date(tx.date || tx.createdAt);
+                return tx.type === type && txDate >= weekAgo && txDate <= today;
+            });
+            title = type === 'income' ? 'Last 7 Days Income' : 'Last 7 Days Spend';
+        }
+        setTimeSummaryModalTitle(title);
+        setTimeSummaryModalTransactions(txs);
+        setTimeSummaryModalIsIncome(isIncome);
+        setShowTimeSummaryModal(true);
+    };
+
     return (
         <div className={styles.reportContainer}>
             {/* Header */}
@@ -178,6 +217,8 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
             <TimeSummaryCardsSection
                 todayData={calculations.today}
                 thisWeekData={calculations.thisWeek}
+                loading={loading}
+                onCardClick={handleTimeSummaryCardClick}
             />
 
             {/* Charts Carousel */}
@@ -253,6 +294,14 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                         categoryName={selectedCategory || ''}
                         transactions={selectedCategoryTransactions}
                         currencySymbol={currencySymbol}
+                    />
+                    {/* Time Summary Detail Modal */}
+                    <TimeSummaryDetailModal
+                        show={showTimeSummaryModal}
+                        onHide={() => setShowTimeSummaryModal(false)}
+                        title={timeSummaryModalTitle}
+                        transactions={timeSummaryModalTransactions}
+                        isIncome={timeSummaryModalIsIncome}
                     />
                 </>
             )}
