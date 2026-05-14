@@ -8,11 +8,11 @@ import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
-import LastUsedCategories from './LastUsedCategories';
+import TopCategories from './TopCategories';
 import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
 
-function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit, lastUsedCategories }) {
+function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -193,10 +193,9 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
                     </div>
                 </Col>
                 <Col className="mb-2" xs={12} sm={6} md={3}>
-                    <LastUsedCategories
-                        onCategorySelect={(cat) => setCategory(cat)}
+                    <TopCategories
+                        selectedCategory={(cat) => setCategory(cat)}
                         transactionType={transactionType}
-                        lastUsedCategories={lastUsedCategories}
                     />
                 </Col>
                 <Col xs={5} sm={6} md={isLendingTransaction ? 3 : 3}>
@@ -326,10 +325,6 @@ AddExpenseForm.propTypes = {
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
-    lastUsedCategories: PropTypes.shape({
-        spend: PropTypes.arrayOf(PropTypes.string),
-        income: PropTypes.arrayOf(PropTypes.string),
-    }).isRequired,
 };
 
 export default AddExpenseForm;
