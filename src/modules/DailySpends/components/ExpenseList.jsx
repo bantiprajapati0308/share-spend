@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar } from 'react-bootstrap-icons';
+import { Badge } from 'react-bootstrap';
 import styles from '../styles/DailySpends.module.scss';
 import ExpenseItem from './ExpenseItem';
 import SortingComponent from '../../../components/common/SortingComponent';
@@ -23,12 +23,14 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
     };
 
     return (
-        <div className={styles.expenseList}>
+        <>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h3 className='d-flex align-items-center mb-0'>
-                    <Calendar size={24} className="me-2" />
-                    {title}
-                </h3>
+                <h5 className="d-flex align-items-center gap-2 mb-0 fw-semibold text-dark">
+                    <span className="text-secondary ms-3 ps-1" style={{ fontSize: '1.25rem' }}>{title}</span>
+                    <Badge bg={isIncome ? 'success' : 'danger'} pill className="px-2 py-1" style={{ fontSize: '0.72rem' }}>
+                        {expenses.length}
+                    </Badge>
+                </h5>
 
                 {expenses.length > 0 && (
                     <SortingComponent
@@ -39,24 +41,25 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
                     />
                 )}
             </div>
-
-            {expenses.length === 0 ? (
-                <div className={styles.noExpenses}>
-                    <p>{emptyMessage}</p>
-                </div>
-            ) : (
-                <>
-                    {sortedExpenses.map((expense) => (
-                        <ExpenseItem
-                            key={expense.id}
-                            expense={expense}
-                            onDelete={onDelete}
-                            onEdit={onEdit}
-                        />
-                    ))}
-                </>
-            )}
-        </div>
+            <div className={styles.expenseList}>
+                {expenses.length === 0 ? (
+                    <div className={styles.noExpenses}>
+                        <p>{emptyMessage}</p>
+                    </div>
+                ) : (
+                    <>
+                        {sortedExpenses.map((expense) => (
+                            <ExpenseItem
+                                key={expense.id}
+                                expense={expense}
+                                onDelete={onDelete}
+                                onEdit={onEdit}
+                            />
+                        ))}
+                    </>
+                )}
+            </div>
+        </>
     );
 }
 
