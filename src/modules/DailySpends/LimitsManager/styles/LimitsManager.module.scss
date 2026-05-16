@@ -221,7 +221,7 @@
 .limitsList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+    gap: .5rem;
 }
 
 // ==================== Card Styles ====================
@@ -423,7 +423,7 @@
 // ==================== Responsive Design ====================
 @media (max-width: 768px) {
     .header {
-        padding: 1.5rem 0;
+        padding: .5rem 0;
 
         .headerContent {
             gap: 1rem;
@@ -475,7 +475,7 @@
     }
 
     .header {
-        margin-bottom: 1.5rem;
+        margin-bottom: .5rem;
 
         .backButton {
             align-self: flex-start;

@@ -166,8 +166,8 @@ export function useMasterReportData(startDate = null, endDate = null) {
 
     // Get breakdown data by dynamic date ranges for stacked bar chart
     // Creates max 10 bars based on the date range provided or all transactions
-    // Shows top 6 categories by amount and groups rest as "Other"
-    const getWeeklyBreakdownData = (rangeStartDate = null, rangeEndDate = null) => {
+    // Includes all categories that have amount > 0 for the given transaction type
+    const getWeeklyBreakdownData = (rangeStartDate = null, rangeEndDate = null, transactionType = 'spend') => {
         let breakdownData = [];
         let orderedLabels = [];
         let categoriesWithData = new Set();
@@ -240,7 +240,7 @@ export function useMasterReportData(startDate = null, endDate = null) {
         dateRanges.forEach(range => {
             // Get transactions within this date range
             const rangeTransactions = transactions.filter(tx => {
-                if (tx.type !== 'spend') return false;
+                if (tx.type !== transactionType) return false;
                 const txDate = new Date(tx.date || tx.createdAt);
                 return txDate >= range.start && txDate <= range.end;
             });
@@ -353,7 +353,7 @@ export function useMasterReportData(startDate = null, endDate = null) {
             thisWeek: getThisWeekData()
         },
         getCategoryTransactions,
-        getWeeklyBreakdownData: () => getWeeklyBreakdownData(startDate, endDate), // Returns { data, labels, categories } for correct x-axis order
+        getWeeklyBreakdownData: (transactionType = 'spend') => getWeeklyBreakdownData(startDate, endDate, transactionType), // Returns { data, labels, categories } for correct x-axis order
         getUniqueCategories, // Returns top 6 categories + "Other" if applicable
         getTotalCategoriesCount, // Returns total number of original categories
         getOtherCategoriesList // Returns list of categories grouped into "Other"
