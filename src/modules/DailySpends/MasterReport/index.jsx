@@ -32,6 +32,7 @@ import { generateMasterReportCSV, downloadCSV } from './utils/masterReportUtils'
 function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('category');
+    const [chartTransactionType, setChartTransactionType] = useState('spend');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedCategoryTransactions, setSelectedCategoryTransactions] = useState([]);
@@ -65,13 +66,28 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
 
     const currencySymbol = getCurrencySymbol(currency);
 
-    // Prepare pie chart data from category breakdown
-    const getCategoryChartData = () => {
-        return Object.entries(categoryBreakdown).map(([category, data]) => ({
-            category: category,
-            amount: data.amount
-        })).sort((a, b) => b.amount - a.amount);
+    // Prepare pie chart data by selected transaction type from filtered transactions
+    const getCategoryChartData = (transactionType = 'spend') => {
+        const categoryTotals = {};
+
+        transactions
+            .filter(tx => tx.type === transactionType)
+            .forEach(tx => {
+                const amount = parseFloat(tx.amount) || 0;
+                if (amount <= 0) return;
+                const category = tx.category || 'Other';
+                categoryTotals[category] = (categoryTotals[category] || 0) + amount;
+            });
+
+        return Object.entries(categoryTotals)
+            .map(([category, amount]) => ({ category, amount }))
+            .sort((a, b) => b.amount - a.amount);
     };
+
+    const weeklyDataObj = getWeeklyBreakdownData(chartTransactionType);
+    const pieChartDataByType = getCategoryChartData(chartTransactionType);
+    const legendRows = Math.max(1, Math.ceil((weeklyDataObj.categories?.length || 1) / 4));
+    const legendMaxHeight = Math.min(170, 45 + (legendRows * 14));
 
     // Handle category row click
     const handleCategoryClick = (categoryName) => {
@@ -124,7 +140,7 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                     usePointStyle: true,
                     textAlign: 'left'
                 },
-                maxHeight: 50,
+                maxHeight: legendMaxHeight,
                 onClick: (evt, legendItem, legend) => {
                     // Toggle dataset visibility
                     const index = legendItem.datasetIndex !== undefined ? legendItem.datasetIndex : legendItem.index;
@@ -224,9 +240,9 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
             {/* Charts Carousel */}
             {!loading && transactions.length > 0 && (
                 <ChartsCarousel
-                    pieChartData={getCategoryChartData()}
-                    stackedBarData={getWeeklyBreakdownData()}
-                    categories={getUniqueCategories()}
+                    pieChartData={pieChartDataByType}
+                    stackedBarData={{ data: weeklyDataObj.data, labels: weeklyDataObj.labels }}
+                    categories={weeklyDataObj.categories}
                     chartOptions={chartOptions}
                     pieChartOptions={pieChartOptions}
                     onPieSliceClick={handlePieSliceClick}
@@ -236,6 +252,8 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                     loading={loading}
                     startDate={startDate}
                     endDate={endDate}
+                    transactionType={chartTransactionType}
+                    onTransactionTypeChange={setChartTransactionType}
                     currency="₹"
                 />
             )}

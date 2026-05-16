@@ -194,3 +194,9 @@
         }
     }
 }
+
+.tableScrollContainer {
+    max-height: 568px;
+    overflow-y: auto;
+    overflow-x: auto;
+}

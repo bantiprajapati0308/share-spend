@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
 import { StackedBarChart, PieChart } from '../../../../components/charts';
 import styles from '../styles/ChartsCarousel.module.scss';
@@ -20,6 +20,8 @@ function ChartsCarousel({
     loading,
     startDate,
     endDate,
+    transactionType,
+    onTransactionTypeChange,
     currency = '₹'
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,7 +35,7 @@ function ChartsCarousel({
     const charts = [
         {
             id: 'pie',
-            title: 'Category Distribution',
+            title: `${transactionType === 'income' ? 'Income' : 'Spend'} Category Distribution`,
             subtitle: startDate && endDate ? `${startDate.toDateString()} - ${endDate.toDateString()}` : "All Time",
             component: (
                 <div className={styles.chartContainer}>
@@ -41,7 +43,7 @@ function ChartsCarousel({
                         data={pieChartData}
                         labelKey="category"
                         valueKey="amount"
-                        title="Category Distribution"
+                        title={`${transactionType === 'income' ? 'Income' : 'Spend'} Category Distribution`}
                         subtitle={startDate && endDate ? `${startDate.toDateString()} - ${endDate.toDateString()}` : "All Time"}
                         size="medium"
                         loading={loading}
@@ -69,14 +71,14 @@ function ChartsCarousel({
         },
         {
             id: 'stacked',
-            title: 'Breakdown by Weeks',
-            subtitle: 'Weekly spending trends',
+            title: `${transactionType === 'income' ? 'Income' : 'Spend'} Breakdown by Range`,
+            subtitle: `Range-wise ${transactionType === 'income' ? 'income' : 'spending'} trends`,
             component: (
                 <div className={styles.chartContainer}>
                     <StackedBarChart
                         data={stackedBarData}
                         categories={categories}
-                        title="Breakdown by Weeks"
+                        title={`${transactionType === 'income' ? 'Income' : 'Spend'} Breakdown by Range`}
                         size="medium"
                         loading={loading}
                         currency={currency}
@@ -183,6 +185,16 @@ function ChartsCarousel({
                     <small className="text-muted">{charts[currentIndex].subtitle}</small>
                 </div>
                 <div className={styles.carouselControls}>
+                    <Form.Select
+                        size="sm"
+                        value={transactionType}
+                        onChange={(event) => onTransactionTypeChange(event.target.value)}
+                        aria-label="Select transaction type"
+                        style={{ width: '120px' }}
+                    >
+                        <option value="spend">Spend</option>
+                        <option value="income">Income</option>
+                    </Form.Select>
                     <Button
                         variant="outline-secondary"
                         size="sm"
@@ -246,7 +258,13 @@ function ChartsCarousel({
 
 ChartsCarousel.propTypes = {
     pieChartData: PropTypes.array.isRequired,
-    stackedBarData: PropTypes.array.isRequired,
+    stackedBarData: PropTypes.oneOfType([
+        PropTypes.array,
+        PropTypes.shape({
+            data: PropTypes.array,
+            labels: PropTypes.array,
+        }),
+    ]).isRequired,
     categories: PropTypes.array.isRequired,
     chartOptions: PropTypes.object.isRequired,
     pieChartOptions: PropTypes.object.isRequired,
@@ -255,6 +273,8 @@ ChartsCarousel.propTypes = {
     loading: PropTypes.bool,
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
+    transactionType: PropTypes.oneOf(['spend', 'income']),
+    onTransactionTypeChange: PropTypes.func,
     currency: PropTypes.string
 };
 

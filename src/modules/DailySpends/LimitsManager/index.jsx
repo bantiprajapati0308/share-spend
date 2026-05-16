@@ -236,7 +236,7 @@ function LimitsManager() {
                         <Tab.Content className={styles.tabContent}>
                             {/* Spending Limits Tab */}
                             <Tab.Pane eventKey="spending">
-                                <Row className="mt-4">
+                                <Row>
                                     <Col lg={12}>
                                         <LimitsPanel
                                             limits={limits}
@@ -255,7 +255,7 @@ function LimitsManager() {
 
                             {/* Income Limits Tab */}
                             <Tab.Pane eventKey="income">
-                                <Row className="mt-4">
+                                <Row>
                                     <Col lg={12}>
                                         <LimitsPanel
                                             limits={limits}

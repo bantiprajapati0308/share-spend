@@ -29,10 +29,14 @@ const StackedBarChart = ({
 }) => {
     // Prepare chart data
     const chartData = useMemo(() => {
-        if (!data || data.length === 0) {
+        if (!data || (Array.isArray(data) && data.length === 0)) {
             return { labels: [], datasets: [] };
         }
-
+        // If data is an object with { data, labels }, use them
+        if (data && typeof data === 'object' && !Array.isArray(data) && data.data && data.labels) {
+            return prepareStackedBarData(data.data, categories, labelKey, valueKey, data.labels);
+        }
+        // Fallback: treat as array
         return prepareStackedBarData(data, categories, labelKey, valueKey, colorPalette);
     }, [data, categories, labelKey, valueKey, colorPalette]);
 
