@@ -32,8 +32,8 @@ function AmountInput({
     return (
         <input
             {...inputProps}
-            type="text"
-            inputMode="text"
+            type="number"
+            inputMode="numeric"
             value={value}
             onChange={handleChange}
             onBlur={handleBlur}
