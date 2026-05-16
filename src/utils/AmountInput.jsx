@@ -33,7 +33,7 @@ function AmountInput({
         <input
             {...inputProps}
             type="text"
-            inputMode="decimal"
+            inputMode="text"
             value={value}
             onChange={handleChange}
             onBlur={handleBlur}
