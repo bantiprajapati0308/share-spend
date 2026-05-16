@@ -223,21 +223,26 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
 
             {/* Charts Carousel */}
             {!loading && transactions.length > 0 && (
-                <ChartsCarousel
-                    pieChartData={getCategoryChartData()}
-                    stackedBarData={getWeeklyBreakdownData()}
-                    categories={getUniqueCategories()}
-                    chartOptions={chartOptions}
-                    pieChartOptions={pieChartOptions}
-                    onPieSliceClick={handlePieSliceClick}
-                    onBarClick={(data) => {
-                        // Optional: Navigate to category details or show modal
-                    }}
-                    loading={loading}
-                    startDate={startDate}
-                    endDate={endDate}
-                    currency="₹"
-                />
+                (() => {
+                    const weeklyDataObj = getWeeklyBreakdownData();
+                    return (
+                        <ChartsCarousel
+                            pieChartData={getCategoryChartData()}
+                            stackedBarData={{ data: weeklyDataObj.data, labels: weeklyDataObj.labels }}
+                            categories={weeklyDataObj.categories}
+                            chartOptions={chartOptions}
+                            pieChartOptions={pieChartOptions}
+                            onPieSliceClick={handlePieSliceClick}
+                            onBarClick={(data) => {
+                                // Optional: Navigate to category details or show modal
+                            }}
+                            loading={loading}
+                            startDate={startDate}
+                            endDate={endDate}
+                            currency="₹"
+                        />
+                    );
+                })()
             )}
 
             {/* Content based on state */}

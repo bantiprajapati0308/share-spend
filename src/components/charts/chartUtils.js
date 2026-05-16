@@ -73,9 +73,9 @@ export const formatPercentage = (value, total) => {
  * @param {string} valueKey - Key for values in data objects
  * @returns {Object} Chart.js compatible data object
  */
-export const prepareStackedBarData = (rawData, categories, labelKey = 'date', valueKey = 'amount') => {
-    // Extract unique labels (e.g., dates)
-    const labels = [...new Set(rawData.map(item => item[labelKey]))].sort();
+export const prepareStackedBarData = (rawData, categories, labelKey = 'date', valueKey = 'amount', orderedLabels = null) => {
+    // Use provided orderedLabels if available, else extract and sort
+    const labels = orderedLabels || [...new Set(rawData.map(item => item[labelKey]))].sort();
 
     // Generate colors for all categories including "Other"
     const colors = generateColors(categories.length);

@@ -164,125 +164,120 @@ export function useMasterReportData(startDate = null, endDate = null) {
         return categoryBreakdown[categoryName]?.transactions || [];
     };
 
-    // Get monthly breakdown data by weeks for stacked bar chart
+    // Get breakdown data by dynamic date ranges for stacked bar chart
+    // Creates max 10 bars based on the date range provided or all transactions
     // Shows top 6 categories by amount and groups rest as "Other"
-    const getWeeklyBreakdownData = () => {
-        const weeklyData = [];
-        const today = new Date();
-        const currentMonth = today.getMonth();
-        const currentYear = today.getFullYear();
+    const getWeeklyBreakdownData = (rangeStartDate = null, rangeEndDate = null) => {
+        let breakdownData = [];
+        let orderedLabels = [];
+        let categoriesWithData = new Set();
 
-        // Get the first and last day of the current month
-        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+        // Determine the date range to use
+        let startDate = rangeStartDate;
+        let endDate = rangeEndDate;
 
-        // Define week ranges for the current month
-        const weeks = [
-            { label: 'Week 1', start: 1, end: 7 },
-            { label: 'Week 2', start: 8, end: 14 },
-            { label: 'Week 3', start: 15, end: 21 },
-            { label: 'Week 4', start: 22, end: lastDayOfMonth.getDate() }
-        ];
+        // If no range provided, use all transactions' date range
+        if (!startDate || !endDate) {
+            if (transactions.length === 0) return [];
 
-        // First pass: Calculate total amounts for each category to determine top categories
-        const categoryTotals = {};
+            const dates = transactions
+                .filter(tx => tx.date || tx.createdAt)
+                .map(tx => new Date(tx.date || tx.createdAt));
 
-        weeks.forEach(week => {
-            const weekStart = new Date(currentYear, currentMonth, week.start);
-            const weekEnd = new Date(currentYear, currentMonth, Math.min(week.end, lastDayOfMonth.getDate()));
+            startDate = new Date(Math.min(...dates));
+            endDate = new Date(Math.max(...dates));
+        }
 
-            // Skip future weeks
-            if (weekStart > today) return;
+        // Ensure dates are at the beginning of the day
+        startDate = new Date(startDate);
+        startDate.setHours(0, 0, 0, 0);
 
-            // Get transactions for this week
-            const weekTransactions = transactions.filter(tx => {
+        endDate = new Date(endDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        // Calculate total days in range
+        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+        // Calculate days per group (max 10 groups)
+        const daysPerGroup = Math.ceil(totalDays / 10);
+
+        // Create date ranges for each group
+        const dateRanges = [];
+        let currentStart = new Date(startDate);
+        let groupIndex = 0;
+
+        while (currentStart < endDate && groupIndex < 10) {
+            const currentEnd = new Date(currentStart);
+            currentEnd.setDate(currentEnd.getDate() + daysPerGroup - 1);
+            currentEnd.setHours(23, 59, 59, 999);
+
+            // Cap the end date to the range end date
+            const actualEnd = currentEnd > endDate ? endDate : currentEnd;
+
+            const startDay = currentStart.getDate();
+            const endDay = actualEnd.getDate();
+            const month = currentStart.toLocaleString('default', { month: 'short' });
+
+            const label = startDay === endDay
+                ? `${startDay} ${month}`
+                : `${startDay}-${endDay} ${month}`;
+
+            dateRanges.push({
+                label,
+                start: new Date(currentStart),
+                end: new Date(actualEnd)
+            });
+
+            // Move to next group
+            currentStart.setDate(currentStart.getDate() + daysPerGroup);
+            groupIndex++;
+        }
+
+        // First pass: Calculate total amounts for each category across all date ranges
+        // We'll collect all categories with data > 0 in any range
+
+        // Second pass: Process each date range with top 6 + Other grouping
+        dateRanges.forEach(range => {
+            // Get transactions within this date range
+            const rangeTransactions = transactions.filter(tx => {
                 if (tx.type !== 'spend') return false;
-
                 const txDate = new Date(tx.date || tx.createdAt);
-                const txDay = txDate.getDate();
-                const txMonth = txDate.getMonth();
-                const txYear = txDate.getFullYear();
-
-                return txYear === currentYear &&
-                    txMonth === currentMonth &&
-                    txDay >= week.start &&
-                    txDay <= Math.min(week.end, lastDayOfMonth.getDate());
+                return txDate >= range.start && txDate <= range.end;
             });
 
-            // Accumulate totals for each category
-            weekTransactions.forEach(tx => {
-                const category = tx.category || 'Other';
-                categoryTotals[category] = (categoryTotals[category] || 0) + (parseFloat(tx.amount) || 0);
-            });
-        });
-
-        // Sort categories by total amount (highest first) and get top 6
-        const sortedCategories = Object.entries(categoryTotals)
-            .sort(([, a], [, b]) => b - a)
-            .map(([category]) => category);
-
-        const top6Categories = sortedCategories.slice(0, 6);
-        const otherCategories = sortedCategories.slice(6);
-
-        // Second pass: Process each week with top 6 + Other grouping
-        weeks.forEach(week => {
-            const weekStart = new Date(currentYear, currentMonth, week.start);
-            const weekEnd = new Date(currentYear, currentMonth, Math.min(week.end, lastDayOfMonth.getDate()));
-
-            // Skip future weeks
-            if (weekStart > today) return;
-
-            // Adjust end date if it's in the future
-            if (weekEnd > today) {
-                weekEnd.setTime(today.getTime());
-            }
-
-            // Get transactions for this week
-            const weekTransactions = transactions.filter(tx => {
-                if (tx.type !== 'spend') return false;
-
-                const txDate = new Date(tx.date || tx.createdAt);
-                const txDay = txDate.getDate();
-                const txMonth = txDate.getMonth();
-                const txYear = txDate.getFullYear();
-
-                return txYear === currentYear &&
-                    txMonth === currentMonth &&
-                    txDay >= week.start &&
-                    txDay <= Math.min(week.end, lastDayOfMonth.getDate());
-            });
-
-            // Group by category for this week (top 6 + Other)
+            // Group by category for this date range (no 'Other', all categories with data)
             const categoryAmounts = {};
-            let otherAmount = 0;
 
-            weekTransactions.forEach(tx => {
+            rangeTransactions.forEach(tx => {
                 const category = tx.category || 'Other';
                 const amount = parseFloat(tx.amount) || 0;
-
-                if (top6Categories.includes(category)) {
+                if (amount > 0) {
                     categoryAmounts[category] = (categoryAmounts[category] || 0) + amount;
-                } else {
-                    otherAmount += amount;
+                    categoriesWithData.add(category);
                 }
             });
 
-            // Add "Other" category if there are other transactions
-            if (otherAmount > 0 && otherCategories.length > 0) {
-                categoryAmounts['Other'] = otherAmount;
-            }
-
-            // Create data entries for each category that has transactions in this week
+            // Create data entries for each category that has transactions in this range
             Object.entries(categoryAmounts).forEach(([category, amount]) => {
-                weeklyData.push({
-                    date: week.label, // Use week label for display
+                breakdownData.push({
+                    date: range.label,
                     category,
-                    amount
+                    amount,
+                    _sortKey: range.start.getTime() // Attach numeric sort key
                 });
             });
+            // Collect label in order if not already present
+            if (!orderedLabels.includes(range.label)) {
+                orderedLabels.push(range.label);
+            }
         });
 
-        return weeklyData;
+        // Sort breakdownData by the numeric start date
+        breakdownData = breakdownData.sort((a, b) => a._sortKey - b._sortKey);
+        // Remove the _sortKey before returning
+        breakdownData = breakdownData.map(({ _sortKey, ...rest }) => rest);
+        // Only include categories that have at least some data in any range
+        return { data: breakdownData, labels: orderedLabels, categories: Array.from(categoriesWithData) };
     };
 
     // Get top 6 categories plus "Other" if applicable
@@ -358,7 +353,7 @@ export function useMasterReportData(startDate = null, endDate = null) {
             thisWeek: getThisWeekData()
         },
         getCategoryTransactions,
-        getWeeklyBreakdownData, // Returns monthly data broken down by weeks (top 6 + Other)
+        getWeeklyBreakdownData: () => getWeeklyBreakdownData(startDate, endDate), // Returns { data, labels, categories } for correct x-axis order
         getUniqueCategories, // Returns top 6 categories + "Other" if applicable
         getTotalCategoriesCount, // Returns total number of original categories
         getOtherCategoriesList // Returns list of categories grouped into "Other"
