@@ -6,7 +6,8 @@ import {
     Clock,
     CurrencyDollar,
     SortNumericDown,
-    Check
+    Check,
+    X
 } from 'react-bootstrap-icons';
 import PropTypes from 'prop-types';
 import styles from './SortingComponent.module.scss';
@@ -61,7 +62,11 @@ function SortingComponent({
     sortOptions = defaultSortOptions,
     buttonSize = 'sm',
     buttonVariant = 'outline-primary',
-    disabled = false
+    disabled = false,
+    showSearch = true,
+    searchQuery = '',
+    onSearchChange,
+    searchPlaceholder = 'Search name, category, amount, date'
 }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -70,62 +75,100 @@ function SortingComponent({
         setDropdownOpen(false);
     };
 
-    const currentSortOption = sortOptions.find(option => option.key === currentSort);
+    const hasSearchValue = Boolean(searchQuery && searchQuery.trim());
+
+    const handleSearchChange = (event) => {
+        if (typeof onSearchChange === 'function') {
+            onSearchChange(event.target.value);
+        }
+    };
+
+    const handleClearSearch = () => {
+        if (typeof onSearchChange === 'function') {
+            onSearchChange('');
+        }
+    };
 
     return (
-        <Dropdown
-            show={dropdownOpen}
-            onToggle={setDropdownOpen}
-            className={styles.sortingDropdown}
-        >
-            <Dropdown.Toggle
-                variant={buttonVariant}
-                size={buttonSize}
-                disabled={disabled}
-                className={`${styles.sortButton} d-flex align-items-center gap-2`}
-            >
-                <SortDown size={16} />
-                Sort
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu className={styles.sortMenu}>
-                <div className={styles.menuHeader}>
-                    <SortDown size={16} className="me-2" />
-                    Sort Options
-                </div>
-
-                {sortOptions.map((option) => {
-                    const IconComponent = option.icon;
-                    const isSelected = currentSort === option.key;
-
-                    return (
-                        <Dropdown.Item
-                            key={option.key}
-                            onClick={() => handleSortSelect(option.key)}
-                            className={`${styles.sortOption} ${isSelected ? styles.selected : ''}`}
+        <div className={styles.sortingDropdown}>
+            {showSearch && (
+                <div className={styles.searchInputWrapper}>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        placeholder={searchPlaceholder}
+                        className={styles.searchInput}
+                        aria-label="Search expenses"
+                        disabled={disabled}
+                    />
+                    {hasSearchValue && (
+                        <button
+                            type="button"
+                            onClick={handleClearSearch}
+                            className={styles.clearSearchButton}
+                            aria-label="Clear search"
                         >
-                            <div className="d-flex align-items-center justify-content-between w-100">
-                                <div className="d-flex align-items-center gap-3">
-                                    <IconComponent
-                                        size={16}
-                                        className={styles.optionIcon}
-                                    />
-                                    <span className={styles.optionLabel}>
-                                        {option.label}
-                                    </span>
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+            )}
+
+            <Dropdown
+                show={dropdownOpen}
+                onToggle={setDropdownOpen}
+                className={styles.sortDropdown}
+            >
+                <Dropdown.Toggle
+                    variant={buttonVariant}
+                    size={buttonSize}
+                    disabled={disabled}
+                    className={`${styles.sortButton} d-flex align-items-center gap-2`}
+                >
+                    <SortDown size={16} />
+                    Sort
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className={styles.sortMenu}>
+                    <div className={styles.menuHeader}>
+                        <SortDown size={16} className="me-2" />
+                        Sort Options
+                    </div>
+
+                    {sortOptions.map((option) => {
+                        const IconComponent = option.icon;
+                        const isSelected = currentSort === option.key;
+
+                        return (
+                            <Dropdown.Item
+                                key={option.key}
+                                onClick={() => handleSortSelect(option.key)}
+                                className={`${styles.sortOption} ${isSelected ? styles.selected : ''}`}
+                            >
+                                <div className="d-flex align-items-center justify-content-between w-100">
+                                    <div className="d-flex align-items-center gap-3">
+                                        <IconComponent
+                                            size={16}
+                                            className={styles.optionIcon}
+                                        />
+                                        <span className={styles.optionLabel}>
+                                            {option.label}
+                                        </span>
+                                    </div>
+                                    {isSelected && (
+                                        <Check
+                                            size={16}
+                                            className={styles.checkIcon}
+                                        />
+                                    )}
                                 </div>
-                                {isSelected && (
-                                    <Check
-                                        size={16}
-                                        className={styles.checkIcon}
-                                    />
-                                )}
-                            </div>
-                        </Dropdown.Item>
-                    );
-                })}
-            </Dropdown.Menu>
-        </Dropdown>
+                            </Dropdown.Item>
+                        );
+                    })}
+                </Dropdown.Menu>
+            </Dropdown>
+        </div>
     );
 }
 
@@ -140,6 +183,10 @@ SortingComponent.propTypes = {
     buttonSize: PropTypes.oneOf(['sm', 'md', 'lg']),
     buttonVariant: PropTypes.string,
     disabled: PropTypes.bool,
+    showSearch: PropTypes.bool,
+    searchQuery: PropTypes.string,
+    onSearchChange: PropTypes.func,
+    searchPlaceholder: PropTypes.string,
 };
 
 export default SortingComponent;
