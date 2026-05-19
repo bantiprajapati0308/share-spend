@@ -51,7 +51,7 @@ function ExpenseItem({ expense, onDelete, onEdit }) {
                     {incomeTypeData === 'income' ? <BoxArrowDown size={18} className='me-1' /> : <BoxArrowUp size={18} className='mb-1' />}
                     <div> {formatCurrencyINR(expense.amount)}</div>
                 </div>
-                <div className='d-flex flex-column align-items-end'>
+                <div className='d-flex gap-1 flex-column align-items-center'>
                     {/* Action Buttons (hide if no handlers) */}
                     {(typeof onEdit === 'function' || typeof onDelete === 'function') && (
                         <div className="d-flex gap-1 ms-2">
@@ -78,7 +78,7 @@ function ExpenseItem({ expense, onDelete, onEdit }) {
                         </div>
                     )}
                     <div
-                        className="badge border border-primary-subtle text-primary-emphasis bg-primary-subtle text-nowrap me-2 fw-semibold"
+                        className="badge border border-primary-subtle text-primary-emphasis bg-primary-subtle text-nowrap ms-1 fw-semibold"
                         title={new Date(expense.date).toLocaleDateString('en-US', {
                             day: 'numeric',
                             month: 'short',
