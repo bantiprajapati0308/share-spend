@@ -1,5 +1,6 @@
 import React from 'react';
 import { BoxArrowDown, BoxArrowDownRight, BoxArrowUp, Trash3, PencilSquare } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import styles from '../styles/DailySpends.module.scss';
 import { formatCurrencyINR, getCurrencySymbol } from '../../../Util';
 
@@ -13,30 +14,78 @@ function ExpenseItem({ expense, onDelete, onEdit }) {
             <div className="flex-grow-1 overflow-hidden">
                 {/* Line 1 */}
                 <div className="d-flex justify-content-between align-items-center">
-                    <div className="fw-semibold text-dark text-truncate d-flex align-items-center gap-2">
-                        <span className="fs-5">
-                            {expense.categoryIcon || '📝'}
-                        </span>
+                    <div
+                        className="fw-semibold text-dark text-truncate"
+                        title={expense.name || ''}
+                        style={{ maxWidth: '70%' }}
+                    >
                         {expense.name}
-                    </div>
-                    <div className={`fw-bold ${incomeTypeData === 'income' ? 'text-success' : 'text-danger'} fs-6`}>
-                        {incomeTypeData === 'income' ? <BoxArrowDown size={18} className='me-1' /> : <BoxArrowUp size={18} className='me-1 mb-1' />}
-                        {formatCurrencyINR(expense.amount)}
                     </div>
                 </div>
                 {/* Line 2 */}
-                <div className="d-flex justify-content-between align-items-center small mt-1">
+                <div className="d-flex justify-content-between align-items-center mt-1">
                     <div className="text-muted text-truncate">
                         <span className="badge bg-light text-dark border me-2">
-                            {expense.category}
+                            {expense.categoryIcon || '📝'}{expense.category}
                         </span>
                         {expense.notes && (
-                            <span className="text-secondary">
-                                {expense.notes}
-                            </span>
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                    <Tooltip id={`note-tooltip-${expense.id}`}>
+                                        {expense.notes}
+                                    </Tooltip>
+                                }
+                            >
+                                <span className="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                                    Notes
+                                </span>
+                            </OverlayTrigger>
                         )}
                     </div>
-                    <div className="text-muted text-nowrap">
+
+                </div>
+            </div>
+            <div className='d-flex gap-1'>
+                <div className={`fw-bold ${incomeTypeData === 'income' ? 'text-success' : 'text-danger'} d-flex flex-column align-items-center justify-content-end fs-6`}>
+                    {incomeTypeData === 'income' ? <BoxArrowDown size={18} className='me-1' /> : <BoxArrowUp size={18} className='mb-1' />}
+                    <div> {formatCurrencyINR(expense.amount)}</div>
+                </div>
+                <div className='d-flex flex-column align-items-end'>
+                    {/* Action Buttons (hide if no handlers) */}
+                    {(typeof onEdit === 'function' || typeof onDelete === 'function') && (
+                        <div className="d-flex gap-1 ms-2">
+                            {typeof onEdit === 'function' && (
+                                <button
+                                    className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
+                                    style={{ width: '32px', height: '32px' }}
+                                    onClick={() => onEdit(expense)}
+                                    title="Edit expense"
+                                >
+                                    <PencilSquare size={16} className="text-warning" />
+                                </button>
+                            )}
+                            {typeof onDelete === 'function' && (
+                                <button
+                                    className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
+                                    style={{ width: '32px', height: '32px' }}
+                                    onClick={() => onDelete(expense.id)}
+                                    title="Delete expense"
+                                >
+                                    <Trash3 size={18} className="text-danger" />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                    <div
+                        className="badge border border-primary-subtle text-primary-emphasis bg-primary-subtle text-nowrap me-2 fw-semibold"
+                        title={new Date(expense.date).toLocaleDateString('en-US', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        })}
+                        style={{ letterSpacing: '0.2px', fontSize: '0.78rem' }}
+                    >
                         {new Date(expense.date).toLocaleDateString('en-US', {
                             day: 'numeric',
                             month: 'short'
@@ -44,31 +93,6 @@ function ExpenseItem({ expense, onDelete, onEdit }) {
                     </div>
                 </div>
             </div>
-            {/* Action Buttons (hide if no handlers) */}
-            {(typeof onEdit === 'function' || typeof onDelete === 'function') && (
-                <div className="d-flex gap-1 ms-2">
-                    {typeof onEdit === 'function' && (
-                        <button
-                            className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
-                            style={{ width: '32px', height: '32px' }}
-                            onClick={() => onEdit(expense)}
-                            title="Edit expense"
-                        >
-                            <PencilSquare size={16} className="text-warning" />
-                        </button>
-                    )}
-                    {typeof onDelete === 'function' && (
-                        <button
-                            className="btn btn-sm btn-light border-0 d-flex align-items-center justify-content-center"
-                            style={{ width: '32px', height: '32px' }}
-                            onClick={() => onDelete(expense.id)}
-                            title="Delete expense"
-                        >
-                            <Trash3 size={18} className="text-danger" />
-                        </button>
-                    )}
-                </div>
-            )}
         </div>
     );
 }

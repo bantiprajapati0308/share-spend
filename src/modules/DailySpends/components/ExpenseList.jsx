@@ -7,6 +7,7 @@ import { sortExpenses, SORT_TYPES } from '../../../utils/sortingUtils';
 
 function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
     const [currentSort, setCurrentSort] = useState(SORT_TYPES.DATE_NEWEST);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const isIncome = title.includes('Income');
     const isToday = title.toLowerCase().includes('today');
@@ -20,10 +21,55 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
                 ? 'No income added yet. Add your income above!'
                 : 'No expenses yet. Start adding your daily expenses above!';
 
-    // Sort expenses based on current sort selection
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+
+    // Filter by name, amount, notes, and date text
+    const filteredExpenses = useMemo(() => {
+        if (!normalizedSearch) {
+            return expenses;
+        }
+
+        return expenses.filter((expense) => {
+            const nameText = String(expense.name || '').toLowerCase();
+            const categoryText = String(expense.category || '').toLowerCase();
+            const amountText = String(expense.amount ?? '').toLowerCase();
+            const notesText = String(expense.notes || '').toLowerCase();
+
+            const dateValue = expense.date || expense.createdAt;
+            let dateText = '';
+            let isoDateText = '';
+
+            if (dateValue) {
+                const parsedDate = new Date(dateValue);
+                if (!Number.isNaN(parsedDate.getTime())) {
+                    dateText = parsedDate
+                        .toLocaleDateString('en-US', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        })
+                        .toLowerCase();
+                    isoDateText = parsedDate.toISOString().split('T')[0].toLowerCase();
+                }
+            }
+
+            return (
+                nameText.includes(normalizedSearch) ||
+                categoryText.includes(normalizedSearch) ||
+                amountText.includes(normalizedSearch) ||
+                notesText.includes(normalizedSearch) ||
+                dateText.includes(normalizedSearch) ||
+                isoDateText.includes(normalizedSearch)
+            );
+        });
+    }, [expenses, normalizedSearch]);
+
+    // Sort only the visible (filtered) expenses
     const sortedExpenses = useMemo(() => {
-        return sortExpenses(expenses, currentSort);
-    }, [expenses, currentSort]);
+        return sortExpenses(filteredExpenses, currentSort);
+    }, [filteredExpenses, currentSort]);
+
+    const hasSearch = normalizedSearch.length > 0;
 
     const handleSortChange = (sortType) => {
         setCurrentSort(sortType);
@@ -32,10 +78,10 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="d-flex align-items-center gap-2 mb-0 fw-semibold text-dark">
-                    <span className="text-secondary ms-3 ps-1" style={{ fontSize: '1.25rem' }}>Transaction</span>
-                    <Badge bg={isIncome ? 'success' : 'danger'} pill className="px-2 py-1" style={{ fontSize: '0.72rem' }}>
-                        {expenses.length}
+                <h5 className="d-flex align-items-center gap-1 me-2 mb-0 fw-semibold text-dark">
+                    <span className="text-secondary ms-3" style={{ fontSize: '1rem' }}>Transactions</span>
+                    <Badge bg={isIncome ? 'success' : 'danger'} pill className="px-1 py-1" style={{ fontSize: '0.72rem' }}>
+                        {hasSearch ? `${sortedExpenses.length}/${expenses.length}` : expenses.length}
                     </Badge>
                 </h5>
 
@@ -43,6 +89,8 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
                     <SortingComponent
                         currentSort={currentSort}
                         onSortChange={handleSortChange}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
                         buttonSize="sm"
                         buttonVariant="outline-primary"
                     />
@@ -52,6 +100,10 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses' }) {
                 {expenses.length === 0 ? (
                     <div className={styles.noExpenses}>
                         <p>{emptyMessage}</p>
+                    </div>
+                ) : sortedExpenses.length === 0 ? (
+                    <div className={styles.noExpenses}>
+                        <p>No transactions match your search.</p>
                     </div>
                 ) : (
                     <>
