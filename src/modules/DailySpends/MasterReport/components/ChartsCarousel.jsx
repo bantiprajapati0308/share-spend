@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Form } from 'react-bootstrap';
 import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
 import { StackedBarChart, PieChart } from '../../../../components/charts';
+import CalendarHeatmap from './CalendarHeatmap';
 import styles from '../styles/ChartsCarousel.module.scss';
 
 /**
@@ -22,7 +23,8 @@ function ChartsCarousel({
     endDate,
     transactionType,
     onTransactionTypeChange,
-    currency = '₹'
+    currency = '₹',
+    transactions = []
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState(null);
@@ -99,6 +101,23 @@ function ChartsCarousel({
                         className={categories.length > 4 ? "multi-category-legend-chart" : "compact-legend-chart"}
                         colorPalette="default"
                         onBarClick={onBarClick}
+                    />
+                </div>
+            )
+        },
+        {
+            id: 'calendar',
+            title: `Daily ${transactionType === 'income' ? 'Income' : 'Spend'} Heatmap`,
+            subtitle: startDate && endDate
+                ? `${startDate.toDateString()} – ${endDate.toDateString()}`
+                : 'Last 30 days',
+            component: (
+                <div className={styles.chartContainer}>
+                    <CalendarHeatmap
+                        transactions={transactions}
+                        transactionType={transactionType}
+                        startDate={startDate}
+                        endDate={endDate}
                     />
                 </div>
             )
@@ -275,7 +294,8 @@ ChartsCarousel.propTypes = {
     endDate: PropTypes.instanceOf(Date),
     transactionType: PropTypes.oneOf(['spend', 'income']),
     onTransactionTypeChange: PropTypes.func,
-    currency: PropTypes.string
+    currency: PropTypes.string,
+    transactions: PropTypes.array
 };
 
 export default ChartsCarousel;

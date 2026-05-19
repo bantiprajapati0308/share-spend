@@ -255,6 +255,7 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
                     transactionType={chartTransactionType}
                     onTransactionTypeChange={setChartTransactionType}
                     currency="₹"
+                    transactions={transactions}
                 />
             )}
 
