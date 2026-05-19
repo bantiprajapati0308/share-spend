@@ -5,7 +5,7 @@ import ExpenseList from '../../components/ExpenseList';
 
 import { formatCurrencyINR } from '../../../../Util';
 
-function TimeSummaryDetailModal({ show, onHide, title, transactions, isIncome }) {
+function TimeSummaryDetailModal({ show, onHide, title, transactions, isIncome, dateHide = false }) {
     const totalAmount = transactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
 
     return (
@@ -18,6 +18,7 @@ function TimeSummaryDetailModal({ show, onHide, title, transactions, isIncome })
                     expenses={transactions}
                     title={title}
                     // Hide edit/delete by passing no-op handlers
+                    dateHide={dateHide}
                     onDelete={undefined}
                     onEdit={undefined}
                 />

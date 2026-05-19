@@ -4,7 +4,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import styles from '../styles/DailySpends.module.scss';
 import { formatCurrencyINR, getCurrencySymbol } from '../../../Util';
 
-function ExpenseItem({ expense, onDelete, onEdit }) {
+function ExpenseItem({ expense, onDelete, onEdit, dateHide = false }) {
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
     const incomeTypeData = expense.type;
@@ -85,6 +85,7 @@ function ExpenseItem({ expense, onDelete, onEdit }) {
                             year: 'numeric'
                         })}
                         style={{ letterSpacing: '0.2px', fontSize: '0.78rem' }}
+                        hidden={dateHide}
                     >
                         {new Date(expense.date).toLocaleDateString('en-US', {
                             day: 'numeric',
