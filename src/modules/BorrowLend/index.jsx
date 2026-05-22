@@ -23,6 +23,8 @@ function BorrowLend() {
         getTotalGiven,
         getTotalTaken,
         getNetBalance,
+        getGivenPeopleCount,
+        getTakenPeopleCount,
         getFilteredTransactions,
         loading,
         error,
@@ -85,6 +87,8 @@ function BorrowLend() {
                         totalGiven={getTotalGiven()}
                         totalTaken={getTotalTaken()}
                         netBalance={getNetBalance()}
+                        givenCount={getGivenPeopleCount()}
+                        takenCount={getTakenPeopleCount()}
                         onAddClick={() => setShowForm(!showForm)}
                     />
                     {showForm && (
