@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useCalendarData } from '../hooks/useCalendarData';
 import TimeSummaryDetailModal from './TimeSummaryDetailModal';
-import { formatCurrencyINR } from '../../../../Util';
+import { formatCurrencyINR, formatCurrencyCompact } from '../../../../Util';
 import styles from '../styles/CalendarHeatmap.module.scss';
 
 const LEVEL_LABELS = ['None', 'Low', 'Low-Med', 'Mid', 'High', 'Peak'];
@@ -147,7 +147,7 @@ function CalendarHeatmap({ transactions, transactionType, startDate, endDate }) 
                                 <span className={styles.dateNum}>{date.getDate()}</span>
                                 {inRange && dayData.total > 0 && (
                                     <span className={styles.amountBadge}>
-                                        {formatCurrencyINR(dayData.total)}
+                                        {formatCurrencyCompact(dayData.total)}
                                     </span>
                                 )}
                             </div>

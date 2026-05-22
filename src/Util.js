@@ -18,6 +18,7 @@ export const formatCurrencyINR = (amount, options = {}) => {
     return showSymbol ? `${DEFAULT_CURRENCY_SYMBOL}${formattedAmount}` : formattedAmount;
 };
 
+
 export const getCurrencySymbol = (currency = DEFAULT_CURRENCY) => {
     switch (currency) {
         case 'USD':
@@ -32,6 +33,23 @@ export const getCurrencySymbol = (currency = DEFAULT_CURRENCY) => {
             return DEFAULT_CURRENCY_SYMBOL;
     }
 }
+
+/**
+ * Format a number compactly with the current currency symbol.
+ * 999 → ₹999   |   1000 → ₹1k   |   5630 → ₹5.6k   |   47168 → ₹47.2k   |   1000000 → ₹1M
+ * @param {number} num
+ * @param {number} decimals
+ * @returns {string}
+ */
+export const formatCurrencyCompact = (num, decimals = 1) => {
+    const currency = (typeof localStorage !== 'undefined' && localStorage.getItem('defaultCurrency')) || DEFAULT_CURRENCY;
+    const symbol = getCurrencySymbol(currency);
+    if (!num) return `${symbol}0`;
+    const absNum = Math.abs(num);
+    if (absNum >= 1_000_000) return `${symbol}${(num / 1_000_000).toFixed(decimals)}M`;
+    if (absNum >= 1_000) return `${symbol}${(num / 1_000).toFixed(decimals)}k`;
+    return `${symbol}${Math.round(num)}`;
+};
 
 export const getGradientColor = (currentValue, minValue, maxValue) => {
     // Return default black if no gradient needed
