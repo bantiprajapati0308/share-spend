@@ -112,12 +112,15 @@ export const createEnhancedBorrowLendRenderer = (currency, onRowClick = null) =>
             }
         };
 
+        const isSettled = Number(displayAmount) === 0 || status === 'Paid';
+
         return (
             <tr
                 key={index}
                 onClick={handleRowClick}
                 style={{
-                    cursor: isMultipleTransactions ? 'pointer' : 'default'
+                    cursor: isMultipleTransactions ? 'pointer' : 'default',
+                    opacity: isSettled ? 0.6 : 1,
                 }}
                 title={isMultipleTransactions ? `Click to view ${transactionCount} transactions` : undefined}
             >
