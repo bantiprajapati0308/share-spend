@@ -165,6 +165,23 @@ export const useLendingTransactions = () => {
         return Math.round((given - taken) * 100) / 100;
     };
 
+    // Count unique people with outstanding > 0 (excludes fully paid)
+    const getGivenPeopleCount = () => {
+        const seen = new Set();
+        transactions
+            .filter(t => t.type === TRANSACTION_TYPES.GAVE && computeRecordTotals(t).outstanding > 0)
+            .forEach(t => seen.add(t.personName));
+        return seen.size;
+    };
+
+    const getTakenPeopleCount = () => {
+        const seen = new Set();
+        transactions
+            .filter(t => t.type === TRANSACTION_TYPES.TOOK && computeRecordTotals(t).outstanding > 0)
+            .forEach(t => seen.add(t.personName));
+        return seen.size;
+    };
+
     const expandedTransactions = useMemo(() => expandTransactionsFromRecords(transactions), [transactions]);
 
     // Compute record totals by type for due tracking
@@ -284,6 +301,8 @@ export const useLendingTransactions = () => {
         getTotalGiven,
         getTotalTaken,
         getNetBalance,
+        getGivenPeopleCount,
+        getTakenPeopleCount,
         getFilteredTransactions,
         getUniquePersonNames,
         // Archive functionality

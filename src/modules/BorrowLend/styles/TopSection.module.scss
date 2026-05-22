@@ -1,167 +1,132 @@
 @use '../../../assets/scss/variables' as *;
-@use '../../../assets/scss/mixins' as *;
 
 .topSection {
-    background: white;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
-.greeting {
-    h2 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: $text-primary;
-        margin: 0;
-
-        @media (max-width: 768px) {
-            font-size: 1.5rem;
-        }
-    }
-}
-
-.avatar {
-    img {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid $primary-color;
-    }
-}
-
-.avatarPlaceholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: $primary-color;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    border: 3px solid $primary-color;
-}
-
-.dashboardGrid {
+/* ── Card grid ─────────────────────────────────── */
+.cardGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;
-    margin-bottom: 1.5rem;
-    width: 100%;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
 }
 
-.dashboardCard {
-    padding: 1.25rem 1rem;
-    border-radius: 1rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    color: white;
+.card {
+    background: #fff;
+    border-radius: 1.1rem;
+    padding: 1.1rem 0.5rem 0.9rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 0.28rem;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    text-align: center;
+    min-height: 148px;
     justify-content: center;
-    min-height: 140px;
-
-    @media (max-width: 576px) {
-        min-height: 120px;
-        padding: 1rem;
-    }
+    transition: box-shadow 0.2s;
 
     &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .cardIcon {
-        font-size: 2rem;
-        margin-bottom: 0.75rem;
-
-        @media (max-width: 576px) {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-        }
-    }
-
-    .cardLabel {
-        font-size: 0.75rem;
-        font-weight: 600;
-        opacity: 0.95;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-
-        @media (max-width: 576px) {
-            font-size: 0.7rem;
-            margin-bottom: 0.5rem;
-        }
-    }
-
-    .cardValue {
-        font-size: 1.5rem;
-        font-weight: 800;
-        line-height: 1.3;
-        word-break: break-word;
-        max-width: 100%;
-
-        @media (max-width: 768px) {
-            font-size: 1.25rem;
-        }
-
-        @media (max-width: 576px) {
-            font-size: 1.1rem;
-        }
-    }
-
-    &.willGet {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    }
-
-    &.owe {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-
-    &.balance {
-        background: linear-gradient(135deg, #3b82f6 0%, #1e62d0 100%);
-
-        .cardValue {
-            color: white;
-        }
+        box-shadow: 0 5px 22px rgba(0, 0, 0, 0.12);
     }
 }
 
-.addButton {
-    width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e62d0 100%);
-    color: white;
-    border: none;
-    border-radius: 0.75rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
+/* ── Tinted balance card ────────────────────────── */
+.balancePos {
+    background: linear-gradient(150deg, #e6f9f1 0%, #ccf0e1 100%);
+}
+
+.balanceNeg {
+    background: linear-gradient(150deg, #fff0ee 0%, #fdddd9 100%);
+}
+
+/* ── SVG icon circle ────────────────────────────── */
+.iconWrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+    flex-shrink: 0;
+
+    svg {
+        width: 22px;
+        height: 22px;
+        color: #fff;
+    }
+}
+
+.iconWrapGreen {
+    background: #10b981;
+}
+
+.iconWrapRed {
+    background: #ef4444;
+}
+
+/* ── Balance emoji ──────────────────────────────── */
+.balanceFace {
+    font-size: 3.1rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+}
+
+/* ── Typography ─────────────────────────────────── */
+.cardLabel {
+    font-size: 0.63rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.cardAmount {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.15;
+
+    @media (max-width: 380px) {
+        font-size: 1rem;
+    }
+}
+
+.amountGreen {
+    color: #059669;
+}
+
+.amountRed {
+    color: #dc2626;
+}
+
+.cardSub {
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ── Add button ─────────────────────────────────── */
+.addButton {
+    width: 100%;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e62d0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
 
     &:hover {
-        transform: scale(1.02);
-        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 6px 18px rgba(59, 130, 246, 0.38);
+        transform: translateY(-1px);
     }
 
     &:active {
         transform: scale(0.98);
-    }
-
-    .icon {
-        font-size: 1.3rem;
-        font-weight: 700;
-    }
-
-    @media (max-width: 576px) {
-        padding: 0.9rem;
-        font-size: 1rem;
     }
 }
