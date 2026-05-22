@@ -39,8 +39,12 @@ function BorrowLendTable({ transactions, currency }) {
         [borrowedTransactions]
     );
 
-    // Select the appropriate data based on active tab
-    const activeData = activeTab === 'gave' ? lentAggregatedData : borrowedAggregatedData;
+    // Select the appropriate data based on active tab, settled rows go to the bottom
+    const activeData = useMemo(() => {
+        const data = activeTab === 'gave' ? lentAggregatedData : borrowedAggregatedData;
+        const isSettled = row => Number(row.displayAmount) === 0 || row.status === 'Paid';
+        return [...data].sort((a, b) => isSettled(a) - isSettled(b));
+    }, [activeTab, lentAggregatedData, borrowedAggregatedData]);
     // Create clean professional headers
     const headers = useMemo(() => [
         { label: 'Person', className: 'p-3' },
