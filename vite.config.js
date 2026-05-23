@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path'
 export default defineConfig({
   plugins: [react()],
-  base: '/share-spend/', // Ensure this is set correctly based on your deployment environment
+  base: '/', // Set to root for Vercel deployment
 
   // Configure the build output directory
   build: {
