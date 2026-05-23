@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Alert } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import { useUserCategories } from './hooks/useUserCategories';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
-import { getCategoryTotals, getBreakdownData } from '../../hooks/useCategoryBreakdown';
 import DailySpendsHeader from './components/DailySpendsHeader';
 import DateRangeAccordion from './components/DateRangeAccordion';
 import DualSummaryCards from './components/DualSummaryCards';
@@ -18,7 +17,6 @@ import FullScreenLoader from '../../components/common/FullScreenLoader';
 
 function DailySpends() {
     const navigate = useNavigate();
-    const location = useLocation();
     const [selectedType, setSelectedType] = useState('spend');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
@@ -36,9 +34,6 @@ function DailySpends() {
         addTransaction,
         deleteTransaction,
         updateTransaction,
-        getTotalSpend,
-        getTotalIncome,
-        getSpendPercentage,
         getTransactionsByType,
         loading,
         error,
@@ -85,18 +80,6 @@ function DailySpends() {
             setUserCategories([]);
         } finally {
             setCategoriesLoading(false);
-        }
-    };
-
-    const loadCategoryTotals = async () => {
-        try {
-            if (!startDate || !endDate) return;
-            // Convert dates to string format for Firebase
-            const startDateStr = startDate.toISOString().split('T')[0];
-            const endDateStr = endDate.toISOString().split('T')[0];
-            const totals = await getCategoryTotals(startDateStr, endDateStr);
-        } catch (err) {
-            console.error('Error loading category totals:', err);
         }
     };
 
