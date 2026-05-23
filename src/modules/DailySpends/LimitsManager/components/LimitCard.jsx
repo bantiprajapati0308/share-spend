@@ -10,7 +10,6 @@ import {
     getStatusText,
     getStatusVariantForIncome,
     getStatusTextForIncome,
-    formatCurrency,
 } from '../utils/limitsCalculations';
 import GradientProgressBar from '../../components/GradientProgressBar';
 import { formatCurrencyINR } from '../../../../Util';
