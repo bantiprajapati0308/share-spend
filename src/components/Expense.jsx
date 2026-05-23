@@ -161,11 +161,11 @@ function Expense({ canEdit = true }) {
     const isAllSelected = members.length > 0 && participants.length === members.length;
 
     const handleNext = () => {
-        navigate(`/share-spend/report/${tripId}`);
+        navigate(`/report/${tripId}`);
     };
 
     const handleBack = () => {
-        navigate(`/share-spend/members/${tripId}`);
+        navigate(`/members/${tripId}`);
     };
 
     return (

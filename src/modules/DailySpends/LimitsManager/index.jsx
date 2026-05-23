@@ -191,7 +191,7 @@ function LimitsManager() {
                     <div className={styles.headerContent}>
                         <button
                             className={styles.backButton}
-                            onClick={() => navigate('/share-spend/daily-expenses')}
+                            onClick={() => navigate('/daily-expenses')}
                             title="Back to Daily Expenses"
                         >
                             <ArrowLeft size={20} />

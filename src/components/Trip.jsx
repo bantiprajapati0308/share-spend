@@ -39,7 +39,7 @@ function Trip() {
             // Dispatch to Redux if needed
             dispatch(setTrip({ name: tripName, description, organizer, currency, date, passcode, id: tripId }));
             // Navigate to members page with tripId
-            navigate(`/share-spend/members/${tripId}`);
+            navigate(`/members/${tripId}`);
             // Reset form
             setTripName('');
             setDescription('');
@@ -125,7 +125,7 @@ function Trip() {
                                                         title="Open Trip"
                                                         onClick={() => {
                                                             dispatch(setTrip(tripItem));
-                                                            navigate(`/share-spend/members/${tripItem.id}`);
+                                                            navigate(`/members/${tripItem.id}`);
                                                         }}
                                                     >
                                                         <ArrowRightCircle size={20} />

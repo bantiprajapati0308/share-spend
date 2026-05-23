@@ -6,7 +6,7 @@ function BottomNavigation() {
     return (
         <nav className={styles.bottomNav}>
             <NavLink
-                to="/share-spend/daily-expenses"
+                to="/daily-expenses"
                 className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
                 style={{ textDecoration: 'none' }}
             >
@@ -15,7 +15,7 @@ function BottomNavigation() {
             </NavLink>
 
             <NavLink
-                to="/share-spend/lending"
+                to="/lending"
                 className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
                 style={{ textDecoration: 'none' }}
             >
@@ -23,7 +23,7 @@ function BottomNavigation() {
                 <span className={styles.label}>Borrow/Lent</span>
             </NavLink>
             <NavLink
-                to="/share-spend/trip"
+                to="/trip"
                 className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
                 style={{ textDecoration: 'none' }}
             >

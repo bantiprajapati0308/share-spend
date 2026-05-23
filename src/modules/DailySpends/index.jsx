@@ -196,18 +196,10 @@ function DailySpends() {
         setIsEditMode(false);
     };
 
-    const handleOpenBreakdownReport = () => {
-        navigate('/share-spend/breakdown-report', {
-            state: {
-                startDate,
-                endDate,
-            }
-        });
-    };
 
     const handleOpenLimitsManager = () => {
-        navigate('/share-spend/daily-expenses/limits-manager', {
-            state: { from: '/share-spend/daily-expenses' }
+        navigate('/daily-expenses/limits-manager', {
+            state: { from: '/daily-expenses' }
         });
     };
 

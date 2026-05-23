@@ -10,7 +10,7 @@ function TopBar() {
 
     const handleLogout = async () => {
         await auth.signOut();
-        navigate("/share-spend/login");
+        navigate("/login");
         window.location.reload();
     };
 

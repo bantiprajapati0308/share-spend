@@ -180,7 +180,7 @@ function Report() {
                             variant="outline-primary"
                             className="fw-semibold"
                             style={{ borderRadius: 8 }}
-                            onClick={() => navigate(`/share-spend/expenses/${tripId}`)}
+                            onClick={() => navigate(`/expenses/${tripId}`)}
                         >
                             Back
                         </Button>

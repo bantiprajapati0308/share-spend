@@ -92,7 +92,7 @@ const AuthScreen = () => {
         // Don't fail login if category initialization fails
       }
 
-      navigate("/share-spend/trip");
+      navigate("/daily-expenses");
       setLoadingAuth(false);
     } catch (err) {
       setError(err.message);
@@ -139,7 +139,7 @@ const AuthScreen = () => {
       }
 
       setLoadingAuth(false);
-      navigate("/share-spend/trip");
+      navigate("/daily-expenses");
     } catch (err) {
       setError(err.message);
       setLoadingAuth(false);

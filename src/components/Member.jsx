@@ -126,9 +126,9 @@ function Member({ canEdit = true }) {
     const handleNext = (type) => {
         let path = '';
         if (type === 'back') {
-            path = '/share-spend/trip';
+            path = '/trip';
         } else if (type === 'next') {
-            path = `/share-spend/expenses/${tripId}`; // Pass tripId in the route
+            path = `/expenses/${tripId}`; // Pass tripId in the route
         }
         navigate(path);
     };

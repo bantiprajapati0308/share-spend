@@ -52,7 +52,7 @@ function NavigationBar() {
 
     const handleLogout = async () => {
         await auth.signOut();
-        navigate("/share-spend/login"); // Redirect to home after logout
+        navigate("/login"); // Redirect to home after logout
         window.location.reload();
     };
 
@@ -79,13 +79,13 @@ function NavigationBar() {
                         <div className={styles.mobileMenuGrid}>
                             <Row>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to="/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <HouseDoor size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Trip</span>
                                     </NavLink>
                                 </Col>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to={`/share-spend/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <People size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Members</span>
                                     </NavLink>
@@ -93,13 +93,13 @@ function NavigationBar() {
                             </Row>
                             <Row>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to={`/share-spend/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <Wallet2 size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Expenses</span>
                                     </NavLink>
                                 </Col>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to={`/share-spend/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to={`/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <BarChart size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Report</span>
                                     </NavLink>
@@ -107,13 +107,13 @@ function NavigationBar() {
                             </Row>
                             <Row>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to="/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <Calendar size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Daily</span>
                                     </NavLink>
                                 </Col>
                                 <Col xs={6} className={styles.menuCol}>
-                                    <NavLink to="/share-spend/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                    <NavLink to="/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                         <HandThumbsUp size={20} className="me-2" />
                                         <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Lending</span>
                                     </NavLink>
@@ -123,27 +123,27 @@ function NavigationBar() {
                     ) : (
                         <Nav className="justify-content-start">
                             <div className={styles.desktopMenuWrap}>
-                                <NavLink to="/share-spend/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to="/trip" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <HouseDoor size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Trip</span>
                                 </NavLink>
-                                <NavLink to={`/share-spend/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/members/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <People size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Members</span>
                                 </NavLink>
-                                <NavLink to={`/share-spend/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/expenses/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <Wallet2 size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Expenses</span>
                                 </NavLink>
-                                <NavLink to={`/share-spend/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to={`/report/${tripId}`} className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <BarChart size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Report</span>
                                 </NavLink>
-                                <NavLink to="/share-spend/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to="/daily-expenses" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <Calendar size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Daily</span>
                                 </NavLink>
-                                <NavLink to="/share-spend/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
+                                <NavLink to="/lending" className={styles.gridNavItem} onClick={handleNavClick} style={{ textDecoration: 'none' }}>
                                     <HandThumbsUp size={16} className="me-2" />
                                     <span className={styles.menuTitle} style={{ fontSize: '0.9rem' }}>Lending</span>
                                 </NavLink>

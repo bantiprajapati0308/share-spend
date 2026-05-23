@@ -57,28 +57,28 @@ function App() {
         <ErrorBoundary>
           <TopBar />
           <Routes>
-            <Route path="/share-spend/trip" element={<Trip />} />
-            <Route path="/share-spend/members/:tripId" element={
+            <Route path="/trip" element={<Trip />} />
+            <Route path="/members/:tripId" element={
               <ProtectedTripRoute>
                 <Member />
               </ProtectedTripRoute>
             } />
-            <Route path="/share-spend/expenses/:tripId" element={
+            <Route path="/expenses/:tripId" element={
               <ProtectedTripRoute>
                 <Expense />
               </ProtectedTripRoute>
             } />
-            <Route path="/share-spend/report/:tripId" element={
+            <Route path="/report/:tripId" element={
               <ProtectedTripRoute>
                 <Report />
               </ProtectedTripRoute>
             } />
-            <Route path="/share-spend/daily-expenses" element={<DailySpends />} />
-            <Route path="/share-spend/daily-expenses/limits-manager" element={<LimitsManager />} />
-            <Route path="/share-spend/breakdown-report" element={<BreakdownReport />} />
-            <Route path="/share-spend/daily-expenses/master-report" element={<MasterReportWrapper />} />
-            <Route path="/share-spend/lending" element={<BorrowLend />} />
-            <Route path="*" element={<Navigate to="/share-spend/login" />} />
+            <Route path="/daily-expenses" element={<DailySpends />} />
+            <Route path="/daily-expenses/limits-manager" element={<LimitsManager />} />
+            <Route path="/breakdown-report" element={<BreakdownReport />} />
+            <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />
+            <Route path="/lending" element={<BorrowLend />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </ErrorBoundary>
         <BottomNavigation />

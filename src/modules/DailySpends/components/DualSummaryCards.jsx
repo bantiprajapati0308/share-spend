@@ -17,7 +17,7 @@ function DualSummaryCards({
     const overspentPercentage = isOverspent ? ((Math.abs(savedAmount) / totalIncome) * 100) : 0;
     const navigate = useNavigate();
     const handleOpenMasterReport = () => {
-        navigate('/share-spend/daily-expenses/master-report', {
+        navigate('/daily-expenses/master-report', {
             state: { startDate, endDate }
         });
     };
