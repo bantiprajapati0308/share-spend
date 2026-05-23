@@ -1,5 +1,15 @@
-import { db, auth } from "../firebase";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { dailySpendsApi } from '../services/api/dailySpendsApi';
+
+const toDateStr = (d) => d instanceof Date ? d.toISOString().split('T')[0] : d;
+
+const fetchFiltered = async (type, startDateStr, endDateStr) => {
+    const result = await dailySpendsApi.getTransactions(type);
+    if (!result.success) throw new Error(result.error);
+    return result.data.filter(exp => {
+        const expDate = exp.date || (exp.createdAt ? new Date(exp.createdAt).toISOString().split('T')[0] : null);
+        return expDate >= startDateStr && expDate <= endDateStr;
+    });
+};
 
 /**
  * GET: Fetch expenses grouped by category for a specific date range
@@ -8,48 +18,18 @@ import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
  */
 export const getExpensesByCategory = async (startDate, endDate) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            console.error("User not authenticated");
-            return {};
-        }
-
-        // Convert Date objects to YYYY-MM-DD strings for date filtering
-        const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-        const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
-
-        // Query all spend transactions (date filtering done client-side to avoid composite index)
-        const expensesQuery = query(
-            collection(db, "users", userId, "dailySpends"),
-            where("type", "==", "spend"),
-            orderBy("date", "desc")
-        );
-
-        const snap = await getDocs(expensesQuery);
-        const expenses = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-
-        // Filter by date range on client side
-        const filteredExpenses = expenses.filter(exp => {
-            const expDate = exp.date || exp.createdAt?.toISOString?.().split('T')[0];
-            return expDate >= startDateStr && expDate <= endDateStr;
-        });
-
-        // Group by category
+        const startDateStr = toDateStr(startDate);
+        const endDateStr = toDateStr(endDate);
+        const filtered = await fetchFiltered('spend', startDateStr, endDateStr);
         const grouped = {};
-        filteredExpenses.forEach(expense => {
-            const category = expense.category || "Other";
-            if (!grouped[category]) {
-                grouped[category] = [];
-            }
+        filtered.forEach(expense => {
+            const category = expense.category || 'Other';
+            if (!grouped[category]) grouped[category] = [];
             grouped[category].push(expense);
         });
-
         return grouped;
     } catch (error) {
-        console.error("Error fetching expenses by category:", error);
+        console.error('Error fetching expenses by category:', error);
         return {};
     }
 };
@@ -64,41 +44,17 @@ export const getExpensesByCategory = async (startDate, endDate) => {
  */
 export const getCategoryTotals = async (startDate, endDate, type = 'spend') => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            console.error("User not authenticated");
-            return {};
-        }
-
-        // Convert Date objects to YYYY-MM-DD strings for date filtering
-        const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-        const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
-
-        // Query transactions of specified type
-        const expensesQuery = query(
-            collection(db, "users", userId, "dailySpends"),
-            where("type", "==", type)
-        );
-
-        const snap = await getDocs(expensesQuery);
-        const expenses = snap.docs.map(doc => doc.data());
-
-        // Filter by date range on client side
-        const filteredExpenses = expenses.filter(exp => {
-            const expDate = exp.date || exp.createdAt?.toISOString?.().split('T')[0];
-            return expDate >= startDateStr && expDate <= endDateStr;
-        });
-
+        const startDateStr = toDateStr(startDate);
+        const endDateStr = toDateStr(endDate);
+        const filtered = await fetchFiltered(type, startDateStr, endDateStr);
         const totals = {};
-        filteredExpenses.forEach(expense => {
-            const category = expense.category || "Other";
-            const amount = parseFloat(expense.amount) || 0;
-            totals[category] = (totals[category] || 0) + amount;
+        filtered.forEach(expense => {
+            const category = expense.category || 'Other';
+            totals[category] = (totals[category] || 0) + (parseFloat(expense.amount) || 0);
         });
-
         return totals;
     } catch (error) {
-        console.error("Error fetching category totals:", error);
+        console.error('Error fetching category totals:', error);
         return {};
     }
 };
@@ -109,39 +65,12 @@ export const getCategoryTotals = async (startDate, endDate, type = 'spend') => {
  */
 export const getCategorySummary = async (category, startDate, endDate, limit = null) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            console.error("User not authenticated");
-            return null;
-        }
-
-        // Convert Date objects to YYYY-MM-DD strings for date filtering
-        const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-        const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
-
-        // Query by category only (date filtering done client-side to avoid composite index)
-        const expensesQuery = query(
-            collection(db, "users", userId, "dailySpends"),
-            where("type", "==", "spend"),
-            where("category", "==", category),
-            orderBy("date", "desc")
-        );
-
-        const snap = await getDocs(expensesQuery);
-        let transactions = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-
-        // Filter by date range on client side
-        transactions = transactions.filter(tx => {
-            const txDate = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
-            return txDate >= startDateStr && txDate <= endDateStr;
-        });
-
+        const startDateStr = toDateStr(startDate);
+        const endDateStr = toDateStr(endDate);
+        const filtered = await fetchFiltered('spend', startDateStr, endDateStr);
+        const transactions = filtered.filter(t => (t.category || 'Other') === category);
         const totalSpent = transactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
         const percentage = limit ? Math.round((totalSpent / limit) * 100) : 0;
-
         return {
             category,
             totalSpent: parseFloat(totalSpent.toFixed(2)),
@@ -150,7 +79,7 @@ export const getCategorySummary = async (category, startDate, endDate, limit = n
             transactions,
         };
     } catch (error) {
-        console.error("Error fetching category summary:", error);
+        console.error('Error fetching category summary:', error);
         return null;
     }
 };

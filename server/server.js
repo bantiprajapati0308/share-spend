@@ -1,0 +1,45 @@
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('./src/config/firebase'); // initialise Admin SDK early
+
+const express = require('express');
+const cors = require('cors');
+const errorHandler = require('./src/middleware/errorHandler');
+
+const app = express();
+
+// ─── Middleware ────────────────────────────────────────────────────────────────
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173').split(',');
+
+app.use(cors({
+    origin: (origin, cb) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            cb(null, true);
+        } else {
+            cb(new Error(`CORS: origin ${origin} not allowed`));
+        }
+    },
+    credentials: true,
+}));
+
+app.use(express.json());
+
+// ─── Health check ──────────────────────────────────────────────────────────────
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/trips', require('./src/routes/trips'));
+app.use('/api/settlements', require('./src/routes/settlements'));
+app.use('/api/daily-spends', require('./src/routes/dailySpends'));
+app.use('/api/categories', require('./src/routes/categories'));
+app.use('/api/category-limits', require('./src/routes/categoryLimits'));
+app.use('/api/settings', require('./src/routes/settings'));
+app.use('/api/borrow-lend', require('./src/routes/borrowLend'));
+
+// ─── Error handler ────────────────────────────────────────────────────────────
+app.use(errorHandler);
+
+// ─── Start ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`[server] Running on http://localhost:${PORT}`));

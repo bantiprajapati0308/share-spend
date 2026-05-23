@@ -1,26 +1,19 @@
-import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where } from "firebase/firestore";
-import { serverTimestamp } from "firebase/firestore";
+import { dailySpendsApi } from '../services/api/dailySpendsApi';
+
+const normalizeDate = (ts) => {
+    if (!ts) return null;
+    if (ts instanceof Date) return ts;
+    if (typeof ts.toDate === 'function') return ts.toDate();
+    if (ts._seconds !== undefined) return new Date(ts._seconds * 1000);
+    return new Date(ts);
+};
 
 // GET: Fetch all transactions for current user
 export const getTransactions = async () => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            console.error("User not authenticated");
-            return [];
-        }
-
-        const transactionsQuery = query(
-            collection(db, "users", userId, "dailySpends"),
-            orderBy("createdAt", "desc")
-        );
-        const snap = await getDocs(transactionsQuery);
-        return snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt),
-        }));
+        const result = await dailySpendsApi.getTransactions();
+        if (!result.success) throw new Error(result.error);
+        return result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
     } catch (error) {
         console.error("Error fetching transactions:", error);
         return [];
@@ -30,29 +23,10 @@ export const getTransactions = async () => {
 // GET: Fetch transactions by type (spend/income)
 export const getTransactionsByType = async (type) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            console.error("User not authenticated");
-            return [];
-        }
-
-        const transactionsQuery = query(
-            collection(db, "users", userId, "dailySpends"),
-            where("type", "==", type)
-        );
-        const snap = await getDocs(transactionsQuery);
-        const transactions = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt),
-        }));
-
-        // Sort by date (newest first)
-        return transactions.sort((a, b) => {
-            const dateA = new Date(a.createdAt);
-            const dateB = new Date(b.createdAt);
-            return dateB - dateA;
-        });
+        const result = await dailySpendsApi.getTransactions(type);
+        if (!result.success) throw new Error(result.error);
+        const transactions = result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
+        return transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (error) {
         console.error("Error fetching transactions by type:", error);
         return [];
@@ -62,19 +36,9 @@ export const getTransactionsByType = async (type) => {
 // POST: Add a new transaction
 export const addTransaction = async (transactionData) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            throw new Error("User not authenticated");
-        }
-
-        const dataToSave = {
-            ...transactionData,
-            createdAt: serverTimestamp(),
-            userId: userId,
-        };
-
-        const docRef = await addDoc(collection(db, "users", userId, "dailySpends"), dataToSave);
-        return { id: docRef.id, ...dataToSave };
+        const result = await dailySpendsApi.addTransaction(transactionData);
+        if (!result.success) throw new Error(result.error);
+        return { ...result.data, createdAt: normalizeDate(result.data.createdAt) };
     } catch (error) {
         console.error("Error adding transaction:", error);
         throw error;
@@ -84,16 +48,8 @@ export const addTransaction = async (transactionData) => {
 // UPDATE: Update an existing transaction
 export const updateTransaction = async (transactionId, transactionData) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            throw new Error("User not authenticated");
-        }
-
-        const transactionRef = doc(db, "users", userId, "dailySpends", transactionId);
-        await updateDoc(transactionRef, {
-            ...transactionData,
-            updatedAt: serverTimestamp(),
-        });
+        const result = await dailySpendsApi.updateTransaction(transactionId, transactionData);
+        if (!result.success) throw new Error(result.error);
         return { id: transactionId, ...transactionData };
     } catch (error) {
         console.error("Error updating transaction:", error);
@@ -104,11 +60,8 @@ export const updateTransaction = async (transactionId, transactionData) => {
 // DELETE: Remove a transaction
 export const deleteTransaction = async (transactionId) => {
     try {
-        const userId = auth.currentUser?.uid;
-        if (!userId) {
-            throw new Error("User not authenticated");
-        }
-        await deleteDoc(doc(db, "users", userId, "dailySpends", transactionId));
+        const result = await dailySpendsApi.deleteTransaction(transactionId);
+        if (!result.success) throw new Error(result.error);
         return true;
     } catch (error) {
         console.error("Error deleting transaction:", error);

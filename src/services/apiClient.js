@@ -1,9 +1,22 @@
 /**
  * Generic API Client
- * Handles all HTTP requests with configurable options
+ * Handles all HTTP requests with configurable options.
+ * Automatically injects the Firebase ID token on every request to the backend.
  */
+import { auth } from '../firebase';
 
-const API_BASE_URL = "https://faran.vercel.app";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+/** Retrieve the current user's Firebase ID token (refreshes if needed) */
+async function getAuthToken() {
+  const user = auth.currentUser;
+  if (!user) return null;
+  try {
+    return await user.getIdToken();
+  } catch {
+    return null;
+  }
+}
 
 class ApiClient {
   /**
@@ -28,10 +41,16 @@ class ApiClient {
 
     try {
       const url = `${baseUrl}${endpoint}`;
+
+      // Inject Firebase auth token automatically
+      const token = await getAuthToken();
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
       const config = {
         method,
         headers: {
           "Content-Type": "application/json",
+          ...authHeaders,
           ...headers,
         },
       };
@@ -56,7 +75,7 @@ class ApiClient {
         return {
           success: true,
           status: response.status,
-          data: result,
+          data: result?.data !== undefined ? result.data : result,
         };
       }
 

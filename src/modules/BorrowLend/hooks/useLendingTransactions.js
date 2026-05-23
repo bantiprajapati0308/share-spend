@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { db, auth } from '../../../firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { borrowLendApi } from '../../../services/api/borrowLendApi';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 import { addBorrowLendRecord } from '../utils/borrowLendFirestore';
 import {
@@ -71,22 +70,9 @@ export const useLendingTransactions = () => {
         try {
             setLoading(true);
             setError(null);
-
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                console.error('User not authenticated');
-                setTransactions([]);
-                return;
-            }
-
-            const transactionsQuery = query(
-                collection(db, 'users', userId, 'borrowLend'),
-                orderBy('createdAt', 'desc')
-            );
-
-            const snapshot = await getDocs(transactionsQuery);
-            const data = snapshot.docs.map((document) => document.data());
-            setTransactions(data);
+            const result = await borrowLendApi.getRecords();
+            if (!result.success) throw new Error(result.error);
+            setTransactions(result.data);
         } catch (err) {
             console.error('Error fetching lending transactions:', err);
             setError(err.message || 'Failed to load records');
@@ -98,11 +84,6 @@ export const useLendingTransactions = () => {
 
     const addTransaction = async (transactionData) => {
         try {
-            const userId = auth.currentUser?.uid;
-            if (!userId) {
-                throw new Error('User not authenticated');
-            }
-
             await addBorrowLendRecord({
                 personName: transactionData.personName,
                 amount: transactionData.amount,
@@ -111,7 +92,6 @@ export const useLendingTransactions = () => {
                 dueDate: transactionData.dueDate,
                 description: transactionData.description,
             });
-
             await fetchTransactions();
         } catch (err) {
             console.error('Error adding lending transaction:', err);

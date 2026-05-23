@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { auth, googleProvider, db } from "../firebase";
+import { auth, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -14,7 +14,7 @@ import { ensurePredefinedCategories } from "../utils/initializePredefinedCategor
 import { emailService } from "../services";
 import { toast } from "react-toastify";
 import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { authApi } from "../services/api/authApi";
 
 const AuthScreen = () => {
   const [email, setEmail] = useState("");
@@ -64,24 +64,10 @@ const AuthScreen = () => {
       // Store/update user profile in Firestore
       if (isRegister) {
         // On registration, create user profile with provided username
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email: user.email,
-          firstName: username.split(" ")[0] || username,
-          lastName: username.split(" ").slice(1).join(" ") || "",
-          displayName: username,
-          photoURL: "",
-          age: null,
-          dateOfBirth: null,
-          phoneNumber: user.phoneNumber || null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          lastLoginAt: serverTimestamp(),
-          authProvider: "email",
-        });
+        await authApi.register({ email: user.email, firstName: username.split(' ')[0] || username, lastName: username.split(' ').slice(1).join(' ') || '', displayName: username, authProvider: 'email' });
       } else {
         // On login, just update last login
-        await updateLastLogin(user.uid);
+        await updateLastLogin();
       }
 
       // Initialize predefined categories for the user
@@ -107,27 +93,19 @@ const AuthScreen = () => {
       const credentialResult = await signInWithPopup(auth, googleProvider);
       const { user } = credentialResult;
 
-      console.log("Google sign-in successful:", { user });
-
       // Create or get user profile
       await createOrUpdateUserProfile(user);
 
       // Check if this is a new user by comparing creation time with current time
-      const isNewUser =
-        user.metadata?.creationTime === user.metadata?.lastSignInTime;
-      const creationTime = new Date(user.metadata?.creationTime).getTime();
-      const currentTime = Date.now();
-      const timeDifference = currentTime - creationTime;
-
-      // Consider it a new user if account was created within the last 1 minute
-      const isRecentlyCreated = timeDifference < 1 * 60 * 1000; // 1 minute in milliseconds
+      const isNewUser = user.metadata?.creationTime === user.metadata?.lastSignInTime;
+      const timeDifference = Date.now() - new Date(user.metadata?.creationTime).getTime();
+      const isRecentlyCreated = timeDifference < 60000;
 
       if (isNewUser || isRecentlyCreated) {
         const name = user.displayName || username || user.email || "User";
         await sendEmailToUser(user.email, name);
       } else {
-        // On re-login, update last login timestamp
-        await updateLastLogin(user.uid);
+        await updateLastLogin();
       }
 
       // Initialize predefined categories for the user
@@ -135,7 +113,6 @@ const AuthScreen = () => {
         await ensurePredefinedCategories();
       } catch (err) {
         console.error("Error initializing predefined categories:", err);
-        // Don't fail login if category initialization fails
       }
 
       setLoadingAuth(false);
