@@ -1,22 +1,19 @@
-import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs, doc, deleteDoc, query, orderBy } from "firebase/firestore";
+import { membersApi } from '../services/api/expensesApi';
 
-// Add a member to a trip
 export const addMember = async (tripId, memberData) => {
-    const userId = auth.currentUser.uid;
-    await addDoc(collection(db, "users", userId, "trips", tripId, "members"), memberData);
+    const result = await membersApi.addMember(tripId, memberData);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
 };
 
-// Get all members for a trip
 export const getMembers = async (tripId) => {
-    const userId = auth.currentUser.uid;
-    const q = query(collection(db, "users", userId, "trips", tripId, "members"), orderBy("createdAt", "desc"))
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const result = await membersApi.getMembers(tripId);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
 };
 
-// ❌ Delete a member from a trip
 export const deleteMember = async (tripId, memberId) => {
-    const userId = auth.currentUser.uid;
-    await deleteDoc(doc(db, "users", userId, "trips", tripId, "members", memberId));
+    const result = await membersApi.deleteMember(tripId, memberId);
+    if (!result.success) throw new Error(result.error);
 };
+

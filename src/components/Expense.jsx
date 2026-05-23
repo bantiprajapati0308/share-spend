@@ -9,7 +9,6 @@ import { PlusCircle, Save2, XCircle, PeopleFill, ListUl, Pencil, Trash3 } from '
 import { getMembers } from '../hooks/useMembers';
 import { addExpense as addExpenseToDB, getExpenses, deleteExpense, updateExpense } from '../hooks/useExpenses';
 import FullScreenLoader from './common/FullScreenLoader';
-import { serverTimestamp } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -81,7 +80,7 @@ function Expense({ canEdit = true }) {
                 paidBy,
                 participants,
                 description,
-                createdAt: serverTimestamp()
+                createdAt: new Date().toISOString()
             };
             try {
                 if (editMode && editId) {

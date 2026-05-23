@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 import { Form, Button, Card, Alert } from "react-bootstrap";
+import { authApi } from "../services/api/authApi";
 
 const Registration = ({ onRegistered }) => {
   const [username, setUsername] = useState("");
@@ -24,11 +24,7 @@ const Registration = ({ onRegistered }) => {
       );
       const user = userCredential.user;
       // Store extra info in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        username,
-        email,
-        createdAt: new Date(),
-      });
+      await authApi.register({ email: user.email, displayName: username, authProvider: 'email' });
       setLoading(false);
       onRegistered && onRegistered();
     } catch (err) {

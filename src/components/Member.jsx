@@ -11,7 +11,6 @@ import FullScreenLoader from './common/FullScreenLoader';
 import InlineLoader from './common/InlineLoader';
 import { removeMember } from '../redux/tripSlice';
 import { getExpenses } from '../hooks/useExpenses';
-import { serverTimestamp } from 'firebase/firestore';
 
 function Member({ canEdit = true }) {
     const [memberName, setMemberName] = useState('');
@@ -82,7 +81,7 @@ function Member({ canEdit = true }) {
                 return;
             }
             try {
-                await addMemberToDB(tripId, { name: memberName, createdAt: serverTimestamp() });
+                await addMemberToDB(tripId, { name: memberName });
                 setMemberName('');
                 await fetchMembers(); // Don't trigger full-page loader
             } catch (err) {

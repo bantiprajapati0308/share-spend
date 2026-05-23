@@ -1,31 +1,24 @@
-import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query } from "firebase/firestore";
+import { expensesApi } from '../services/api/expensesApi';
 
-// POST: Add expense to a trip
 export const addExpense = async (tripId, expenseData) => {
-    const userId = auth.currentUser.uid;
-    return await addDoc(collection(db, "users", userId, "trips", tripId, "expenses"), expenseData);
+    const result = await expensesApi.addExpense(tripId, expenseData);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
 };
 
-// GET: Fetch all expenses for a trip
 export const getExpenses = async (tripId) => {
-    const userId = auth.currentUser.uid;
-    const expensesQuery = query(
-        collection(db, "users", userId, "trips", tripId, "expenses"),
-        orderBy("createdAt", "asc")
-    );
-    const snap = await getDocs(expensesQuery);
-    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const result = await expensesApi.getExpenses(tripId);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
 };
 
-// DELETE: Remove expense from a trip
 export const deleteExpense = async (tripId, expenseId) => {
-    const userId = auth.currentUser.uid;
-    await deleteDoc(doc(db, "users", userId, "trips", tripId, "expenses", expenseId));
+    const result = await expensesApi.deleteExpense(tripId, expenseId);
+    if (!result.success) throw new Error(result.error);
 };
 
-// UPDATE: Update an existing expense
 export const updateExpense = async (tripId, expenseId, expenseData) => {
-    const userId = auth.currentUser.uid;
-    await updateDoc(doc(db, "users", userId, "trips", tripId, "expenses", expenseId), expenseData);
+    const result = await expensesApi.updateExpense(tripId, expenseId, expenseData);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
 };

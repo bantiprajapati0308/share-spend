@@ -25,3 +25,8 @@ dist-ssr
 node_modules
 
 .env
+
+# Server
+server/.env
+server/node_modules
+server/serviceAccount.json
