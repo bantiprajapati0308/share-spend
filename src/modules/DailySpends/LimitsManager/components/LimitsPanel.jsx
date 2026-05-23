@@ -6,7 +6,7 @@ import styles from '../styles/LimitsManager.module.scss';
 import LimitCard from './LimitCard';
 import EmptyState from './EmptyState';
 import { getLimitsSummary, sortLimitsByUrgency } from '../utils/limitsCalculations';
-import { DEFAULT_CURRENCY_SYMBOL, formatCurrencyINR } from '../../../../Util';
+import { formatCurrencyINR } from '../../../../Util';
 
 /**
  * LimitsPanel Component
