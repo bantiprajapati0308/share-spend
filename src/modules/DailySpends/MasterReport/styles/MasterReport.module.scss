@@ -4,12 +4,12 @@
 @use 'animations';
 @use 'bootstrap-enhancements';
 
-// Import component styles with proper scoping
-@import 'header';
-@import 'cards';
-@import 'tabs';
-@import 'tables';
-@import 'modal';
+// Load component styles with proper scoping
+@use 'header';
+@use 'cards';
+@use 'tabs';
+@use 'tables';
+@use 'modal';
 
 // Main container
 .reportContainer {
