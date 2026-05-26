@@ -12,7 +12,7 @@ import TopCategories from './TopCategories';
 import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
 
-function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit }) {
+function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit, onCategoriesChanged }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -313,6 +313,7 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
             <CategoryManagementModal
                 show={showCategoryModal}
                 onHide={() => setShowCategoryModal(false)}
+                onCategoriesChanged={onCategoriesChanged}
             />
         </form>
     );
@@ -325,6 +326,7 @@ AddExpenseForm.propTypes = {
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
+    onCategoriesChanged: PropTypes.func,
 };
 
 export default AddExpenseForm;

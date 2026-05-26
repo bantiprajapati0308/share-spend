@@ -1,11 +1,10 @@
-import { dailySpendsApi } from '../services/api/dailySpendsApi';
+import { getTransactionsByType } from './useDailySpends';
 
 const toDateStr = (d) => d instanceof Date ? d.toISOString().split('T')[0] : d;
 
 const fetchFiltered = async (type, startDateStr, endDateStr) => {
-    const result = await dailySpendsApi.getTransactions(type);
-    if (!result.success) throw new Error(result.error);
-    return result.data.filter(exp => {
+    const transactions = await getTransactionsByType(type);
+    return transactions.filter(exp => {
         const expDate = exp.date || (exp.createdAt ? new Date(exp.createdAt).toISOString().split('T')[0] : null);
         return expDate >= startDateStr && expDate <= endDateStr;
     });

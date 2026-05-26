@@ -29,7 +29,7 @@ const getCategoryTooltip = (categoryName) => {
  * Shows both types in expandable accordions
  * Disabled categories won't appear in any dropdown
  */
-function CategoryManagementModal({ show, onHide }) {
+function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
     const {
         categories,
         loading: contextLoading,
@@ -79,6 +79,9 @@ function CategoryManagementModal({ show, onHide }) {
         try {
             setIsSubmitting(true);
             await addNewCategory(newCategoryName.trim(), newCategoryEmoji, newCategoryType);
+            if (onCategoriesChanged) {
+                await onCategoriesChanged();
+            }
             setNewCategoryName('');
             setNewCategoryEmoji('📝');
             setNewCategoryType('spend');
@@ -98,11 +101,17 @@ function CategoryManagementModal({ show, onHide }) {
                 // Category is currently enabled, so disable it
                 await disableCategory(categoryId);
                 updateCategoryInState(categoryId, { isEnabled: false });
+                if (onCategoriesChanged) {
+                    await onCategoriesChanged();
+                }
                 toast.success('Category disabled');
             } else {
                 // Category is currently disabled, so enable it
                 await enableCategory(categoryId);
                 updateCategoryInState(categoryId, { isEnabled: true });
+                if (onCategoriesChanged) {
+                    await onCategoriesChanged();
+                }
                 toast.success('Category enabled');
             }
         } catch (error) {
@@ -132,6 +141,9 @@ function CategoryManagementModal({ show, onHide }) {
 
             await deleteCategory(categoryId, categoryData);
             removeCategoryFromState(categoryId);
+            if (onCategoriesChanged) {
+                await onCategoriesChanged();
+            }
             toast.success('Category deleted successfully');
         } catch (error) {
             toast.error(error.message || 'Failed to delete category');
@@ -337,6 +349,7 @@ function CategoryManagementModal({ show, onHide }) {
 CategoryManagementModal.propTypes = {
     show: PropTypes.bool.isRequired,
     onHide: PropTypes.func.isRequired,
+    onCategoriesChanged: PropTypes.func,
 };
 
 export default CategoryManagementModal;
