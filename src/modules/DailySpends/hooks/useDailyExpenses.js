@@ -12,11 +12,27 @@ import {
     applyBorrowLendRepayment
 } from '../../BorrowLend/utils/borrowLendFirestore';
 import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
+import useCategoryContext from './useCategoryContext';
+import {
+    buildDisabledCategoryLookup,
+    filterTransactionsByDisabledCategories
+} from '../utils/transactionVisibility';
 
 export const useDailyExpenses = () => {
-    const [transactions, setTransactions] = useState([]);
+    const [rawTransactions, setRawTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { categories } = useCategoryContext();
+
+    const disabledCategoryLookup = useMemo(
+        () => buildDisabledCategoryLookup(categories),
+        [categories]
+    );
+
+    const transactions = useMemo(
+        () => filterTransactionsByDisabledCategories(rawTransactions, disabledCategoryLookup),
+        [rawTransactions, disabledCategoryLookup]
+    );
 
     // Fetch all transactions from Firebase on mount
     useEffect(() => {
@@ -31,7 +47,7 @@ export const useDailyExpenses = () => {
                     const dateB = b.createdAt || new Date(0);
                     return new Date(dateB) - new Date(dateA);
                 });
-                setTransactions(sortedData);
+                setRawTransactions(sortedData);
             } catch (err) {
                 console.error('Error fetching transactions:', err);
                 setError(err.message);
@@ -47,12 +63,12 @@ export const useDailyExpenses = () => {
         try {
             const result = await addTransaction(newTransaction);
             // Add to local state and maintain createdAt sorting
-            const updatedTransactions = [result, ...transactions].sort((a, b) => {
+            const updatedTransactions = [result, ...rawTransactions].sort((a, b) => {
                 const dateA = a.createdAt || new Date(0);
                 const dateB = b.createdAt || new Date(0);
                 return new Date(dateB) - new Date(dateA);
             });
-            setTransactions(updatedTransactions);
+            setRawTransactions(updatedTransactions);
 
             const normalizedCategory = (newTransaction.category || '').toLowerCase();
             const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
@@ -108,7 +124,7 @@ export const useDailyExpenses = () => {
     const deleteTransactionHandler = async (id) => {
         try {
             await deleteTransaction(id);
-            setTransactions(transactions.filter(t => t.id !== id));
+            setRawTransactions(rawTransactions.filter(t => t.id !== id));
         } catch (err) {
             console.error('Error deleting transaction:', err);
             throw err;
@@ -119,7 +135,7 @@ export const useDailyExpenses = () => {
         try {
             const result = await updateTransaction(id, updatedTransaction);
             // Update local state
-            setTransactions(transactions.map(t =>
+            setRawTransactions(rawTransactions.map(t =>
                 t.id === id ? { ...t, ...updatedTransaction, id } : t
             ));
             return result;
@@ -174,7 +190,7 @@ export const useDailyExpenses = () => {
                 const dateB = b.createdAt || new Date(0);
                 return new Date(dateB) - new Date(dateA);
             });
-            setTransactions(sortedData);
+            setRawTransactions(sortedData);
         } catch (err) {
             console.error('Error refreshing transactions:', err);
             setError(err.message);

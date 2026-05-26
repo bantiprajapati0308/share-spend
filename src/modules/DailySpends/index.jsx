@@ -35,6 +35,7 @@ function DailySpends() {
         deleteTransaction,
         updateTransaction,
         getTransactionsByType,
+        refreshTransactions,
         loading,
         error,
     } = useDailyExpenses();
@@ -285,6 +286,7 @@ function DailySpends() {
                             editingTransaction={editingTransaction}
                             isEditMode={isEditMode}
                             onCancelEdit={handleCancelEdit}
+                            onCategoriesChanged={refreshTransactions}
                         />
                     </div>
                     {/* Transaction View Toggle */}

@@ -1,4 +1,9 @@
 import { dailySpendsApi } from '../services/api/dailySpendsApi';
+import { categoriesApi } from '../services/api/categoriesApi';
+import {
+    buildDisabledCategoryLookup,
+    filterTransactionsByDisabledCategories
+} from '../modules/DailySpends/utils/transactionVisibility';
 
 const normalizeDate = (ts) => {
     if (!ts) return null;
@@ -8,12 +13,33 @@ const normalizeDate = (ts) => {
     return new Date(ts);
 };
 
+const fetchDisabledCategoryLookup = async () => {
+    const categoriesResult = await categoriesApi.getCategories();
+    if (!categoriesResult.success) {
+        throw new Error(categoriesResult.error || 'Failed to load categories for visibility rules');
+    }
+
+    return buildDisabledCategoryLookup(categoriesResult.data || []);
+};
+
+const applyCategoryVisibility = async (transactions) => {
+    try {
+        const disabledLookup = await fetchDisabledCategoryLookup();
+        return filterTransactionsByDisabledCategories(transactions, disabledLookup);
+    } catch (error) {
+        console.error('Error applying category visibility rules:', error);
+        // If category visibility fails, return transactions to avoid blocking the app.
+        return transactions;
+    }
+};
+
 // GET: Fetch all transactions for current user
 export const getTransactions = async () => {
     try {
         const result = await dailySpendsApi.getTransactions();
         if (!result.success) throw new Error(result.error);
-        return result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
+        const normalizedTransactions = result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
+        return await applyCategoryVisibility(normalizedTransactions);
     } catch (error) {
         console.error("Error fetching transactions:", error);
         return [];
@@ -23,10 +49,10 @@ export const getTransactions = async () => {
 // GET: Fetch transactions by type (spend/income)
 export const getTransactionsByType = async (type) => {
     try {
-        const result = await dailySpendsApi.getTransactions(type);
-        if (!result.success) throw new Error(result.error);
-        const transactions = result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
-        return transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const transactions = await getTransactions();
+        const typeFiltered = transactions.filter((transaction) => transaction.type === type);
+        const sortedTransactions = typeFiltered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return sortedTransactions;
     } catch (error) {
         console.error("Error fetching transactions by type:", error);
         return [];
