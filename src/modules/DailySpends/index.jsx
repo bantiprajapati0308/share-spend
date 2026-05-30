@@ -39,7 +39,7 @@ function DailySpends() {
         refreshTransactions,
         loading,
         error,
-    } = useDailyExpenses();
+    } = useDailyExpenses(startDate, endDate);
 
     const { categories: allCategories } = useCategoryContext();
     const userCategories = useMemo(

@@ -3,7 +3,9 @@ import { getTransactionsByType } from './useDailySpends';
 const toDateStr = (d) => d instanceof Date ? d.toISOString().split('T')[0] : d;
 
 const fetchFiltered = async (type, startDateStr, endDateStr) => {
-    const transactions = await getTransactionsByType(type);
+    // Pass the date range to the server so only matching documents are read.
+    const transactions = await getTransactionsByType(type, { startDate: startDateStr, endDate: endDateStr });
+    // Client-side safety-net for any legacy records without a `date` field.
     return transactions.filter(exp => {
         const expDate = exp.date || (exp.createdAt ? new Date(exp.createdAt).toISOString().split('T')[0] : null);
         return expDate >= startDateStr && expDate <= endDateStr;

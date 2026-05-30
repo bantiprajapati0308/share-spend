@@ -8,10 +8,12 @@ const normalizeDate = (ts) => {
     return new Date(ts);
 };
 
-// GET: Fetch all transactions for current user (raw — category visibility is applied by UI hooks)
-export const getTransactions = async () => {
+// GET: Fetch transactions for current user.
+// Pass { startDate, endDate } as YYYY-MM-DD strings to filter on the server —
+// only the matching date range is read from Firestore.
+export const getTransactions = async ({ startDate, endDate } = {}) => {
     try {
-        const result = await dailySpendsApi.getTransactions();
+        const result = await dailySpendsApi.getTransactions({ startDate, endDate });
         if (!result.success) throw new Error(result.error);
         return result.data.map(d => ({ ...d, createdAt: normalizeDate(d.createdAt) }));
     } catch (error) {
@@ -20,13 +22,13 @@ export const getTransactions = async () => {
     }
 };
 
-// GET: Fetch transactions by type (spend/income)
-export const getTransactionsByType = async (type) => {
+// GET: Fetch transactions by type, optionally scoped to a date range.
+export const getTransactionsByType = async (type, { startDate, endDate } = {}) => {
     try {
-        const transactions = await getTransactions();
-        const typeFiltered = transactions.filter((transaction) => transaction.type === type);
-        const sortedTransactions = typeFiltered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        return sortedTransactions;
+        const transactions = await getTransactions({ startDate, endDate });
+        return transactions
+            .filter(t => t.type === type)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (error) {
         console.error("Error fetching transactions by type:", error);
         return [];

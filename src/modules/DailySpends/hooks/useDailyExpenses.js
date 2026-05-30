@@ -20,7 +20,7 @@ import {
     filterTransactionsByDisabledCategories
 } from '../utils/transactionVisibility';
 
-export const useDailyExpenses = () => {
+export const useDailyExpenses = (startDate = null, endDate = null) => {
     const dispatch = useDispatch();
     const [rawTransactions, setRawTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,14 +37,22 @@ export const useDailyExpenses = () => {
         [rawTransactions, disabledCategoryLookup]
     );
 
-    // Fetch all transactions from Firebase on mount
+    // Fetch transactions scoped to the current date range.
+    // Waits for startDate/endDate to be set (loaded from settings) before firing.
+    // Re-fetches automatically whenever the date range changes.
     useEffect(() => {
+        if (!startDate || !endDate) {
+            // Dates not yet loaded from settings — nothing to fetch.
+            // Keep loading=true so FullScreenLoader stays visible.
+            return;
+        }
         const fetchTransactions = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getTransactions();
-                // Sort by createdAt in descending order (most recent first)
+                const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
+                const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+                const data = await getTransactions({ startDate: startStr, endDate: endStr });
                 const sortedData = data.sort((a, b) => {
                     const dateA = a.createdAt || new Date(0);
                     const dateB = b.createdAt || new Date(0);
@@ -61,7 +69,7 @@ export const useDailyExpenses = () => {
         };
 
         fetchTransactions();
-    }, []);
+    }, [startDate, endDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const addTransactionHandler = async (newTransaction) => {
         try {
@@ -187,10 +195,12 @@ export const useDailyExpenses = () => {
     };
 
     const refreshTransactions = async () => {
+        if (!startDate || !endDate) return;
         try {
             setLoading(true);
-            const data = await getTransactions();
-            // Sort by createdAt in descending order (most recent first)
+            const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
+            const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+            const data = await getTransactions({ startDate: startStr, endDate: endStr });
             const sortedData = data.sort((a, b) => {
                 const dateA = a.createdAt || new Date(0);
                 const dateB = b.createdAt || new Date(0);

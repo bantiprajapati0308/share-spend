@@ -69,7 +69,10 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const allData = await getTransactions();
+                // Pass the date range so the server only reads the matching documents.
+                const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
+                const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+                const allData = await getTransactions({ startDate: startStr, endDate: endStr });
                 applyData(allData);
             } catch (err) {
                 console.error('Error loading master report data:', err);
