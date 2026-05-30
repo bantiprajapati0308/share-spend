@@ -11,7 +11,7 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
     const [transactions, setTransactions] = useState([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState({});
     const [monthlyBreakdown, setMonthlyBreakdown] = useState({});
-    const [loading, setLoading] = useState(preloadedTransactions === null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {

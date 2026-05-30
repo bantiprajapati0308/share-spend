@@ -8,7 +8,13 @@ function ReportsTabContent({ transactions, startDate, endDate }) {
 
     const reportData = useMasterReportData(startDate, endDate, transactions);
 
-    const weeklyDataObj = reportData.getWeeklyBreakdownData(chartTransactionType);
+    const weeklyDataObj = useMemo(
+        () => reportData.getWeeklyBreakdownData(chartTransactionType),
+        // reportData.getWeeklyBreakdownData is a new fn ref each render;
+        // depend on the actual inputs that drive the computation instead
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [reportData.transactions, startDate, endDate, chartTransactionType]
+    );
 
     const pieChartDataByType = useMemo(() => {
         const categoryTotals = {};

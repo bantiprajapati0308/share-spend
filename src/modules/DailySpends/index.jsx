@@ -166,13 +166,6 @@ function DailySpends() {
 
 
 
-    const tabContentById = {
-        reports: {
-            title: 'Reports',
-            description: 'Reports content is coming soon.'
-        },
-    };
-
     const tabIconClassById = {
         'add-transaction': styles.tabIconAdd,
         set_limits: styles.tabIconLimits,
@@ -201,7 +194,6 @@ function DailySpends() {
         if (activeLandingTab === 'category') {
             return <CategoryManager onCategoriesChanged={refreshTransactions} />;
         }
-
         if (activeLandingTab === 'reports') {
             return (
                 <ReportsTabContent
@@ -341,9 +333,29 @@ function DailySpends() {
                                     </span>
                                 )}
                             >
-                                <div ref={activeLandingTab === 'add-transaction' ? addFormRef : null}>
-                                    {renderTabContent()}
-                                </div>
+                                {tab.id === 'add-transaction' && (
+                                    <div ref={addFormRef}>
+                                        <AddExpenseForm
+                                            onAddExpense={handleAddTransaction}
+                                            onUpdateExpense={handleUpdateTransaction}
+                                            editingTransaction={editingTransaction}
+                                            isEditMode={isEditMode}
+                                            onCancelEdit={handleCancelEdit}
+                                            onCategoriesChanged={refreshTransactions}
+                                        />
+                                    </div>
+                                )}
+                                {tab.id === 'set_limits' && <LimitsManager embedded />}
+                                {tab.id === 'reports' && (
+                                    <ReportsTabContent
+                                        transactions={transactions}
+                                        startDate={startDate}
+                                        endDate={endDate}
+                                    />
+                                )}
+                                {tab.id === 'category' && (
+                                    <CategoryManager onCategoriesChanged={refreshTransactions} />
+                                )}
                             </Tab>
                         ))}
                     </Tabs>
