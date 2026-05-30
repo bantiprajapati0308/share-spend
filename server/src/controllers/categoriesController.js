@@ -19,6 +19,39 @@ const PREDEFINED_CATEGORIES = [
 ];
 
 const col = (uid) => db.collection('users').doc(uid).collection('categories');
+const userDoc = (uid) => db.collection('users').doc(uid);
+
+/**
+ * Seed predefined categories for a user. Idempotent — skips any that already exist
+ * OR that the user has explicitly deleted.
+ * Called internally on new user registration (no HTTP request/response needed).
+ */
+const seedPredefinedCategoriesForUser = async (uid) => {
+    // Load existing categories and the deleted-predefined exclusion list in parallel.
+    const [snap, userSnap] = await Promise.all([
+        col(uid).get(),
+        userDoc(uid).get(),
+    ]);
+
+    const existingNames = new Set(snap.docs.map((d) => d.data().name));
+    // Categories the user deliberately deleted — never re-seed these.
+    const deletedPredefined = new Set(userSnap.data()?.deletedPredefinedCategories || []);
+
+    const now = FieldValue.serverTimestamp();
+    const batch = db.batch();
+    let added = 0;
+
+    PREDEFINED_CATEGORIES.forEach((cat) => {
+        if (!existingNames.has(cat.name) && !deletedPredefined.has(cat.name)) {
+            const ref = col(uid).doc();
+            batch.set(ref, { ...cat, isEnabled: cat.isEnabled ?? true, createdAt: now, updatedAt: now });
+            added++;
+        }
+    });
+
+    if (added > 0) await batch.commit();
+    return added;
+};
 
 // GET /api/categories?enabled=true
 const getCategories = async (req, res) => {
@@ -64,35 +97,39 @@ const updateCategory = async (req, res) => {
 // DELETE /api/categories/:id
 const deleteCategory = async (req, res) => {
     try {
-        await col(req.uid).doc(req.params.id).delete();
+        const ref = col(req.uid).doc(req.params.id);
+        const snap = await ref.get();
+
+        if (!snap.exists) {
+            await ref.delete();
+            return ok(res, { deleted: true });
+        }
+
+        const data = snap.data();
+        await ref.delete();
+
+        // If the user is deleting a predefined category, record it so the seeder
+        // never re-adds it on subsequent logins.
+        if (data.isPredefined) {
+            await userDoc(req.uid).update({
+                deletedPredefinedCategories: FieldValue.arrayUnion(data.name),
+            });
+        }
+
         ok(res, { deleted: true });
     } catch (e) {
         fail(res, e.message);
     }
 };
 
-// POST /api/categories/initialize  — idempotent: adds any missing predefined categories
+// POST /api/categories/initialize  — idempotent HTTP endpoint (kept for backwards compat)
 const initializeCategories = async (req, res) => {
     try {
-        const snap = await col(req.uid).get();
-        const existingNames = new Set(snap.docs.map((d) => d.data().name));
-        const now = FieldValue.serverTimestamp();
-        const batch = db.batch();
-        let added = 0;
-
-        PREDEFINED_CATEGORIES.forEach((cat) => {
-            if (!existingNames.has(cat.name)) {
-                const ref = col(req.uid).doc();
-                batch.set(ref, { ...cat, isEnabled: cat.isEnabled ?? true, createdAt: now, updatedAt: now });
-                added++;
-            }
-        });
-
-        if (added > 0) await batch.commit();
+        const added = await seedPredefinedCategoriesForUser(req.uid);
         ok(res, { initialized: true, added });
     } catch (e) {
         fail(res, e.message);
     }
 };
 
-module.exports = { getCategories, addCategory, updateCategory, deleteCategory, initializeCategories };
+module.exports = { getCategories, addCategory, updateCategory, deleteCategory, initializeCategories, seedPredefinedCategoriesForUser };

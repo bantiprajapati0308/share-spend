@@ -10,7 +10,6 @@ import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
 import Logo from "../assets/images/logo.png"; // Use your logo
 import { useNavigate } from "react-router-dom";
-import { ensurePredefinedCategories } from "../utils/initializePredefinedCategories";
 import { emailService } from "../services";
 import { toast } from "react-toastify";
 import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
@@ -70,14 +69,6 @@ const AuthScreen = () => {
         await updateLastLogin();
       }
 
-      // Initialize predefined categories for the user
-      try {
-        await ensurePredefinedCategories();
-      } catch (err) {
-        console.error("Error initializing predefined categories:", err);
-        // Don't fail login if category initialization fails
-      }
-
       navigate("/daily-expenses");
       setLoadingAuth(false);
     } catch (err) {
@@ -108,12 +99,7 @@ const AuthScreen = () => {
         await updateLastLogin();
       }
 
-      // Initialize predefined categories for the user
-      try {
-        await ensurePredefinedCategories();
-      } catch (err) {
-        console.error("Error initializing predefined categories:", err);
-      }
+      // Initialize predefined categories is now handled server-side on new user creation.
 
       setLoadingAuth(false);
       navigate("/daily-expenses");

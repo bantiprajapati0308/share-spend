@@ -23,7 +23,7 @@ import {
 export const useDailyExpenses = (startDate = null, endDate = null) => {
     const dispatch = useDispatch();
     const [rawTransactions, setRawTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { categories } = useCategoryContext();
 
@@ -46,9 +46,9 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
             // Keep loading=true so FullScreenLoader stays visible.
             return;
         }
+        setLoading(true);
         const fetchTransactions = async () => {
             try {
-                setLoading(true);
                 setError(null);
                 const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
                 const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;

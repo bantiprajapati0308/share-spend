@@ -1,5 +1,21 @@
 const { db, FieldValue } = require('../config/firebase');
 const { ok, fail, notFound } = require('../utils/response');
+const { seedPredefinedCategoriesForUser } = require('./categoriesController');
+const { seedPredefinedLimitsForUser } = require('./categoryLimitsController');
+
+// Seeds both categories and limits for a user.
+// Runs both in parallel, then marks categoriesSeeded=true on the user doc.
+// Throws on failure so the caller can surface the error properly.
+const seedNewUser = async (uid) => {
+    console.log(`[auth] Seeding categories + limits for uid=${uid}`);
+    const [catAdded, limAdded] = await Promise.all([
+        seedPredefinedCategoriesForUser(uid),
+        seedPredefinedLimitsForUser(uid),
+    ]);
+    console.log(`[auth] Seeded ${catAdded} categories, ${limAdded} limits for uid=${uid}`);
+    // Mark as seeded so subsequent logins skip this work.
+    await db.collection('users').doc(uid).update({ categoriesSeeded: true });
+};
 
 const usersCol = (uid) => db.collection('users').doc(uid);
 
@@ -36,10 +52,17 @@ const createOrUpdateProfile = async (req, res) => {
                 lastLoginAt: now,
             };
             await ref.set(profile);
+            // Await seeding so categories + limits exist before the frontend loads.
+            await seedNewUser(req.uid);
             return ok(res, { id: req.uid, ...profile }, 201);
         }
 
-        await ref.update({ lastLoginAt: now, updatedAt: now });
+        // Existing user — check if seeding ever completed (catches race-condition victims).
+        const needsSeed = !snap.data().categoriesSeeded;
+        const updates = { lastLoginAt: now, updatedAt: now };
+        await ref.update(updates);
+        if (needsSeed) await seedNewUser(req.uid);
+
         const updated = await ref.get();
         ok(res, { id: updated.id, ...updated.data() });
     } catch (e) {
@@ -80,12 +103,19 @@ const register = async (req, res) => {
     try {
         const ref = usersCol(req.uid);
         const snap = await ref.get();
-        if (snap.exists) return ok(res, { id: snap.id, ...snap.data() });
+
+        // Existing user — check if seeding ever completed.
+        if (snap.exists) {
+            if (!snap.data().categoriesSeeded) await seedNewUser(req.uid);
+            return ok(res, { id: snap.id, ...snap.data() });
+        }
 
         const { username, email } = req.body;
         const now = FieldValue.serverTimestamp();
         const profile = { username: username || '', email: email || req.email || '', createdAt: now };
         await ref.set(profile);
+        // Await seeding so categories + limits exist before the frontend loads.
+        await seedNewUser(req.uid);
         ok(res, { id: req.uid, ...profile }, 201);
     } catch (e) {
         fail(res, e.message);
