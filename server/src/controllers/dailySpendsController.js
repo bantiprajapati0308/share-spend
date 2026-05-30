@@ -6,8 +6,14 @@ const col = (uid) => db.collection('users').doc(uid).collection('dailySpends');
 // GET /api/daily-spends?type=spend|income
 const getTransactions = async (req, res) => {
     try {
+        // NOTE: the compound query (type + createdAt) requires a Firestore composite index:
+        //   Collection: users/{uid}/dailySpends  Fields: type ASC, createdAt DESC
         let query = col(req.uid).orderBy('createdAt', 'desc');
-        if (req.query.type) query = col(req.uid).where('type', '==', req.query.type);
+        if (req.query.type) {
+            query = col(req.uid)
+                .where('type', '==', req.query.type)
+                .orderBy('createdAt', 'desc');
+        }
         const snap = await query.get();
         ok(res, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (e) {

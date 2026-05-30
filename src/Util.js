@@ -73,3 +73,10 @@ export const CURRENCY_ARRAY = [
     { value: 'EUR', label: '€' },
     { value: 'GBP', label: '£' },
 ]
+
+export const DailySpendTabsList = [
+    { id: 'add-transaction', label: 'Add Transaction', iconClass: 'bi bi-plus-circle' },
+    { id: 'set_limits', label: 'Set Limits', iconClass: 'bi bi-gear' },
+    { id: 'reports', label: 'Reports', iconClass: 'bi bi-bar-chart' },
+    { id: 'category', label: 'Manage Categories', iconClass: 'bi bi-tags' },
+]; 

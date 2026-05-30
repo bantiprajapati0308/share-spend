@@ -12,7 +12,7 @@ import TopCategories from './TopCategories';
 import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
 
-function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingTransaction, isEditMode, onCancelEdit, onCategoriesChanged }) {
+function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isEditMode, onCancelEdit, onCategoriesChanged }) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -155,14 +155,6 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
                     <h3 className='mb-0'>
                         {isEditMode ? '✏️' : '➕'} {isEditMode ? 'Edit' : 'Add'} {transactionType === 'spend' ? 'Expense' : 'Income'}
                     </h3>
-                    <Button
-                        variant="link"
-                        onClick={onLimitsClick}
-                        className={styles.reportBtn}
-                        size="sm"
-                    >
-                        Spending Limits
-                    </Button>
                 </div>
                 <TransactionTypeSelector
                     value={transactionType}
@@ -174,21 +166,12 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
             <Row className="g-1">
                 <Col xs={12} sm={6} md={3}>
                     <div className={styles.formGroup}>
-
                         <CategorySelectDropdown
                             value={category}
                             onChange={(selected) => setCategory(selected)}
                             type={transactionType}
                             placeholder="Select..."
                         >
-                            <button
-                                type="button"
-                                className={styles.addCategoryIconBtn}
-                                onClick={() => setShowCategoryModal(true)}
-                                title="Manage categories"
-                            >
-                                <Plus size={16} />
-                            </button>
                         </CategorySelectDropdown>
                     </div>
                 </Col>
@@ -322,7 +305,6 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, onLimitsClick, editingT
 AddExpenseForm.propTypes = {
     onAddExpense: PropTypes.func.isRequired,
     onUpdateExpense: PropTypes.func,
-    onLimitsClick: PropTypes.func,
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,

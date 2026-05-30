@@ -9,12 +9,11 @@ const getTripSettlements = async (req, res) => {
 
         const snap = await db.collection('settlements')
             .where('tripId', '==', tripId)
+            .where('status', '==', 'completed')
+            .orderBy('createdAt', 'desc')
             .get();
 
-        const settlements = snap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .filter((s) => s.status === 'completed');
-        ok(res, settlements);
+        ok(res, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (e) {
         fail(res, e.message);
     }

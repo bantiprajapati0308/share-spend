@@ -1,17 +1,27 @@
 import { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Card, Button, Alert, Spinner } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
+import { Spinner, Alert } from 'react-bootstrap';
 import styles from '../styles/LimitsManager.module.scss';
 import LimitCard from './LimitCard';
 import EmptyState from './EmptyState';
-import { getLimitsSummary, sortLimitsByUrgency } from '../utils/limitsCalculations';
+import {
+    getLimitsSummary,
+    sortLimitsByUrgency,
+    calculateLimitPercentage,
+} from '../utils/limitsCalculations';
 import { formatCurrencyINR } from '../../../../Util';
+import useCategoryContext from '../../hooks/useCategoryContext';
+
+const FILTER_OPTIONS = [
+    { key: 'all', label: 'All', chipClass: null },
+    { key: 'overLimit', label: 'Over Limit', chipClass: styles.chipOverLimit },
+    { key: 'caution', label: 'Caution', chipClass: styles.chipCaution },
+    { key: 'onTrack', label: 'On Track', chipClass: styles.chipOnTrack },
+];
 
 /**
- * LimitsPanel Component
- * Reusable panel for displaying spend or income limits
- * Handles separate calculations for each type
+ * LimitsPanel — mobile-first panel for spend or income limits.
  */
 function LimitsPanel({
     limits,
@@ -19,119 +29,149 @@ function LimitsPanel({
     limitType = 'spend',
     onAddLimit,
     onEditLimit,
-    onDeleteLimit, onCategoryClick, loading = false,
+    onDeleteLimit,
+    onCategoryClick,
+    loading = false,
     error = null,
 }) {
-    const [expandSummary, setExpandSummary] = useState(false);
-
-    // Filter and sort limits by type with memoization
-    const typedLimits = useMemo(() => {
-        const filtered = limits.filter(limit => (limit.type || 'spend') === limitType);
-        return sortLimitsByUrgency(filtered, categoryTotals);
-    }, [limits, limitType, categoryTotals]);
-
-    // Calculate summary statistics
-    const summary = useMemo(() => {
-        return getLimitsSummary(typedLimits, categoryTotals);
-    }, [typedLimits, categoryTotals]);
+    const [activeFilter, setActiveFilter] = useState('all');
+    const { categories } = useCategoryContext();
 
     const typeLabel = limitType === 'income' ? 'Income' : 'Spending';
 
+    // Build a name→emoji lookup from category context
+    const categoryEmojiMap = useMemo(
+        () => categories.reduce((map, cat) => { map[cat.name] = cat.emoji; return map; }, {}),
+        [categories]
+    );
+
+    // Filter limits by type and sort by urgency
+    const typedLimits = useMemo(() => {
+        const filtered = limits.filter(l => (l.type || 'spend') === limitType);
+        return sortLimitsByUrgency(filtered, categoryTotals);
+    }, [limits, limitType, categoryTotals]);
+
+    // Summary stats for the 4-box header grid
+    const summary = useMemo(
+        () => getLimitsSummary(typedLimits, categoryTotals),
+        [typedLimits, categoryTotals]
+    );
+
+    // Per-filter bucket counts
+    const filterCounts = useMemo(() => {
+        let overLimit = 0;
+        let caution = 0;
+        let onTrack = 0;
+        typedLimits.forEach(l => {
+            const pct = calculateLimitPercentage(categoryTotals[l.category] || 0, l.limit);
+            if (pct > 100) overLimit += 1;
+            else if (pct > 80) caution += 1;
+            else onTrack += 1;
+        });
+        return { all: typedLimits.length, overLimit, caution, onTrack };
+    }, [typedLimits, categoryTotals]);
+
+    // Apply active filter
+    const filteredLimits = useMemo(() => {
+        if (activeFilter === 'all') return typedLimits;
+        return typedLimits.filter(l => {
+            const pct = calculateLimitPercentage(categoryTotals[l.category] || 0, l.limit);
+            if (activeFilter === 'overLimit') return pct > 100;
+            if (activeFilter === 'caution') return pct > 80 && pct <= 100;
+            if (activeFilter === 'onTrack') return pct <= 80;
+            return true;
+        });
+    }, [typedLimits, activeFilter, categoryTotals]);
+
     if (loading) {
         return (
-            <Card className={styles.limitsPanel}>
-                <Card.Body className={styles.loadingState}>
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Loading {typeLabel.toLowerCase()} limits...</span>
-                </Card.Body>
-            </Card>
+            <div className={styles.loadingState}>
+                <Spinner animation="border" size="sm" />
+                <span>Loading {typeLabel.toLowerCase()} limits…</span>
+            </div>
         );
     }
 
+    const avgClass =
+        summary.averageUsage > 100
+            ? styles.danger
+            : summary.averageUsage > 80
+                ? styles.warning
+                : styles.primary;
+
     return (
-        <Card className={styles.limitsPanel}>
-            {/* Panel Header */}
-            <Card.Header className={styles.panelHeader}>
-                <div className={styles.headerContent}>
-                    <div>
-                        <h5 className={styles.panelTitle}>{typeLabel} Limits</h5>
-                        <p className={styles.panelSubtitle}>
-                            {summary.totalLimits} limit{summary.totalLimits !== 1 ? 's' : ''} • {summary.overLimitCount} over limit
-                        </p>
+        <>
+            {error && <Alert variant="warning" className="mb-3">{error}</Alert>}
+
+            {/* 4-stat summary grid */}
+            {typedLimits.length > 0 && (
+                <div className={styles.summaryGrid}>
+                    <div className={styles.statCard}>
+                        <span className={styles.statLabel}>Total Budget</span>
+                        <span className={styles.statValue}>{formatCurrencyINR(summary.totalBudget)}</span>
                     </div>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={onAddLimit}
-                        className={styles.addLimitBtn}
-                    >
-                        <Plus size={16} /> Add {typeLabel} Limit
-                    </Button>
+                    <div className={styles.statCard}>
+                        <span className={styles.statLabel}>Total Spent</span>
+                        <span className={styles.statValue}>{formatCurrencyINR(summary.totalSpent)}</span>
+                    </div>
+                    <div className={styles.statCard}>
+                        <span className={styles.statLabel}>Average Usage</span>
+                        <span className={`${styles.statValue} ${avgClass}`}>{summary.averageUsage}%</span>
+                    </div>
+                    <div className={styles.statCard}>
+                        <span className={styles.statLabel}>Over Limit</span>
+                        <span className={`${styles.statValue} ${filterCounts.overLimit > 0 ? styles.danger : ''}`}>
+                            {filterCounts.overLimit}
+                        </span>
+                    </div>
                 </div>
-            </Card.Header>
+            )}
 
-            <Card.Body className={styles.panelBody}>
-                {error && (
-                    <Alert variant="danger" className="mb-3">
-                        {error}
-                    </Alert>
-                )}
+            {/* Full-width add button */}
+            <button type="button" className={styles.addBtn} onClick={onAddLimit}>
+                <Plus size={20} /> Add {typeLabel} Limit
+            </button>
 
-                {/* Summary Section */}
-                {summary.totalLimits > 0 && (
-                    <div
-                        className={styles.summarySection}
-                        onClick={() => setExpandSummary(!expandSummary)}
-                    >
-                        <div className={styles.summaryRow}>
-                            <span className={styles.summaryLabel}>Total Budget</span>
-                            <span className={styles.summaryValue}>
-                                {formatCurrencyINR(summary.totalBudget)}
-                            </span>
-                        </div>
-                        <div className={styles.summaryRow}>
-                            <span className={styles.summaryLabel}>
-                                {limitType === 'income' ? 'Total Actual' : 'Total Spent'}
-                            </span>
-                            <span className={styles.summaryValue}>
-                                {formatCurrencyINR(summary.totalSpent)}
-                            </span>
-                        </div>
-                        <div className={styles.summaryRow}>
-                            <span className={styles.summaryLabel}>Average Usage</span>
-                            <span
-                                className={`${styles.summaryValue} ${summary.averageUsage > 100 ? styles.overBudget : ''
-                                    }`}
-                            >
-                                {summary.averageUsage}%
-                            </span>
-                        </div>
-                    </div>
-                )}
+            {/* Filter chips — only when there are limits */}
+            {typedLimits.length > 0 && (
+                <div className={styles.filterRow}>
+                    {FILTER_OPTIONS.map(({ key, label, chipClass }) => (
+                        <button
+                            key={key}
+                            type="button"
+                            className={[
+                                styles.filterChip,
+                                chipClass || '',
+                                activeFilter === key ? styles.chipActive : '',
+                            ].join(' ').trim()}
+                            onClick={() => setActiveFilter(key)}
+                        >
+                            {label} ({filterCounts[key]})
+                        </button>
+                    ))}
+                </div>
+            )}
 
-                {/* Limits List */}
-                {typedLimits.length === 0 ? (
-                    <EmptyState
-                        limitType={limitType}
-                        onAddClick={onAddLimit}
-                    />
-                ) : (
-                    <div className={styles.limitsList}>
-                        {typedLimits.map((limit) => (
-                            <LimitCard
-                                key={limit.id}
-                                limit={limit}
-                                spent={categoryTotals[limit.category] || 0}
-                                onEdit={onEditLimit}
-                                onDelete={onDeleteLimit}
-                                onCategoryClick={onCategoryClick || undefined}
-                                limitType={limitType}
-                            />
-                        ))}
-                    </div>
-                )}
-            </Card.Body>
-        </Card>
+            {/* Limits list */}
+            {filteredLimits.length === 0 ? (
+                <EmptyState limitType={limitType} onAddClick={onAddLimit} />
+            ) : (
+                <div className={styles.limitsList}>
+                    {filteredLimits.map(limit => (
+                        <LimitCard
+                            key={limit.id}
+                            limit={limit}
+                            spent={categoryTotals[limit.category] || 0}
+                            onEdit={onEditLimit}
+                            onDelete={onDeleteLimit}
+                            onCategoryClick={onCategoryClick}
+                            limitType={limitType}
+                            emoji={categoryEmojiMap[limit.category] || '📝'}
+                        />
+                    ))}
+                </div>
+            )}
+        </>
     );
 }
 

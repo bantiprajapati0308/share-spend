@@ -1,280 +1,188 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Nav, Tab, Alert } from 'react-bootstrap';
-import { ArrowLeft } from 'react-bootstrap-icons';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { ArrowLeft } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import useLimitsManager from './hooks/useLimitsManager';
 import { useSelectedDateRange } from '../hooks/useSelectedDateRange';
-import { getTransactionsByCategory, getTransactionsByType } from '../../../hooks/useDailySpends';
 import LimitsPanel from './components/LimitsPanel';
 import LimitForm from './components/LimitForm';
 import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
 import styles from './styles/LimitsManager.module.scss';
-import { toast } from 'react-toastify';
 
-/**
- * LimitsManager Main Component
- * Route-based interface for managing spending and income limits
- * Separate calculations and database operations for each type
- */
-function LimitsManager() {
+const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
+
+function LimitsManager({ embedded = false }) {
     const navigate = useNavigate();
     const { loadDateRange } = useSelectedDateRange();
 
-    // State management
+    // Read transactions already loaded by useDailyExpenses — no extra API call
+    const allTransactions = useSelector(state => state.dailySpends.transactions);
+
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [activeTab, setActiveTab] = useState('spending');
     const [showLimitForm, setShowLimitForm] = useState(false);
     const [editingLimit, setEditingLimit] = useState(null);
     const [formSubmitting, setFormSubmitting] = useState(false);
-
-    // Category Details Modal state
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [categoryTransactions, setCategoryTransactions] = useState([]);
 
-    const loadSavedDateRange = useCallback(async () => {
-        try {
-            const savedRange = await loadDateRange();
-            if (savedRange?.startDate && savedRange?.endDate) {
-                setStartDate(new Date(savedRange.startDate));
-                setEndDate(new Date(savedRange.endDate));
-            } else {
-                // Set default to current month
-                const now = new Date();
-                setStartDate(new Date(now.getFullYear(), now.getMonth(), 1));
-                setEndDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
-            }
-        } catch (err) {
-            console.error('Error loading date range:', err);
-            toast.error('Failed to load date range');
-        }
-    }, [loadDateRange]);
-
     const currentLimitType = activeTab === 'spending' ? 'spend' : 'income';
 
-    // Use custom hook for limit management
     const {
         limits,
-        categoryTotals,
+        categoryTotals,  // derived from Redux via useMemo — no API call
         loading,
         error,
+        loadLimits,
         addLimit,
         updateLimit,
         deleteLimit,
-        initialize,
-        refreshCategoryTotals,
     } = useLimitsManager(startDate, endDate, currentLimitType);
 
-    // Load date range and data on mount (only once)
+    // Single mount effect — load saved date range then load category limits only
     useEffect(() => {
-        loadSavedDateRange();
+        async function bootstrap() {
+            try {
+                const savedRange = await loadDateRange();
+                let start, end;
+                if (savedRange?.startDate && savedRange?.endDate) {
+                    start = new Date(savedRange.startDate);
+                    end = new Date(savedRange.endDate);
+                } else {
+                    const now = new Date();
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                }
+                setStartDate(start);
+                setEndDate(end);
+                await loadLimits();
+            } catch (err) {
+                console.error('Error during bootstrap:', err);
+                toast.error('Failed to load date range');
+            }
+        }
+        bootstrap();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Initialize limits data once dates are available
-    useEffect(() => {
-        if (startDate && endDate) {
-            initialize(); // Call the lazy-load function once
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [startDate, endDate]); // Only depends on dates, not functions
+    // Tab change is now synchronous — categoryTotals recomputes automatically via useMemo
+    const handleTabChange = useCallback((tab) => {
+        setActiveTab(tab);
+    }, []);
 
-    // Refresh category totals when tab changes (to show latest data)
-    useEffect(() => {
-        if (startDate && endDate) {
-            refreshCategoryTotals();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab]); // Refresh when switching tabs
+    // Category click uses Redux transactions — no API call
+    const handleCategoryClick = useCallback((categoryName) => {
+        if (!startDate || !endDate) return;
+        const startStr = toDateStr(startDate);
+        const endStr = toDateStr(endDate);
+        const filtered = allTransactions.filter(tx => {
+            if (tx.category !== categoryName) return false;
+            if (tx.type !== currentLimitType) return false;
+            const txDate = tx.date
+                ?? (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
+            return txDate && txDate >= startStr && txDate <= endStr;
+        });
+        setCategoryTransactions(filtered);
+        setSelectedCategory(categoryName);
+        setShowCategoryModal(true);
+    }, [allTransactions, currentLimitType, startDate, endDate]);
 
-    /**
-     * Handle category click to show detailed transactions
-     */
-    const handleCategoryClick = async (categoryName) => {
-        try {
-            setSelectedCategory(categoryName);
-
-            // Get transactions based on current limit type
-            let transactions = [];
-
-            if (currentLimitType === 'income') {
-                const allIncomeTransactions = await getTransactionsByType('income');
-                transactions = allIncomeTransactions.filter(tx => tx.category === categoryName);
-            } else {
-                const allCategoriesTransactions = await getTransactionsByCategory();
-                transactions = allCategoriesTransactions[categoryName] || [];
-            }
-
-            // Filter by date range
-            const filteredTransactions = transactions.filter(transaction => {
-                const transactionDate = new Date(transaction.date || transaction.createdAt);
-                return startDate && endDate &&
-                    transactionDate >= startDate &&
-                    transactionDate <= endDate;
-            });
-
-            setCategoryTransactions(filteredTransactions);
-            setShowCategoryModal(true);
-        } catch (error) {
-            console.error('Error fetching category transactions:', error);
-            toast.error('Failed to load category transactions');
-            // Ensure modal state is reset on error
-            setShowCategoryModal(false);
-            setCategoryTransactions([]);
-        }
-    };
-    /**
-     * Handle add limit form submission
-     */
-    const handleAddLimitSubmit = async (limitData, limitId) => {
+    const handleAddLimitSubmit = useCallback(async (limitData, limitId) => {
         try {
             setFormSubmitting(true);
-
             if (limitId) {
-                // Update existing limit
                 await updateLimit(limitId, limitData);
                 setEditingLimit(null);
             } else {
-                // Add new limit
                 await addLimit(limitData);
             }
-
             setShowLimitForm(false);
         } catch (err) {
             console.error('Error saving limit:', err);
         } finally {
             setFormSubmitting(false);
         }
-    };
+    }, [updateLimit, addLimit]);
 
-    /**
-     * Handle edit limit
-     */
-    const handleEditLimit = (limit) => {
+    const handleEditLimit = useCallback((limit) => {
         setEditingLimit(limit);
         setShowLimitForm(true);
-    };
+    }, []);
 
-    /**
-     * Handle delete limit
-     */
-    const handleDeleteLimit = async (limitId) => {
+    const handleDeleteLimit = useCallback(async (limitId) => {
         try {
             await deleteLimit(limitId);
         } catch (err) {
             console.error('Error deleting limit:', err);
         }
-    };
+    }, [deleteLimit]);
 
-    /**
-     * Handle add new limit button
-     */
-    const handleOpenAddForm = () => {
+    const handleOpenAddForm = useCallback(() => {
         setEditingLimit(null);
         setShowLimitForm(true);
-    };
+    }, []);
 
-    /**
-     * Close form modal
-     */
-    const handleCloseForm = () => {
+    const handleCloseForm = useCallback(() => {
         setShowLimitForm(false);
         setEditingLimit(null);
-    };
+    }, []);
 
     return (
-        <div className={styles.limitsManagerContainer}>
-            {/* Header */}
-            <div className={styles.header}>
-                <Container>
-                    <div className={styles.headerContent}>
-                        <button
-                            className={styles.backButton}
-                            onClick={() => navigate('/daily-expenses')}
-                            title="Back to Daily Expenses"
-                        >
-                            <ArrowLeft size={20} />
-                        </button>
-                        <div className={styles.headerText}>
-                            <h1>Limits Manager</h1>
-                            <p>Manage your spending and income limits</p>
-                        </div>
-                    </div>
-                </Container>
-            </div>
+        <div className={styles.wrapper}>
+            {/* Header — hidden when embedded */}
+            {!embedded && (
+                <div className={styles.header}>
+                    <button
+                        className={styles.backBtn}
+                        onClick={() => navigate('/daily-expenses')}
+                        title="Back to Daily Expenses"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h1 className={styles.headerTitle}>Limits Manager</h1>
+                    <div style={{ width: 36 }} />
+                </div>
+            )}
 
-            {/* Main Content */}
-            <Container className={styles.mainContent}>
-                {error && (
-                    <Alert variant="warning" className="my-3">
-                        {error}
-                    </Alert>
-                )}
-
+            {/* Tab Toggle */}
+            <div className={styles.tabToggle}>
+                <button
+                    type="button"
+                    className={`${styles.tabBtn} ${activeTab === 'spending' ? styles.tabBtnActive : ''}`}
+                    onClick={() => handleTabChange('spending')}
+                >
+                    💰 Spending Limits
+                </button>
+                <button
+                    type="button"
+                    className={`${styles.tabBtn} ${activeTab === 'income' ? styles.tabBtnActive : ''}`}
+                    onClick={() => handleTabChange('income')}
+                >
+                    🎯 Income Limits
+                </button>
+            </div>            {/* Content */}
+            <div className={styles.content}>
                 {!startDate || !endDate ? (
-                    <Alert variant="info">
-                        Loading date range...
-                    </Alert>
+                    <div className={styles.loadingState}>
+                        <span>Loading…</span>
+                    </div>
                 ) : (
-                    <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
-                        {/* Tab Navigation */}
-                        <Nav variant="tabs" className={styles.tabNavigation}>
-                            <Nav.Item>
-                                <Nav.Link eventKey="spending" className={styles.tabLink}>
-                                    💰 Spending Limits
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey="income" className={styles.tabLink}>
-                                    🎯 Income Limits
-                                </Nav.Link>
-                            </Nav.Item>
-                        </Nav>
-
-                        {/* Tab Content */}
-                        <Tab.Content className={styles.tabContent}>
-                            {/* Spending Limits Tab */}
-                            <Tab.Pane eventKey="spending">
-                                <Row>
-                                    <Col lg={12}>
-                                        <LimitsPanel
-                                            limits={limits}
-                                            categoryTotals={categoryTotals}
-                                            limitType="spend"
-                                            onAddLimit={handleOpenAddForm}
-                                            onEditLimit={handleEditLimit}
-                                            onDeleteLimit={handleDeleteLimit}
-                                            onCategoryClick={handleCategoryClick}
-                                            loading={loading}
-                                            error={error}
-                                        />
-                                    </Col>
-                                </Row>
-                            </Tab.Pane>
-
-                            {/* Income Limits Tab */}
-                            <Tab.Pane eventKey="income">
-                                <Row>
-                                    <Col lg={12}>
-                                        <LimitsPanel
-                                            limits={limits}
-                                            categoryTotals={categoryTotals}
-                                            limitType="income"
-                                            onAddLimit={handleOpenAddForm}
-                                            onEditLimit={handleEditLimit}
-                                            onDeleteLimit={handleDeleteLimit}
-                                            onCategoryClick={handleCategoryClick}
-                                            loading={loading}
-                                            error={error}
-                                        />
-                                    </Col>
-                                </Row>
-                            </Tab.Pane>
-                        </Tab.Content>
-                    </Tab.Container>
+                    <LimitsPanel
+                        limits={limits}
+                        categoryTotals={categoryTotals}
+                        limitType={currentLimitType}
+                        onAddLimit={handleOpenAddForm}
+                        onEditLimit={handleEditLimit}
+                        onDeleteLimit={handleDeleteLimit}
+                        onCategoryClick={handleCategoryClick}
+                        loading={loading}
+                        error={error}
+                    />
                 )}
-            </Container>
+            </div>
 
             {/* Limit Form Modal */}
             <LimitForm

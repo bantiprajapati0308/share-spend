@@ -19,6 +19,11 @@ async function getAuthToken() {
 }
 
 class ApiClient {
+  constructor() {
+    // Deduplicates in-flight GET requests: same URL → same Promise
+    this._inflightGets = new Map();
+  }
+
   /**
    * Generic request method
    * @param {string} endpoint - API endpoint (relative path)
@@ -97,10 +102,18 @@ class ApiClient {
   }
 
   /**
-   * GET request helper
+   * GET request helper — deduplicates concurrent identical requests
    */
   async get(endpoint, options = {}) {
-    return this.request(endpoint, { ...options, method: "GET" });
+    const key = `${options.baseUrl || API_BASE_URL}${endpoint}`;
+    if (this._inflightGets.has(key)) {
+      return this._inflightGets.get(key);
+    }
+    const promise = this.request(endpoint, { ...options, method: "GET" }).finally(() => {
+      this._inflightGets.delete(key);
+    });
+    this._inflightGets.set(key, promise);
+    return promise;
   }
 
   /**

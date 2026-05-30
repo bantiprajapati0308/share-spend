@@ -11,7 +11,6 @@ import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
 import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
-import LimitsManager from './modules/DailySpends/LimitsManager';
 import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
 import MasterReport from './modules/DailySpends/MasterReport';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -74,7 +73,6 @@ function App() {
               </ProtectedTripRoute>
             } />
             <Route path="/daily-expenses" element={<DailySpends />} />
-            <Route path="/daily-expenses/limits-manager" element={<LimitsManager />} />
             <Route path="/breakdown-report" element={<BreakdownReport />} />
             <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />
             <Route path="/lending" element={<BorrowLend />} />

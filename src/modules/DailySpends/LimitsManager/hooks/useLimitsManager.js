@@ -1,31 +1,53 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { getCategoryLimits, addCategoryLimit, updateCategoryLimit, deleteCategoryLimit } from '../../../../hooks/useCategoryLimits';
-import { getCategoryTotals } from '../../../../hooks/useCategoryBreakdown';
 import { toast } from 'react-toastify';
 
+const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
+
 /**
- * Custom hook to manage category limits
- * Handles separate spend and income limit operations
- * NO useEffect - lazy initialization pattern
- * @param {Date} startDate - Start date for transactions
- * @param {Date} endDate - End date for transactions
- * @param {string} transactionType - Type of transaction: 'spend' or 'income' (default: 'spend')
+ * Custom hook to manage category limits.
+ *
+ * Transactions are read from the Redux store (written there by useDailyExpenses)
+ * so no duplicate API call is made — categoryTotals is a pure useMemo derivation.
+ *
+ * @param {Date|null} startDate
+ * @param {Date|null} endDate
+ * @param {string}    transactionType - 'spend' | 'income'
  */
 export const useLimitsManager = (startDate, endDate, transactionType = 'spend') => {
+    // Read the already-loaded transactions from Redux — zero API cost
+    const allTransactions = useSelector(state => state.dailySpends.transactions);
+
     const [limits, setLimits] = useState([]);
-    const [categoryTotals, setCategoryTotals] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    // Track initialization to prevent duplicate API calls
     const initialized = useRef(false);
 
     /**
-     * Load all limits from database (called once on first use)
+     * Derive category totals from Redux transactions.
+     * Re-runs automatically whenever transactions, dates, or type change —
+     * no manual refresh needed.
      */
-    const loadLimits = useCallback(async () => {
-        if (initialized.current) return; // Already loaded
+    const categoryTotals = useMemo(() => {
+        if (!startDate || !endDate) return {};
+        const startStr = toDateStr(startDate);
+        const endStr = toDateStr(endDate);
+        const totals = {};
+        allTransactions.forEach(tx => {
+            if (tx.type !== transactionType) return;
+            const txDate = tx.date
+                ?? (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
+            if (!txDate || txDate < startStr || txDate > endStr) return;
+            const cat = tx.category || 'Other';
+            totals[cat] = (totals[cat] || 0) + (parseFloat(tx.amount) || 0);
+        });
+        return totals;
+    }, [allTransactions, startDate, endDate, transactionType]);
 
+    /** Load category limits once. Subsequent calls are no-ops. */
+    const loadLimits = useCallback(async () => {
+        if (initialized.current) return;
         try {
             setLoading(true);
             setError(null);
@@ -41,129 +63,55 @@ export const useLimitsManager = (startDate, endDate, transactionType = 'spend') 
         }
     }, []);
 
-    /**
-     * Load category totals for date range
-     * Only loads if dates actually changed
-     */
-    const loadCategoryTotals = useCallback(async () => {
-        if (!startDate || !endDate) return;
-
-        try {
-            const totals = await getCategoryTotals(startDate, endDate, transactionType);
-            setCategoryTotals(totals);
-        } catch (err) {
-            console.error('Error loading category totals:', err);
-            toast.error('Failed to load category totals');
-        }
-    }, [startDate, endDate, transactionType]);
-
-    /**
-     * Refresh category totals on demand
-     * Used when new transactions are added
-     */
-    const refreshCategoryTotals = useCallback(async () => {
-        if (!startDate || !endDate) return;
-
-        try {
-            const totals = await getCategoryTotals(startDate, endDate, transactionType);
-            setCategoryTotals(totals);
-        } catch (err) {
-            console.error('Error refreshing category totals:', err);
-        }
-    }, [startDate, endDate, transactionType]);
-
-    /**
-     * Get limits filtered by type
-     */
-    const getLimitsByType = useCallback(
-        (type) => {
-            return limits.filter(limit => (limit.type || 'spend') === type);
-        },
-        [limits]
-    );
-
-    /**
-     * Initialize data on demand (call from component manually)
-     * Only loads once per component lifetime
-     */
-    const initialize = useCallback(async () => {
-        // Load limits (only loads if not already initialized)
-        await loadLimits();
-        // Load category totals (respects date changes, prevents duplicate calls)
-        await loadCategoryTotals();
-    }, [loadLimits, loadCategoryTotals]);
-
     return {
         limits,
-        categoryTotals,
+        categoryTotals,   // derived — no API call
         loading,
         error,
-        getCategorySpent: useCallback(
-            (category) => categoryTotals[category] || 0,
-            [categoryTotals]
-        ),
-        getLimitsByType,
-        addLimit: useCallback(
-            async (limitData) => {
-                try {
-                    setError(null);
-                    const newLimit = await addCategoryLimit(limitData);
-                    setLimits(prev => [newLimit, ...prev]);
-                    toast.success(`${limitData.type === 'income' ? 'Income' : 'Spending'} limit added successfully`);
-                    return newLimit;
-                } catch (err) {
-                    console.error('Error adding limit:', err);
-                    const errorMsg = err.message || 'Failed to add limit';
-                    setError(errorMsg);
-                    toast.error(errorMsg);
-                    throw err;
-                }
-            },
-            []
-        ),
-        updateLimit: useCallback(
-            async (limitId, limitData) => {
-                try {
-                    setError(null);
-                    const updatedLimit = await updateCategoryLimit(limitId, limitData);
-                    setLimits(prev =>
-                        prev.map(limit =>
-                            limit.id === limitId ? { ...updatedLimit, id: limitId } : limit
-                        )
-                    );
-                    toast.success('Limit updated successfully');
-                    return updatedLimit;
-                } catch (err) {
-                    console.error('Error updating limit:', err);
-                    const errorMsg = err.message || 'Failed to update limit';
-                    setError(errorMsg);
-                    toast.error(errorMsg);
-                    throw err;
-                }
-            },
-            []
-        ),
-        deleteLimit: useCallback(
-            async (limitId) => {
-                try {
-                    setError(null);
-                    await deleteCategoryLimit(limitId);
-                    setLimits(prev => prev.filter(limit => limit.id !== limitId));
-                    toast.success('Limit deleted successfully');
-                } catch (err) {
-                    console.error('Error deleting limit:', err);
-                    const errorMsg = err.message || 'Failed to delete limit';
-                    setError(errorMsg);
-                    toast.error(errorMsg);
-                    throw err;
-                }
-            },
-            []
-        ),
-        loadLimits,
-        loadCategoryTotals,
-        refreshCategoryTotals,
-        initialize, // Add this to component render
+        loadLimits,       // only loads category limits, never transactions
+        addLimit: useCallback(async (limitData) => {
+            try {
+                setError(null);
+                const newLimit = await addCategoryLimit(limitData);
+                setLimits(prev => [newLimit, ...prev]);
+                toast.success(`${limitData.type === 'income' ? 'Income' : 'Spending'} limit added successfully`);
+                return newLimit;
+            } catch (err) {
+                const msg = err.message || 'Failed to add limit';
+                setError(msg);
+                toast.error(msg);
+                throw err;
+            }
+        }, []),
+        updateLimit: useCallback(async (limitId, limitData) => {
+            try {
+                setError(null);
+                const updated = await updateCategoryLimit(limitId, limitData);
+                setLimits(prev =>
+                    prev.map(l => l.id === limitId ? { ...updated, id: limitId } : l)
+                );
+                toast.success('Limit updated successfully');
+                return updated;
+            } catch (err) {
+                const msg = err.message || 'Failed to update limit';
+                setError(msg);
+                toast.error(msg);
+                throw err;
+            }
+        }, []),
+        deleteLimit: useCallback(async (limitId) => {
+            try {
+                setError(null);
+                await deleteCategoryLimit(limitId);
+                setLimits(prev => prev.filter(l => l.id !== limitId));
+                toast.success('Limit deleted successfully');
+            } catch (err) {
+                const msg = err.message || 'Failed to delete limit';
+                setError(msg);
+                toast.error(msg);
+                throw err;
+            }
+        }, []),
     };
 };
 

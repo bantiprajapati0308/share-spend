@@ -38,8 +38,8 @@ const addCategory = async (req, res) => {
         const { name, emoji, type } = req.body;
         if (!name || !type) return badRequest(res, 'name and type required');
 
-        // Check for duplicate name
-        const existing = await col(req.uid).where('name', '==', name).get();
+        // Check for duplicate name — limit(1) stops scanning after first match
+        const existing = await col(req.uid).where('name', '==', name).limit(1).get();
         if (!existing.empty) return badRequest(res, `Category "${name}" already exists`);
 
         const now = FieldValue.serverTimestamp();
@@ -54,10 +54,8 @@ const addCategory = async (req, res) => {
 // PUT /api/categories/:id
 const updateCategory = async (req, res) => {
     try {
-        const ref = col(req.uid).doc(req.params.id);
-        await ref.update({ ...req.body, updatedAt: FieldValue.serverTimestamp() });
-        const snap = await ref.get();
-        ok(res, { id: snap.id, ...snap.data() });
+        await col(req.uid).doc(req.params.id).update({ ...req.body, updatedAt: FieldValue.serverTimestamp() });
+        ok(res, { id: req.params.id, ...req.body });
     } catch (e) {
         fail(res, e.message);
     }

@@ -30,10 +30,8 @@ const addExpense = async (req, res) => {
 // PUT /api/trips/:tripId/expenses/:expenseId
 const updateExpense = async (req, res) => {
     try {
-        const ref = expensesCol(req.uid, req.params.tripId).doc(req.params.expenseId);
-        await ref.update(req.body);
-        const snap = await ref.get();
-        ok(res, { id: snap.id, ...snap.data() });
+        await expensesCol(req.uid, req.params.tripId).doc(req.params.expenseId).update(req.body);
+        ok(res, { id: req.params.expenseId, ...req.body });
     } catch (e) {
         fail(res, e.message);
     }

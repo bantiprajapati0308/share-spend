@@ -13,11 +13,15 @@ export const getCategoryLimits = async () => {
 };
 
 // GET: Fetch limit for a specific category in a date range (client-side filter)
-export const getCategoryLimit = async (category, startDate, endDate) => {
+// Pass `allLimits` when you already have the list to avoid a redundant API call.
+export const getCategoryLimit = async (category, startDate, endDate, allLimits = null) => {
     try {
-        const result = await categoryLimitsApi.getCategoryLimits();
-        if (!result.success) throw new Error(result.error);
-        const match = result.data.find(l =>
+        const limits = allLimits ?? (await (async () => {
+            const result = await categoryLimitsApi.getCategoryLimits();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        })());
+        const match = limits.find(l =>
             l.category === category &&
             l.startDate <= startDate &&
             l.endDate >= endDate

@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 import tripReducer from './tripSlice';
-
-
+import dailySpendsReducer from './dailySpendsSlice';
 
 // Combine reducers (in case you have more in the future)
 const rootReducer = combineReducers({
     trip: tripReducer,
+    dailySpends: dailySpendsReducer,
 });
 
 // Create store with root reducer

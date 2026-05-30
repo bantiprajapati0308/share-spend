@@ -30,10 +30,8 @@ const addCategoryLimit = async (req, res) => {
 // PUT /api/category-limits/:id
 const updateCategoryLimit = async (req, res) => {
     try {
-        const ref = col(req.uid).doc(req.params.id);
-        await ref.update({ ...req.body, updatedAt: FieldValue.serverTimestamp() });
-        const snap = await ref.get();
-        ok(res, { id: snap.id, ...snap.data() });
+        await col(req.uid).doc(req.params.id).update({ ...req.body, updatedAt: FieldValue.serverTimestamp() });
+        ok(res, { id: req.params.id, ...req.body });
     } catch (e) {
         fail(res, e.message);
     }

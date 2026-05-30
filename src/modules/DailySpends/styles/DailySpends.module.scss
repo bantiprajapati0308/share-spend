@@ -46,6 +46,180 @@
     }
 }
 
+.dateRangePromptCard {
+    background-color: #f8f9fa;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.dateRangePromptTitle {
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.dateRangePromptText {
+    font-size: 16px;
+    margin-bottom: 30px;
+    color: #666;
+}
+
+.dateRangePickerWrapper {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.errorAlert {
+    margin-top: 20px;
+}
+
+.landingTabs {
+    display: flex;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.landingTabBtn {
+    flex: 1;
+    border: 1px solid rgba($primary-color, 0.18);
+    background: #ffffff;
+    color: $text-secondary;
+    padding: 0.7rem 0.55rem;
+    border-radius: 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem;
+
+    i {
+        font-size: 1.25rem;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+
+    span {
+        display: block;
+        line-height: 1.1;
+    }
+
+    &:hover {
+        border-color: rgba($primary-color, 0.4);
+        color: $text-primary;
+        transform: translateY(-1px);
+        box-shadow: $shadow-sm;
+    }
+}
+
+.landingTabBtnActive {
+    background: linear-gradient(135deg, rgba($primary-color, 0.12) 0%, rgba($primary-light, 0.16) 100%);
+    border-color: rgba($primary-color, 0.5);
+    color: $primary-color;
+    box-shadow: 0 6px 14px rgba($primary-color, 0.16);
+}
+
+.comingSoonState {
+    background: #ffffff;
+    border: 1px dashed rgba($primary-color, 0.32);
+    border-radius: 1rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+
+    h4 {
+        margin: 0;
+        color: $text-primary;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0.45rem 0 0;
+        color: $text-secondary;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+}
+
+.dailyTabs {
+    :global(.nav-tabs) {
+        flex-wrap: nowrap;
+        gap: 0.35rem;
+        margin-bottom: 0.5rem !important;
+    }
+
+    :global(.nav-item) {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    :global(.nav-link) {
+        width: 100%;
+        padding: 0.35rem 0.15rem;
+        border-radius: 0.7rem 0.7rem 0 0;
+        margin-bottom: 0;
+        line-height: 1.05;
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.tabTitle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0;
+    width: 100%;
+}
+
+.tabIcon {
+    font-size: 1.08rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    line-height: 1.15rem;
+    text-align: center;
+    display: inline-block;
+}
+
+.tabIconAdd {
+    color: #2f80ed;
+}
+
+.tabIconLimits {
+    color: #f2994a;
+}
+
+.tabIconReports {
+    color: #27ae60;
+}
+
+.tabIconCategory {
+    color: #bb6bd9;
+}
+
+.tabLabel {
+    font-size: 0.66rem;
+    line-height: 1;
+    margin: 0;
+    display: block;
+}
+
 .summaryCard {
     background: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
     border-radius: 1.5rem;
@@ -339,7 +513,7 @@
 }
 
 // ==========================================
-// Category Management Styles
+// Category Management Styles (legacy — used by CategoryManagementModal)
 // ==========================================
 
 .categoryManagementSection {
@@ -1846,4 +2020,25 @@
         font-size: 0.9rem;
         margin-top: 0.75rem;
     }
+}
+
+.landingTabs .landingTabBtn:nth-child(1) i {
+    color: #2f80ed;
+}
+
+.landingTabs .landingTabBtn:nth-child(2) i {
+    color: #f2994a;
+}
+
+.landingTabs .landingTabBtn:nth-child(3) i {
+    color: #27ae60;
+}
+
+.landingTabs .landingTabBtn:nth-child(4) i {
+    color: #bb6bd9;
+}
+
+.landingTabs .landingTabBtn:hover i,
+.landingTabs .landingTabBtnActive i {
+    color: currentColor;
 }

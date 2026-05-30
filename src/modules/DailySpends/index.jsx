@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
-import { useUserCategories } from './hooks/useUserCategories';
+import useCategoryContext from './hooks/useCategoryContext';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
 import DailySpendsHeader from './components/DailySpendsHeader';
 import DateRangeAccordion from './components/DateRangeAccordion';
@@ -14,15 +13,16 @@ import DateRangePicker from './components/DateRangePicker';
 import styles from './styles/DailySpends.module.scss';
 import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
+import { DailySpendTabsList } from '../../Util';
+import CategoryManager from './components/CategoryManager';
+import LimitsManager from './LimitsManager';
 
 function DailySpends() {
-    const navigate = useNavigate();
+    const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
     const [selectedType, setSelectedType] = useState('spend');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [dateRangeLoaded, setDateRangeLoaded] = useState(false);
-    const [userCategories, setUserCategories] = useState([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
 
     // Edit functionality state
     const [editingTransaction, setEditingTransaction] = useState(null);
@@ -40,17 +40,16 @@ function DailySpends() {
         error,
     } = useDailyExpenses();
 
-    const { fetchEnabledCategories } = useUserCategories();
+    const { categories: allCategories } = useCategoryContext();
+    const userCategories = useMemo(
+        () => allCategories.filter(c => c.isEnabled !== false).map(c => c.name),
+        [allCategories]
+    );
     const { loadDateRange, saveDateRange } = useSelectedDateRange();
 
     // Load saved date range from database on mount
     useEffect(() => {
         loadSavedDateRange();
-    }, []);
-
-    // Load user categories on mount
-    useEffect(() => {
-        loadUserCategories();
     }, []);
 
     const loadSavedDateRange = async () => {
@@ -65,22 +64,6 @@ function DailySpends() {
         } catch (err) {
             console.error('Error loading saved date range:', err);
             setDateRangeLoaded(true);
-        }
-    };
-
-    const loadUserCategories = async () => {
-        try {
-            setCategoriesLoading(true);
-            const categories = await fetchEnabledCategories();
-            // Extract category names for the limits dropdown
-            const categoryNames = categories.map(cat => cat.name);
-            setUserCategories(categoryNames);
-        } catch (err) {
-            console.error('Error loading user categories:', err);
-            // Fallback to empty array - users won't see categories until they create one
-            setUserCategories([]);
-        } finally {
-            setCategoriesLoading(false);
         }
     };
 
@@ -181,11 +164,66 @@ function DailySpends() {
     };
 
 
-    const handleOpenLimitsManager = () => {
-        navigate('/daily-expenses/limits-manager', {
-            state: { from: '/daily-expenses' }
-        });
+
+    const tabContentById = {
+        reports: {
+            title: 'Reports',
+            description: 'Reports content is coming soon.'
+        },
     };
+
+    const tabIconClassById = {
+        'add-transaction': styles.tabIconAdd,
+        set_limits: styles.tabIconLimits,
+        reports: styles.tabIconReports,
+        category: styles.tabIconCategory,
+    };
+
+    const renderTabContent = () => {
+        if (activeLandingTab === 'add-transaction') {
+            return (
+                <AddExpenseForm
+                    onAddExpense={handleAddTransaction}
+                    onUpdateExpense={handleUpdateTransaction}
+                    editingTransaction={editingTransaction}
+                    isEditMode={isEditMode}
+                    onCancelEdit={handleCancelEdit}
+                    onCategoriesChanged={refreshTransactions}
+                />
+            );
+        }
+
+        if (activeLandingTab === 'set_limits') {
+            return <LimitsManager embedded />;
+        }
+
+        if (activeLandingTab === 'category') {
+            return <CategoryManager onCategoriesChanged={refreshTransactions} />;
+        }
+
+        const content = tabContentById[activeLandingTab] || {
+            title: 'Coming Soon',
+            description: 'Coming Soon'
+        };
+
+        return (
+            <div className={styles.comingSoonState}>
+                <h4>{content.title}</h4>
+                <p>{content.description}</p>
+            </div>
+        );
+    };
+
+    const handleLandingTabChange = (tabId) => {
+        if (!tabId) return;
+
+        setActiveLandingTab(tabId);
+
+        if (tabId !== 'add-transaction' && isEditMode) {
+            handleCancelEdit();
+        }
+    };
+
 
     const displayedTransactions = getTransactionsByType(selectedType)
         .filter(tx => {
@@ -209,19 +247,12 @@ function DailySpends() {
                 <Row>
                     <Col lg={8} className="mx-auto">
                         <DailySpendsHeader />
-                        <div style={{
-                            backgroundColor: '#f8f9fa',
-                            border: '2px solid #dc3545',
-                            borderRadius: '8px',
-                            padding: '40px 20px',
-                            textAlign: 'center',
-                            marginTop: '30px'
-                        }}>
-                            <h3 style={{ color: '#dc3545', marginBottom: '20px' }}>📅 Select Date Range</h3>
-                            <p style={{ fontSize: '16px', marginBottom: '30px', color: '#666' }}>
+                        <div className={styles.dateRangePromptCard}>
+                            <h3 className={styles.dateRangePromptTitle}>📅 Select Date Range</h3>
+                            <p className={styles.dateRangePromptText}>
                                 Please select a date range to start tracking your expenses and income.
                             </p>
-                            <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', marginBottom: '20px' }}>
+                            <div className={styles.dateRangePickerWrapper}>
                                 <DateRangePicker
                                     onDateRangeChange={handleDateRangeChange}
                                     defaultStartDate={null}
@@ -241,7 +272,7 @@ function DailySpends() {
                 <Row>
                     <Col lg={8} className="mx-auto">
                         <DailySpendsHeader />
-                        <Alert variant="danger" style={{ marginTop: '20px' }}>
+                        <Alert variant="danger" className={styles.errorAlert}>
                             <strong>Error:</strong> Failed to load transactions: {error}
                         </Alert>
                     </Col>
@@ -277,23 +308,41 @@ function DailySpends() {
                         endDate={endDate}
                     />
 
-                    {/* Add Transaction Form */}
-                    <div ref={addFormRef}>
-                        <AddExpenseForm
-                            onAddExpense={handleAddTransaction}
-                            onUpdateExpense={handleUpdateTransaction}
-                            onLimitsClick={handleOpenLimitsManager}
-                            editingTransaction={editingTransaction}
-                            isEditMode={isEditMode}
-                            onCancelEdit={handleCancelEdit}
-                            onCategoriesChanged={refreshTransactions}
-                        />
-                    </div>
+                    <Tabs
+                        id="daily-spends-tabs"
+                        activeKey={activeLandingTab}
+                        onSelect={handleLandingTabChange}
+                        className={`${styles.dailyTabs} mb-2`}
+                        mountOnEnter
+                        unmountOnExit={false}
+                    >
+                        {DailySpendTabsList.map(tab => (
+                            <Tab
+                                key={tab.id}
+                                eventKey={tab.id}
+                                title={(
+                                    <span className={styles.tabTitle}>
+                                        <i
+                                            className={`${tab.iconClass} ${styles.tabIcon} ${tabIconClassById[tab.id] || ''}`}
+                                            aria-hidden="true"
+                                        ></i>
+                                        <span className={styles.tabLabel}>{tab.label}</span>
+                                    </span>
+                                )}
+                            >
+                                <div ref={activeLandingTab === 'add-transaction' ? addFormRef : null}>
+                                    {renderTabContent()}
+                                </div>
+                            </Tab>
+                        ))}
+                    </Tabs>
+
                     {/* Transaction View Toggle */}
                     <TransactionViewToggle
                         selectedType={selectedType}
                         onTypeChange={setSelectedType}
                     />
+
                     {/* Transaction List */}
                     <ExpenseList
                         expenses={displayedTransactions}

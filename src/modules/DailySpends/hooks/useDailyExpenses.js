@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+import { setTransactions, appendTransaction, patchTransaction, removeTransaction as removeTransactionRedux } from '../../../redux/dailySpendsSlice';
 import {
     getTransactions,
     getTransactionsByType,
@@ -19,6 +21,7 @@ import {
 } from '../utils/transactionVisibility';
 
 export const useDailyExpenses = () => {
+    const dispatch = useDispatch();
     const [rawTransactions, setRawTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -48,6 +51,7 @@ export const useDailyExpenses = () => {
                     return new Date(dateB) - new Date(dateA);
                 });
                 setRawTransactions(sortedData);
+                dispatch(setTransactions(sortedData));
             } catch (err) {
                 console.error('Error fetching transactions:', err);
                 setError(err.message);
@@ -69,6 +73,7 @@ export const useDailyExpenses = () => {
                 return new Date(dateB) - new Date(dateA);
             });
             setRawTransactions(updatedTransactions);
+            dispatch(appendTransaction(result));
 
             const normalizedCategory = (newTransaction.category || '').toLowerCase();
             const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
@@ -125,6 +130,7 @@ export const useDailyExpenses = () => {
         try {
             await deleteTransaction(id);
             setRawTransactions(rawTransactions.filter(t => t.id !== id));
+            dispatch(removeTransactionRedux(id));
         } catch (err) {
             console.error('Error deleting transaction:', err);
             throw err;
@@ -135,9 +141,9 @@ export const useDailyExpenses = () => {
         try {
             const result = await updateTransaction(id, updatedTransaction);
             // Update local state
-            setRawTransactions(rawTransactions.map(t =>
-                t.id === id ? { ...t, ...updatedTransaction, id } : t
-            ));
+            const patched = { ...rawTransactions.find(t => t.id === id), ...updatedTransaction, id };
+            setRawTransactions(rawTransactions.map(t => t.id === id ? patched : t));
+            dispatch(patchTransaction(patched));
             return result;
         } catch (err) {
             console.error('Error updating transaction:', err);
@@ -191,6 +197,7 @@ export const useDailyExpenses = () => {
                 return new Date(dateB) - new Date(dateA);
             });
             setRawTransactions(sortedData);
+            dispatch(setTransactions(sortedData));
         } catch (err) {
             console.error('Error refreshing transactions:', err);
             setError(err.message);
