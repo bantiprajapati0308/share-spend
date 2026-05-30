@@ -16,6 +16,7 @@ import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { DailySpendTabsList } from '../../Util';
 import CategoryManager from './components/CategoryManager';
 import LimitsManager from './LimitsManager';
+import ReportsTabContent from './components/ReportsTabContent';
 
 function DailySpends() {
     const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
@@ -199,6 +200,16 @@ function DailySpends() {
 
         if (activeLandingTab === 'category') {
             return <CategoryManager onCategoriesChanged={refreshTransactions} />;
+        }
+
+        if (activeLandingTab === 'reports') {
+            return (
+                <ReportsTabContent
+                    transactions={transactions}
+                    startDate={startDate}
+                    endDate={endDate}
+                />
+            );
         }
 
         const content = tabContentById[activeLandingTab] || {

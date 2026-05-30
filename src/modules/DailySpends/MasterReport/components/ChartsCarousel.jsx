@@ -34,11 +34,30 @@ function ChartsCarousel({
     // Minimum swipe distance (in pixels)
     const minSwipeDistance = 50;
 
+    const fmtDate = (d) => d?.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) ?? '';
+
     const charts = [
+        {
+            id: 'calendar',
+            title: `Daily ${transactionType === 'income' ? 'Income' : 'Spend'} Heatmap`,
+            subtitle: startDate && endDate
+                ? `${fmtDate(startDate)} – ${fmtDate(endDate)}`
+                : 'Last 30 days',
+            component: (
+                <div className={styles.chartContainer}>
+                    <CalendarHeatmap
+                        transactions={transactions}
+                        transactionType={transactionType}
+                        startDate={startDate}
+                        endDate={endDate}
+                    />
+                </div>
+            )
+        },
         {
             id: 'pie',
             title: `${transactionType === 'income' ? 'Income' : 'Spend'} Category Distribution`,
-            subtitle: startDate && endDate ? `${startDate.toDateString()} - ${endDate.toDateString()}` : "All Time",
+            subtitle: startDate && endDate ? `${fmtDate(startDate)} – ${fmtDate(endDate)}` : 'All Time',
             component: (
                 <div className={styles.chartContainer}>
                     <PieChart
@@ -105,23 +124,6 @@ function ChartsCarousel({
                 </div>
             )
         },
-        {
-            id: 'calendar',
-            title: `Daily ${transactionType === 'income' ? 'Income' : 'Spend'} Heatmap`,
-            subtitle: startDate && endDate
-                ? `${startDate.toDateString()} – ${endDate.toDateString()}`
-                : 'Last 30 days',
-            component: (
-                <div className={styles.chartContainer}>
-                    <CalendarHeatmap
-                        transactions={transactions}
-                        transactionType={transactionType}
-                        startDate={startDate}
-                        endDate={endDate}
-                    />
-                </div>
-            )
-        }
     ];
 
     const handleNext = () => {
@@ -199,39 +201,43 @@ function ChartsCarousel({
         <div className={`${styles.chartsCarousel} chartsCarousel`} ref={carouselRef}>
             {/* Navigation Header */}
             <div className={styles.carouselHeader}>
-                <div className={styles.chartTitle}>
-                    <h5 className="mb-0">{charts[currentIndex].title}</h5>
-                    <small className="text-muted">{charts[currentIndex].subtitle}</small>
+                {/* Row 1: title + prev/next */}
+                <div className={styles.headerRow1}>
+                    <span className={styles.chartTitle}>{charts[currentIndex].title}</span>
+                    <div className={styles.navButtons}>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={handlePrev}
+                            disabled={charts.length <= 1}
+                            className={styles.carouselBtn}
+                        >
+                            <ChevronLeft size={14} />
+                        </Button>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={handleNext}
+                            disabled={charts.length <= 1}
+                            className={styles.carouselBtn}
+                        >
+                            <ChevronRight size={14} />
+                        </Button>
+                    </div>
                 </div>
-                <div className={styles.carouselControls}>
+                {/* Row 2: subtitle + dropdown */}
+                <div className={styles.headerRow2}>
+                    <span className={styles.chartSubtitle}>{charts[currentIndex].subtitle}</span>
                     <Form.Select
                         size="sm"
                         value={transactionType}
                         onChange={(event) => onTransactionTypeChange(event.target.value)}
                         aria-label="Select transaction type"
-                        style={{ width: '120px' }}
+                        className={styles.typeSelect}
                     >
                         <option value="spend">Spend</option>
                         <option value="income">Income</option>
                     </Form.Select>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={handlePrev}
-                        disabled={charts.length <= 1}
-                        className={styles.carouselBtn}
-                    >
-                        <ChevronLeft size={16} />
-                    </Button>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={handleNext}
-                        disabled={charts.length <= 1}
-                        className={styles.carouselBtn}
-                    >
-                        <ChevronRight size={16} />
-                    </Button>
                 </div>
             </div>
 

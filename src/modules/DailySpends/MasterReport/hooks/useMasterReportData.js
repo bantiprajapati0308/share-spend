@@ -7,62 +7,70 @@ import { getTransactions } from '../../../../hooks/useDailySpends';
  * @param {Date} startDate - Start date for filtering (optional)
  * @param {Date} endDate - End date for filtering (optional)
  */
-export function useMasterReportData(startDate = null, endDate = null) {
+export function useMasterReportData(startDate = null, endDate = null, preloadedTransactions = null) {
     const [transactions, setTransactions] = useState([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState({});
     const [monthlyBreakdown, setMonthlyBreakdown] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(preloadedTransactions === null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        const applyData = (allData) => {
+            let filteredData = allData;
+            if (startDate && endDate) {
+                const startDateStr = startDate.toISOString().split('T')[0];
+                const endDateStr = endDate.toISOString().split('T')[0];
+                filteredData = allData.filter(tx => {
+                    const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+                    return txDateStr >= startDateStr && txDateStr <= endDateStr;
+                });
+            }
+
+            const data = filteredData;
+            setTransactions(data);
+
+            // Process category breakdown
+            const categoryBreak = {};
+            const monthlyBreak = {};
+
+            data.forEach(tx => {
+                if (tx.type === 'spend') {
+                    const category = tx.category || 'Other';
+                    if (!categoryBreak[category]) {
+                        categoryBreak[category] = { amount: 0, count: 0, transactions: [] };
+                    }
+                    categoryBreak[category].amount += parseFloat(tx.amount) || 0;
+                    categoryBreak[category].count += 1;
+                    categoryBreak[category].transactions.push(tx);
+
+                    // Monthly breakdown
+                    const date = new Date(tx.date || tx.createdAt);
+                    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    if (!monthlyBreak[monthKey]) {
+                        monthlyBreak[monthKey] = { amount: 0, count: 0 };
+                    }
+                    monthlyBreak[monthKey].amount += parseFloat(tx.amount) || 0;
+                    monthlyBreak[monthKey].count += 1;
+                }
+            });
+
+            setCategoryBreakdown(categoryBreak);
+            setMonthlyBreakdown(monthlyBreak);
+            setError(null);
+        };
+
+        // When pre-loaded transactions are provided, skip the API call entirely
+        if (preloadedTransactions !== null) {
+            applyData(preloadedTransactions);
+            setLoading(false);
+            return;
+        }
+
         const fetchData = async () => {
             try {
                 setLoading(true);
                 const allData = await getTransactions();
-
-                // Filter data by date range if provided
-                let filteredData = allData;
-                if (startDate && endDate) {
-                    const startDateStr = startDate.toISOString().split('T')[0];
-                    const endDateStr = endDate.toISOString().split('T')[0];
-
-                    filteredData = allData.filter(tx => {
-                        const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
-                        return txDateStr >= startDateStr && txDateStr <= endDateStr;
-                    });
-                }
-
-                const data = filteredData;
-                setTransactions(data);
-
-                // Process category breakdown
-                const categoryBreak = {};
-                const monthlyBreak = {};
-
-                data.forEach(tx => {
-                    if (tx.type === 'spend') {
-                        const category = tx.category || 'Other';
-                        if (!categoryBreak[category]) {
-                            categoryBreak[category] = { amount: 0, count: 0, transactions: [] };
-                        }
-                        categoryBreak[category].amount += parseFloat(tx.amount) || 0;
-                        categoryBreak[category].count += 1;
-                        categoryBreak[category].transactions.push(tx);
-
-                        // Monthly breakdown
-                        const date = new Date(tx.date || tx.createdAt);
-                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                        if (!monthlyBreak[monthKey]) {
-                            monthlyBreak[monthKey] = { amount: 0, count: 0 };
-                        }
-                        monthlyBreak[monthKey].amount += parseFloat(tx.amount) || 0;
-                        monthlyBreak[monthKey].count += 1;
-                    }
-                });
-
-                setCategoryBreakdown(categoryBreak);
-                setMonthlyBreakdown(monthlyBreak);
-                setError(null);
+                applyData(allData);
             } catch (err) {
                 console.error('Error loading master report data:', err);
                 setError(err.message || 'Failed to load report data');
@@ -72,7 +80,7 @@ export function useMasterReportData(startDate = null, endDate = null) {
         };
 
         fetchData();
-    }, [startDate, endDate]);
+    }, [startDate, endDate, preloadedTransactions]);
 
     // Helper calculations
     const getTotalSpent = () => {

@@ -9,29 +9,62 @@
 
 .carouselHeader {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.55rem 0.75rem;
     border-bottom: 1px solid #e9ecef;
     background: #f8f9fa;
 }
 
-.chartTitle {
-    flex: 1;
-
-    h5 {
-        font-weight: 600;
-        color: #2c3e50;
-        margin: 0;
-    }
+.headerRow1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.carouselControls {
+.headerRow2 {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.5rem;
+}
 
-    button {
-        padding: 0;
-    }
+.chartTitle {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chartSubtitle {
+    font-size: 0.7rem;
+    color: #6c757d;
+    line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.navButtons {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.typeSelect {
+    font-size: 0.72rem !important;
+    padding: 0.2rem 0.4rem !important;
+    height: 26px !important;
+    width: 90px !important;
+    flex-shrink: 0;
+    display: block;
 }
 
 .carouselBtn {
@@ -153,8 +186,12 @@
 @media (max-width: 768px) {
 
 
-    .chartTitle h5 {
-        font-size: 1rem;
+    .chartTitle {
+        font-size: 0.75rem;
+    }
+
+    .chartSubtitle {
+        font-size: 0.68rem;
     }
 
     .carouselBtn {
@@ -186,7 +223,11 @@
         min-height: 350px;
     }
 
-    .chartTitle h5 {
-        font-size: 0.9rem;
+    .chartTitle {
+        font-size: 0.72rem;
+    }
+
+    .chartSubtitle {
+        font-size: 0.65rem;
     }
 }
