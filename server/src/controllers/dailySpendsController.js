@@ -38,8 +38,8 @@ const updateTransaction = async (req, res) => {
     try {
         const ref = col(req.uid).doc(req.params.id);
         await ref.update({ ...req.body, updatedAt: FieldValue.serverTimestamp() });
-        const snap = await ref.get();
-        ok(res, { id: snap.id, ...snap.data() });
+
+        ok(res, { id: req.params.id, ...req.body });
     } catch (e) {
         fail(res, e.message);
     }

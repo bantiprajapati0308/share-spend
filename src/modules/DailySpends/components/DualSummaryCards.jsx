@@ -39,7 +39,7 @@ function DualSummaryCards({
                     </div>
 
                     {/* Expense */}
-                    <div onClick={handleOpenMasterReport} className="d-flex flex-column align-items-center text-center">
+                    <div className="d-flex flex-column align-items-center text-center">
                         <div className={`${styles.iconCircle} ${styles.expense} d-flex align-items-center justify-content-center`}>
                             <i className="bi bi-graph-up-arrow"></i>
                         </div>
