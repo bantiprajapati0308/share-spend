@@ -237,7 +237,8 @@
     background: white;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    // Border colour + bottom width are driven by inline style in LimitCard.jsx.
+    // box-shadow removed — the coloured border acts as the visual separator.
 }
 
 // Action Bar (edit / delete) inside card
@@ -366,26 +367,72 @@
 }
 
 // ==================== Progress Bar ====================
+@keyframes tipPulse {
+
+    0%,
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: translateY(-50%) scale(1.75);
+        opacity: 0.25;
+    }
+}
+
 .progressTrack {
-    height: 4px;
+    height: 8px;
     background: $neutral-200;
+    border-radius: 0 0 14px 14px; // follow card bottom corners
+    position: relative; // needed so the tip dot isn't clipped
 }
 
 .progressFill {
     height: 100%;
-    transition: width 0.4s ease;
+    border-radius: 0 4px 4px 0;
+    transition: width 0.5s ease;
+    position: relative;
+
+    // Pulsing dot at the tip of the bar
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -1px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: inherit; // same colour as the bar segment
+        transform: translateY(-50%);
+        animation: tipPulse 1.6s ease-in-out infinite;
+        pointer-events: none;
+    }
 }
 
-.progressDanger {
-    background: $danger-500;
+// 6-step colour scale: green → dark green → yellow → dark yellow → red → dark red
+.progressGreen {
+    background: $success-500; // 0–30 %
 }
 
-.progressWarning {
-    background: $warning-500;
+.progressDarkGreen {
+    background: $success-700; // 30–55 %
 }
 
-.progressSuccess {
-    background: $brand-primary;
+.progressYellow {
+    background: $warning-400; // 55–75 %
+}
+
+.progressDarkYellow {
+    background: $warning-600; // 75–90 %
+}
+
+.progressRed {
+    background: $danger-500; // 90–100 %
+}
+
+.progressOverLimit {
+    background: $danger-700; // > 100 % (bar capped at 100 % width)
 }
 
 // ==================== Empty State ====================

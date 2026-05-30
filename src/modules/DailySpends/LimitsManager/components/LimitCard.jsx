@@ -73,19 +73,58 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCate
         }
     }, [onDelete, limit]);
 
+    // 6-step colour scale (0 = best, 5 = worst).
+    // spend:  high % is bad  → step increases with %
+    // income: high % is good → step is reversed
+    const COLOR_STEP_CLASSES = [
+        styles.progressGreen,
+        styles.progressDarkGreen,
+        styles.progressYellow,
+        styles.progressDarkYellow,
+        styles.progressRed,
+        styles.progressOverLimit,
+    ];
+    // Hex values mirror the SCSS classes above
+    const COLOR_STEP_HEX = [
+        '#22c55e', // green
+        '#15803d', // dark green
+        '#fbbf24', // yellow
+        '#d97706', // dark yellow
+        '#ef4444', // red
+        '#b91c1c', // dark red (over limit)
+    ];
+
+    const getRawStep = (pct) => {
+        if (pct > 100) return 5;
+        if (pct > 90) return 4;
+        if (pct > 75) return 3;
+        if (pct > 55) return 2;
+        if (pct > 30) return 1;
+        return 0;
+    };
+    const colorStep = limitType === 'income'
+        ? 5 - getRawStep(percentage)   // reversed: low income % = worst
+        : getRawStep(percentage);
+
+    const progressClass = `${styles.progressFill} ${COLOR_STEP_CLASSES[colorStep]}`;
+    const borderColor = COLOR_STEP_HEX[colorStep];
+
     // Build class strings once
     const percentageClass = `${styles.cardPercentage} ${styles[variant]}`;
     const badgeClass = `${styles.statusBadge} ${variant === 'danger' ? styles.badgeDanger :
-            variant === 'warning' ? styles.badgeWarning :
-                styles.badgeSuccess
-        }`;
-    const progressClass = `${styles.progressFill} ${variant === 'danger' ? styles.progressDanger :
-            variant === 'warning' ? styles.progressWarning :
-                styles.progressSuccess
+        variant === 'warning' ? styles.badgeWarning :
+            styles.badgeSuccess
         }`;
 
     return (
-        <div className={styles.limitCard} onClick={handleCardClick}>
+        <div
+            className={styles.limitCard}
+            onClick={handleCardClick}
+            style={{
+                border: `1px solid ${borderColor}`,
+                borderBottomWidth: '1px',
+            }}
+        >
             {/* Inline action bar (edit / delete) */}
             {showActions && (
                 <div className={styles.cardActionsBar}>
