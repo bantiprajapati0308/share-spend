@@ -10,6 +10,7 @@ import AddExpenseForm from './components/AddExpenseForm';
 import TransactionViewToggle from './components/TransactionViewToggle';
 import ExpenseList from './components/ExpenseList';
 import DateRangePicker from './components/DateRangePicker';
+import TimeSummarySection from './components/TimeSummarySection';
 import styles from './styles/DailySpends.module.scss';
 import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
@@ -365,6 +366,9 @@ function DailySpends() {
                         selectedType={selectedType}
                         onTypeChange={setSelectedType}
                     />
+
+                    {/* Spending / Income Overview — Today & Last 7 Days */}
+                    <TimeSummarySection transactions={transactions} selectedType={selectedType} />
 
                     {/* Transaction List */}
                     <ExpenseList
