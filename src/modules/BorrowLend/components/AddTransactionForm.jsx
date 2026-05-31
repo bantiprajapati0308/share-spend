@@ -5,6 +5,7 @@ import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '../styles/BorrowLend.module.scss';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
+import DatePickerInput from '../../../utils/DatePickerInput';
 import { TRANSACTION_TYPES, getTransactionTypeLabel } from '../constants/transactionTypes';
 
 function AddTransactionForm({ onAddTransaction }) {
@@ -90,22 +91,24 @@ function AddTransactionForm({ onAddTransaction }) {
             <Row>
                 <Col xs={6} md={6}>
                     <div className={styles.formGroup}>
-                        <label>Date</label>
-                        <input
-                            type="date"
+                        <DatePickerInput
+                            label="Date"
                             value={date}
-                            onChange={(e) => setDate(e.target.value)}
+                            onChange={(val) => val && setDate(val)}
+                            maxDate={new Date().toISOString().split('T')[0]}
+                            placeholder="Select date"
                         />
                     </div>
                 </Col>
                 <Col xs={6} md={6}>
                     <div className={styles.formGroup}>
-                        <label>Due Date (Optional)</label>
-                        <input
-                            type="date"
+                        <DatePickerInput
+                            label="Due Date (Optional)"
                             value={dueDate}
-                            onChange={(e) => setDueDate(e.target.value)}
-                            min={date}
+                            onChange={setDueDate}
+                            minDate={date}
+                            isClearable
+                            placeholder="Select due date"
                         />
                     </div>
                 </Col>

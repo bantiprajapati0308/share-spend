@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col, Spinner, Button } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import DatePickerInput from '../../../utils/DatePickerInput';
 import styles from '../styles/DailySpends.module.scss';
 import CategorySelectDropdown from './CategorySelectDropdown';
 import CategoryManagementModal from './CategoryManagementModal';
@@ -221,36 +222,26 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
 
                 <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={4}>
                     <div className={styles.formGroup}>
-                        <label>Date *</label>
-                        <input
-                            type="date"
-                            className={`${(isLent || isBorrowed) ? styles.dueDateInput : styles.withOutDueDate}`}
+                        <DatePickerInput
+                            label="Date *"
                             value={date}
-                            onChange={(e) => {
-                                const dateValue = e.target.value;
-                                if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-                                    setDate(dateValue);
-                                }
-                            }}
+                            onChange={(val) => val && setDate(val)}
+                            maxDate={new Date().toISOString().split('T')[0]}
                             required
+                            placeholder="Select date"
                         />
                     </div>
                 </Col>
                 {(isLent || isBorrowed) && (
                     <Col xs={6} sm={6} md={4}>
                         <div className={styles.formGroup}>
-                            <label>Due Date</label>
-                            <input
-                                type="date"
-                                className={`${styles.dueDateInput}`}
+                            <DatePickerInput
+                                label="Due Date"
                                 value={dueDate}
-                                onChange={(e) => {
-                                    const dateValue = e.target.value;
-                                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-                                        setDueDate(dateValue);
-                                    }
-                                }}
-                                min={date}
+                                onChange={setDueDate}
+                                minDate={date}
+                                isClearable
+                                placeholder="Select due date"
                             />
                         </div>
                     </Col>

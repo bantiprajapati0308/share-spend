@@ -246,22 +246,6 @@
     }
 }
 
-.withOutDueDate {
-    // iOS Safari enforces a minimum intrinsic width on date inputs.
-    // min-width: 0 overrides that; width + max-width: 100% prevents overflow.
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-
-.dueDateInput {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-
 .formSection {
     background: white;
     border-radius: 1rem;

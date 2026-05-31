@@ -1,35 +1,34 @@
-import React, { useState } from 'react';
-import { Form, Row, Col, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Button } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../styles/DateRangePicker.module.scss';
 
 function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }) {
-    // Convert Date objects to string format if needed
-    const formatDateValue = (dateValue) => {
-        if (!dateValue) return '';
-        if (dateValue instanceof Date) {
-            return dateValue.toISOString().split('T')[0];
-        }
-        return dateValue;
+    // Accepts: Date object, 'yyyy-MM-dd' string, or null
+    const toDate = (val) => {
+        if (!val) return null;
+        if (val instanceof Date) return val;
+        // String from API (e.g. "2024-01-15") — append local time to avoid UTC shift
+        return new Date(val + 'T00:00:00');
     };
 
-    const [startDate, setStartDate] = useState(formatDateValue(defaultStartDate));
-    const [endDate, setEndDate] = useState(formatDateValue(defaultEndDate));
+    const [startDate, setStartDate] = useState(toDate(defaultStartDate));
+    const [endDate, setEndDate] = useState(toDate(defaultEndDate));
 
-    const handleStartDateChange = (e) => {
-        setStartDate(e.target.value);
-    };
+    // Sync internal state when parent updates props (e.g. after API load)
+    useEffect(() => {
+        setStartDate(toDate(defaultStartDate));
+    }, [defaultStartDate]);
 
-    const handleEndDateChange = (e) => {
-        setEndDate(e.target.value);
-    };
+    useEffect(() => {
+        setEndDate(toDate(defaultEndDate));
+    }, [defaultEndDate]);
 
     const handleApply = () => {
         if (startDate && endDate) {
-            if (new Date(startDate) <= new Date(endDate)) {
-                onDateRangeChange({
-                    startDate: new Date(startDate),
-                    endDate: new Date(endDate),
-                });
+            if (startDate <= endDate) {
+                onDateRangeChange({ startDate, endDate });
             } else {
                 alert('Start date must be before end date');
             }
@@ -39,45 +38,29 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
     };
 
     const handleToday = () => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         setStartDate(today);
         setEndDate(today);
-        onDateRangeChange({
-            startDate: new Date(today),
-            endDate: new Date(today),
-        });
+        onDateRangeChange({ startDate: today, endDate: today });
     };
 
     const handleThisMonth = () => {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-        const start = firstDay.toISOString().split('T')[0];
-        const end = lastDay.toISOString().split('T')[0];
-
-        setStartDate(start);
-        setEndDate(end);
-        onDateRangeChange({
-            startDate: firstDay,
-            endDate: lastDay,
-        });
+        setStartDate(firstDay);
+        setEndDate(lastDay);
+        onDateRangeChange({ startDate: firstDay, endDate: lastDay });
     };
 
     const handleLastMonth = () => {
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
-
-        const start = firstDay.toISOString().split('T')[0];
-        const end = lastDay.toISOString().split('T')[0];
-
-        setStartDate(start);
-        setEndDate(end);
-        onDateRangeChange({
-            startDate: firstDay,
-            endDate: lastDay,
-        });
+        setStartDate(firstDay);
+        setEndDate(lastDay);
+        onDateRangeChange({ startDate: firstDay, endDate: lastDay });
     };
 
     return (
@@ -85,26 +68,43 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
             <div className={styles.pickerSection}>
                 <Row className="g-3">
                     <Col md={5}>
-                        <Form.Group>
-                            <Form.Label className={styles.label}>Start Date</Form.Label>
-                            <Form.Control
-                                type="date"
-                                value={startDate}
-                                onChange={handleStartDateChange}
+                        <div className={styles.datePickerGroup}>
+                            <label className={styles.label}>Start Date</label>
+                            <DatePicker
+                                selected={startDate}
+                                onChange={(d) => setStartDate(d)}
+                                selectsStart
+                                startDate={startDate}
+                                endDate={endDate}
+                                dateFormat="dd/MM/yyyy"
+                                placeholderText="Select start date"
+                                wrapperClassName={styles.datePickerFull}
                                 className={styles.dateInput}
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
                             />
-                        </Form.Group>
+                        </div>
                     </Col>
                     <Col md={5}>
-                        <Form.Group>
-                            <Form.Label className={styles.label}>End Date</Form.Label>
-                            <Form.Control
-                                type="date"
-                                value={endDate}
-                                onChange={handleEndDateChange}
+                        <div className={styles.datePickerGroup}>
+                            <label className={styles.label}>End Date</label>
+                            <DatePicker
+                                selected={endDate}
+                                onChange={(d) => setEndDate(d)}
+                                selectsEnd
+                                startDate={startDate}
+                                endDate={endDate}
+                                minDate={startDate}
+                                dateFormat="dd/MM/yyyy"
+                                placeholderText="Select end date"
+                                wrapperClassName={styles.datePickerFull}
                                 className={styles.dateInput}
+                                showMonthDropdown
+                                showYearDropdown
+                                dropdownMode="select"
                             />
-                        </Form.Group>
+                        </div>
                     </Col>
                     <Col md={2}>
                         <Button
@@ -121,30 +121,9 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
             <div className={styles.presets}>
                 <div className={styles.presetsLabel}>Quick Presets:</div>
                 <div className={styles.presetButtons}>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={handleToday}
-                        className={styles.presetBtn}
-                    >
-                        Today
-                    </Button>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={handleThisMonth}
-                        className={styles.presetBtn}
-                    >
-                        This Month
-                    </Button>
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={handleLastMonth}
-                        className={styles.presetBtn}
-                    >
-                        Last Month
-                    </Button>
+                    <Button variant="outline-secondary" size="sm" onClick={handleToday} className={styles.presetBtn}>Today</Button>
+                    <Button variant="outline-secondary" size="sm" onClick={handleThisMonth} className={styles.presetBtn}>This Month</Button>
+                    <Button variant="outline-secondary" size="sm" onClick={handleLastMonth} className={styles.presetBtn}>Last Month</Button>
                 </div>
             </div>
         </div>
