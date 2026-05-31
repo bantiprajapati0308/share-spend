@@ -110,9 +110,20 @@ const register = async (req, res) => {
             return ok(res, { id: snap.id, ...snap.data() });
         }
 
-        const { username, email } = req.body;
+        const { firstName, lastName, dateOfBirth, mobile, email } = req.body;
         const now = FieldValue.serverTimestamp();
-        const profile = { username: username || '', email: email || req.email || '', createdAt: now };
+        const profile = {
+            firstName: firstName || '',
+            lastName: lastName || '',
+            displayName: `${firstName || ''} ${lastName || ''}`.trim(),
+            dateOfBirth: dateOfBirth || null,
+            mobile: mobile || '',
+            email: email || req.email || '',
+            authProvider: 'email',
+            createdAt: now,
+            updatedAt: now,
+            lastLoginAt: now,
+        };
         await ref.set(profile);
         // Await seeding so categories + limits exist before the frontend loads.
         await seedNewUser(req.uid);

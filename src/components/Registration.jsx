@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import { Form, Button, Card, Alert, Row, Col } from "react-bootstrap";
 import { authApi } from "../services/api/authApi";
+import DatePickerInput from "../utils/DatePickerInput";
 
 const Registration = ({ onRegistered }) => {
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,17 +18,19 @@ const Registration = ({ onRegistered }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    if (!dateOfBirth) {
+      setError("Date of Birth is required.");
+      return;
+    }
     setLoading(true);
     try {
-      // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password,
       );
       const user = userCredential.user;
-      // Store extra info in Firestore
-      await authApi.register({ email: user.email, displayName: username, authProvider: 'email' });
+      await authApi.register({ email: user.email, firstName, lastName, dateOfBirth: dateOfBirth || null, mobile, authProvider: 'email' });
       setLoading(false);
       onRegistered && onRegistered();
     } catch (err) {
@@ -33,22 +39,68 @@ const Registration = ({ onRegistered }) => {
     }
   };
 
+  // Max DOB = 10 years ago (youngest reasonable user)
+  const maxDob = new Date();
+  maxDob.setFullYear(maxDob.getFullYear() - 10);
+  const maxDobStr = maxDob.toISOString().split('T')[0];
+
   return (
-    <Card style={{ maxWidth: 400, margin: "40px auto", padding: "1rem" }}>
+    <Card style={{ maxWidth: 480, margin: "40px auto", padding: "1rem" }}>
       <Card.Body>
         <h4 className="mb-3 text-center">Create Account</h4>
         <Form onSubmit={handleRegister}>
-          <Form.Group className="mb-3">
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              placeholder="Enter your username"
-            />
-            Yo
-          </Form.Group>
+          <Row>
+            <Col xs={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>First Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  placeholder="First name"
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Last Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  placeholder="Last name"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={6}>
+              <Form.Group className="mb-3">
+                <DatePickerInput
+                  label="Date of Birth"
+                  value={dateOfBirth}
+                  onChange={setDateOfBirth}
+                  maxDate={maxDobStr}
+                  placeholder="DD/MM/YYYY"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Mobile Number</Form.Label>
+                <Form.Control
+                  type="tel"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  required
+                  placeholder="e.g. +1 234 567 8900"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
           <Form.Group className="mb-3">
             <Form.Label>Email</Form.Label>
             <Form.Control
