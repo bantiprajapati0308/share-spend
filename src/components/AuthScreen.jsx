@@ -10,8 +10,6 @@ import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
 import Logo from "../assets/images/logo.png"; // Use your logo
 import { useNavigate } from "react-router-dom";
-import { emailService } from "../services";
-import { toast } from "react-toastify";
 import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
 import { authApi } from "../services/api/authApi";
 
@@ -24,27 +22,6 @@ const AuthScreen = () => {
   const [loadingAuth, setLoadingAuth] = useState(false);
   const navigate = useNavigate();
 
-  const sendEmailToUser = async (email, name) => {
-    // Send welcome email
-    try {
-      const emailResult = await emailService.welcomeUserSendEmail({
-        email,
-        name,
-        attachments: [],
-      });
-
-      if (emailResult.success) {
-        console.log("Welcome email sent successfully");
-      } else {
-        console.log("Failed to send welcome email:", emailResult.error);
-        toast.error("Please validate your email or other details");
-      }
-    } catch (emailErr) {
-      console.log("Failed to send welcome email:", emailErr);
-      toast.error("Please validate your email or other details");
-    }
-  };
-
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setError("");
@@ -53,7 +30,6 @@ const AuthScreen = () => {
       let userCredential;
       if (isRegister) {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        sendEmailToUser(email, username);
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
@@ -87,17 +63,7 @@ const AuthScreen = () => {
       // Create or get user profile
       await createOrUpdateUserProfile(user);
 
-      // Check if this is a new user by comparing creation time with current time
-      const isNewUser = user.metadata?.creationTime === user.metadata?.lastSignInTime;
-      const timeDifference = Date.now() - new Date(user.metadata?.creationTime).getTime();
-      const isRecentlyCreated = timeDifference < 60000;
-
-      if (isNewUser || isRecentlyCreated) {
-        const name = user.displayName || username || user.email || "User";
-        await sendEmailToUser(user.email, name);
-      } else {
-        await updateLastLogin();
-      }
+      await updateLastLogin();
 
       // Initialize predefined categories is now handled server-side on new user creation.
 
