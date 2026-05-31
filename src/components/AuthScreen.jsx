@@ -8,23 +8,44 @@ import {
 import { Button, Form, Alert, Card } from "react-bootstrap";
 import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
-import Logo from "../assets/images/logo.png"; // Use your logo
+import Logo from "../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
 import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
 import { authApi } from "../services/api/authApi";
+import DatePickerInput from "../utils/DatePickerInput";
+import RegisterFields from "./RegisterFields";
 
 const AuthScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [mobile, setMobile] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const [loadingAuth, setLoadingAuth] = useState(false);
   const navigate = useNavigate();
 
+  // Max DOB = 10 years ago
+  const maxDob = new Date();
+  maxDob.setFullYear(maxDob.getFullYear() - 10);
+  const maxDobStr = maxDob.toISOString().split('T')[0];
+
+  const resetRegisterFields = () => {
+    setFirstName("");
+    setLastName("");
+    setDateOfBirth("");
+    setMobile("");
+  };
+
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setError("");
+    if (isRegister && !dateOfBirth) {
+      setError("Date of Birth is required.");
+      return;
+    }
     setLoadingAuth(true);
     try {
       let userCredential;
@@ -36,12 +57,9 @@ const AuthScreen = () => {
 
       const user = userCredential.user;
 
-      // Store/update user profile in Firestore
       if (isRegister) {
-        // On registration, create user profile with provided username
-        await authApi.register({ email: user.email, firstName: username.split(' ')[0] || username, lastName: username.split(' ').slice(1).join(' ') || '', displayName: username, authProvider: 'email' });
+        await authApi.register({ email: user.email, firstName, lastName, dateOfBirth: dateOfBirth || null, mobile, authProvider: 'email' });
       } else {
-        // On login, just update last login
         await updateLastLogin();
       }
 
@@ -90,17 +108,13 @@ const AuthScreen = () => {
           </div>
           <Form onSubmit={handleEmailAuth} className={styles.form}>
             {isRegister && (
-              <Form.Group className={styles.formGroup}>
-                <Form.Label className={styles.label}>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className={styles.input}
-                  placeholder="Enter your name"
-                />
-              </Form.Group>
+              <RegisterFields
+                firstName={firstName} setFirstName={setFirstName}
+                lastName={lastName} setLastName={setLastName}
+                dateOfBirth={dateOfBirth} setDateOfBirth={setDateOfBirth}
+                mobile={mobile} setMobile={setMobile}
+                maxDobStr={maxDobStr}
+              />
             )}
             <Form.Group className={styles.formGroup}>
               <Form.Label className={styles.label}>Email</Form.Label>
@@ -140,7 +154,7 @@ const AuthScreen = () => {
             <Button
               variant="link"
               className={styles.switchBtn}
-              onClick={() => setIsRegister(!isRegister)}
+              onClick={() => { setIsRegister(!isRegister); resetRegisterFields(); setError(""); }}
             >
               {isRegister
                 ? "Already have an account? Login"
