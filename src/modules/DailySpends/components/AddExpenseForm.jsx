@@ -219,11 +219,12 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
 
 
 
-                <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={2}>
+                <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={4}>
                     <div className={styles.formGroup}>
                         <label>Date *</label>
                         <input
                             type="date"
+                            className={`${(isLent || isBorrowed) ? styles.dueDateInput : styles.withOutDueDate}`}
                             value={date}
                             onChange={(e) => {
                                 const dateValue = e.target.value;
@@ -241,6 +242,7 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                             <label>Due Date</label>
                             <input
                                 type="date"
+                                className={`${styles.dueDateInput}`}
                                 value={dueDate}
                                 onChange={(e) => {
                                     const dateValue = e.target.value;

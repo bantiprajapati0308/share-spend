@@ -246,6 +246,14 @@
     }
 }
 
+.withOutDueDate {
+    max-width: 100%;
+}
+
+.dueDateInput {
+    max-width: 95%;
+}
+
 .formSection {
     background: white;
     border-radius: 1rem;
@@ -297,14 +305,14 @@
     input[type="date"] {
         color: $text-primary;
 
-        @media (max-width: 480px) {
-            max-width: 280px;
-            width: 100%;
-        }
+        // @media (max-width: 480px) {
+        //     max-width: 280px;
+        //     width: 100%;
+        // }
 
-        @media (max-width: 360px) {
-            max-width: 240px;
-        }
+        // @media (max-width: 360px) {
+        //     max-width: 240px;
+        // }
 
         &::-webkit-calendar-picker-indicator {
             cursor: pointer;
