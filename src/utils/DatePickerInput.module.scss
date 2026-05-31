@@ -1,0 +1,46 @@
+@use '../assets/scss/variables' as *;
+
+// Makes react-datepicker wrapper fill its parent column
+.wrapper {
+    :global(.react-datepicker-wrapper) {
+        width: 100%;
+    }
+
+    :global(.react-datepicker__input-container) {
+        width: 100%;
+    }
+
+    :global(.react-datepicker__close-icon) {
+        right: 0.5rem;
+    }
+}
+
+.label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: $text-primary;
+    font-size: 0.95rem;
+}
+
+.input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    color: $text-primary;
+    background-color: #fff;
+    box-sizing: border-box;
+    font-family: inherit;
+
+    &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba($primary-color, 0.15);
+    }
+
+    &::placeholder {
+        color: $text-secondary;
+    }
+}
