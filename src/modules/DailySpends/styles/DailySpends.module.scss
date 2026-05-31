@@ -247,29 +247,19 @@
 }
 
 .withOutDueDate {
-    max-width: 95%;
-
-    @media (max-width: 480px) {
-        // max-width: 280px;
-        width: 100%;
-    }
-
-    @media (max-width: 360px) {
-        // max-width: 240px;
-    }
+    // iOS Safari enforces a minimum intrinsic width on date inputs.
+    // min-width: 0 overrides that; width + max-width: 100% prevents overflow.
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .dueDateInput {
-    max-width: 95%;
-
-    @media (max-width: 480px) {
-        max-width: 210px;
-        width: 100%;
-    }
-
-    @media (max-width: 360px) {
-        max-width: 160px;
-    }
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .formSection {
@@ -288,6 +278,7 @@
 
 .formGroup {
     margin-bottom: 1rem;
+    min-width: 0; // Prevents column overflow on iOS for date inputs
 
     label {
         display: block;
