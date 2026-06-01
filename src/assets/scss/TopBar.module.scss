@@ -3,10 +3,13 @@
 .topBar {
     position: sticky;
     top: 0;
-    background: white;
-    border-bottom: 1px solid $border-color;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba($border-color, 0.6);
     z-index: 999;
-    box-shadow: $shadow-sm;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease;
 }
 
 .container {
