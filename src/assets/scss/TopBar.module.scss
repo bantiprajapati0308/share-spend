@@ -41,6 +41,31 @@
     }
 }
 
+.avatarFallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $brand-primary 0%, $brand-secondary 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    user-select: none;
+    box-shadow: 0 6px 18px rgba($brand-primary, 0.45), 0 2px 6px rgba(0, 0, 0, 0.12);
+    position: relative;
+    z-index: 1000;
+
+    @media (min-width: 768px) {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+}
+
 .userInfo {
     display: flex;
     flex-direction: column;

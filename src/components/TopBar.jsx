@@ -29,8 +29,12 @@ function TopBar() {
         <header className={styles.topBar}>
             <div className={styles.container}>
                 <div className={styles.userSection}>
-                    {user.photoURL && (
+                    {user.photoURL ? (
                         <img src={user.photoURL} alt={user.displayName} className={styles.avatar} />
+                    ) : (
+                        <div className={styles.avatarFallback}>
+                            {(firstName || user.email || "?")[0].toUpperCase()}
+                        </div>
                     )}
                     <div className={styles.userInfo}>
                         <div className={styles.userName}>Hi, {firstName || user.email} 👋</div>
