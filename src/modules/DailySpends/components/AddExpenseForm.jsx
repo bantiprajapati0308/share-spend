@@ -295,7 +295,7 @@ function AddExpenseForm({
             </Row>
 
             {/* -- Payment Method ------------------------------------------- */}
-            <div className={styles.formGroup}>
+            {false && <div className={styles.formGroup}>
                 <label>Payment Method</label>
                 <Select
                     options={paymentMethodOptions}
@@ -305,7 +305,7 @@ function AddExpenseForm({
                     placeholder="Select payment method"
                     styles={selectStyles}
                 />
-            </div>
+            </div>}
 
             {/* -- Notes --------------------------------------------------- */}
             <div className={styles.formGroup}>
