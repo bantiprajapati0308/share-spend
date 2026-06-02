@@ -1,85 +1,180 @@
+@use '../../../assets/scss/variables' as *;
+
+// -- Container ----------------------------------------------------------------
 .topCategoriesContainer {
     display: flex;
-    gap: 0.75rem;
-    padding: 0;
-    margin: 0;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
 
-    // Responsive design
-    @media (max-width: 768px) {
-        gap: 0.5rem;
+    &::-webkit-scrollbar {
+        display: none;
     }
 }
 
-.categoryCard {
-    flex: 1;
+// -- Individual circle button -------------------------------------------------
+.categoryCircleBtn {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.35rem;
+    border-radius: 0.75rem;
+    transition: background 0.15s ease;
+    min-width: 52px;
+
+    &:hover {
+        background: $neutral-100;
+    }
+}
+
+.categoryCircle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: $primary-50;
+    border: 1.5px solid $primary-100;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.5rem;
-    border-radius: 0.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.25);
-    transition: all 0.2s ease;
-    min-height: unset;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    font-size: 1.35rem;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
 
-    // Background color variations for different categories
-    &:nth-child(1) {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    .categoryCircleBtn:hover & {
+        background: $primary-100;
+        border-color: $primary-200;
     }
-
-    &:nth-child(2) {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 4px 12px rgba(240, 147, 251, 0.25);
-    }
-
-    &:nth-child(3) {
-        background: linear-gradient(135deg, #1f96ff 0%, #108288 100%);
-        box-shadow: 0 4px 12px rgba(79, 172, 254, 0.25);
-    }
-
-    // Hover effect
-    &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
-
-    // Subtle pattern overlay
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background:
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-        background-size: 20px 20px;
-        opacity: 0.3;
-        pointer-events: none;
-    }
-
-}
-
-.categoryEmoji {
-    font-size: 1rem;
-    line-height: 1;
 }
 
 .categoryName {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: capitalize;
-    line-height: 1;
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: $text-secondary;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 52px;
+    line-height: 1.1;
+}
+
+// -- More button circle -------------------------------------------------------
+.moreCircle {
+    background: $neutral-100;
+    border-color: $neutral-200;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-secondary;
+    letter-spacing: 0.05em;
+}
+
+// -- More wrapper (relative for popover positioning) --------------------------
+.moreWrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+// -- Popover — portal-rendered, fixed to viewport ----------------------------
+.morePopover {
+    position: fixed;
+    background: white;
+    border-radius: 0.9rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    min-width: 200px;
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+
+    // Caret pointing upward (popover is below anchor)
+    &::after {
+        content: '';
+        position: absolute;
+        top: -6px;
+        right: 20px;
+        width: 12px;
+        height: 12px;
+        background: white;
+        transform: rotate(45deg);
+        box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.06);
+    }
+}
+
+.moreList {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.moreItem {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.55rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease;
+
+    &:hover {
+        background: $neutral-50;
+    }
+}
+
+.moreItemEmoji {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.moreItemName {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: $text-primary;
+}
+
+// -- Add Custom button --------------------------------------------------------
+.addCustomBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    background: none;
+    border: none;
+    border-top: 1px solid $neutral-100;
+    padding: 0.55rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $primary-color;
+    transition: background 0.12s ease;
+    flex-shrink: 0;
+
+    &:hover {
+        background: $primary-50;
+    }
+}
+
+.addCustomIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid $primary-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
 }

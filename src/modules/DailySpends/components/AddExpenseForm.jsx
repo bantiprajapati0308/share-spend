@@ -1,19 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, Spinner, Button } from 'react-bootstrap';
-import { Plus } from 'react-bootstrap-icons';
+import { Row, Col, Spinner } from 'react-bootstrap';
+import { Plus, PencilSquare } from 'react-bootstrap-icons';
+import Select from 'react-select';
 import { toast } from 'react-toastify';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import styles from '../styles/DailySpends.module.scss';
 import CategorySelectDropdown from './CategorySelectDropdown';
-import CategoryManagementModal from './CategoryManagementModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import TopCategories from './TopCategories';
 import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
+import usePaymentMethods from '../hooks/usePaymentMethods';
+import useCategoryContext from '../hooks/useCategoryContext';
 
-function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isEditMode, onCancelEdit, onCategoriesChanged }) {
+// React Select styles shared between dropdowns
+const selectStyles = {
+    control: (base) => ({
+        ...base,
+        minHeight: '40px',
+        borderRadius: '0.75rem',
+        borderColor: '#dee2e6',
+        boxShadow: 'none',
+        '&:hover': { borderColor: '#667eea' },
+    }),
+    option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isSelected ? '#667eea' : state.isFocused ? '#f8f9fa' : 'white',
+        color: state.isSelected ? 'white' : '#333',
+    }),
+    placeholder: (base) => ({ ...base, color: '#adb5bd', fontSize: '0.9rem' }),
+};
+
+function AddExpenseForm({
+    onAddExpense,
+    onUpdateExpense,
+    editingTransaction,
+    isEditMode,
+    onCancelEdit,
+    onCategoriesChanged,
+    onGoToCategories,
+}) {
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
@@ -22,45 +50,69 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
     const [dueDate, setDueDate] = useState('');
     const [notes, setNotes] = useState('');
     const [personName, setPersonName] = useState('');
-    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [paymentMethodId, setPaymentMethodId] = useState(null);
+    const { categories } = useCategoryContext();
+    const { paymentMethods } = usePaymentMethods();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const skipTypeClear = useRef(false);
 
-    // Clear category when transaction type changes to prevent wrong entries
+    // Clear category & person name when type changes
+    // skipTypeClear prevents clearing when type is set programmatically during edit population
     useEffect(() => {
+        if (skipTypeClear.current) {
+            skipTypeClear.current = false;
+            return;
+        }
         setCategory(null);
-        setPersonName(''); // Also clear person name when switching types
+        setPersonName('');
     }, [transactionType]);
 
-    // Populate form fields when editing
+    // Populate form when editing
     useEffect(() => {
-        if (isEditMode && editingTransaction) {
-            setTransactionType(editingTransaction.type || 'spend');
-            setExpenseName(editingTransaction.name || '');
-            setAmount(editingTransaction.amount?.toString() || '');
-            // Reconstruct category object from editing data
-            const categoryObj = {
-                categoryId: editingTransaction.categoryId,
-                categoryName: editingTransaction.categoryName || editingTransaction.category,
-                emoji: editingTransaction.categoryIcon || '📝',
-                label: `${editingTransaction.categoryIcon} ${editingTransaction.categoryName}`,
-            };
-            setCategory(categoryObj);
+        if (!isEditMode || !editingTransaction) return;
+        skipTypeClear.current = true; // flag so the clear effect ignores this programmatic type change
+        setTransactionType(editingTransaction.type || 'spend');
+        setExpenseName(editingTransaction.name || '');
+        setAmount(editingTransaction.amount?.toString() || '');
+        setCategory({
+            categoryId: editingTransaction.categoryId,
+            // Resolve live name+emoji by ID so renames are reflected immediately
+            ...(() => {
+                const live = categories.find(c => c.id === editingTransaction.categoryId);
+                return live
+                    ? { categoryName: live.name, emoji: live.emoji, label: `${live.emoji} ${live.name}` }
+                    : { categoryName: editingTransaction.categoryName || editingTransaction.category, emoji: editingTransaction.categoryIcon || '??', label: `${editingTransaction.categoryIcon} ${editingTransaction.categoryName}` };
+            })(),
+        });
+        setDate(editingTransaction.date || new Date().toISOString().split('T')[0]);
+        setDueDate(editingTransaction.dueDate || '');
+        setNotes(editingTransaction.notes || '');
 
-            setDate(editingTransaction.date || new Date().toISOString().split('T')[0]);
-            setDueDate(editingTransaction.dueDate || '');
-            setNotes(editingTransaction.notes || '');
-
-            // Check if it's a lending transaction and set person name
-            const categoryName = (editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
-            const isLendingType = ['lent', 'repayment', 'borrowed', 'borrowed pay'].includes(categoryName);
-            if (isLendingType) {
-                setPersonName(editingTransaction.name || '');
-                setExpenseName(''); // Clear expense name for lending transactions
-            } else {
-                setPersonName('');
-            }
+        // Restore payment method selection
+        if (editingTransaction.paymentMethodId) {
+            const pm = paymentMethods.find(p => p.value === editingTransaction.paymentMethodId);
+            setPaymentMethodId(pm ? { value: pm.value, label: pm.label } : null);
         }
-    }, [isEditMode, editingTransaction]);
+
+        const catName = (editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
+        if (['lent', 'repayment', 'borrowed', 'borrowed pay'].includes(catName)) {
+            setPersonName(editingTransaction.name || '');
+            setExpenseName('');
+        } else {
+            setPersonName('');
+        }
+    }, [isEditMode, editingTransaction, categories, paymentMethods]);
+
+    const resetForm = () => {
+        setExpenseName('');
+        setAmount('');
+        setCategory(null);
+        setDate(new Date().toISOString().split('T')[0]);
+        setDueDate('');
+        setPersonName('');
+        setNotes('');
+        setPaymentMethodId(null);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -69,15 +121,12 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
             toast.error('Please fill in all required fields');
             return;
         }
-
-        // Check if person name is required and provided
         if (isLendingTransaction && !personName.trim()) {
             toast.error('Please select or enter a person name');
             return;
         }
 
         let parsedAmount;
-
         try {
             parsedAmount = evaluateAmountExpression(amount);
             setAmount(String(parsedAmount));
@@ -86,75 +135,60 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
             return;
         }
 
-        const baseTransactionObj = {
+        const isDueDate = category &&
+            ['lent', 'borrowed'].includes(category.categoryName.toLowerCase());
+
+        const newTransaction = {
             type: transactionType,
             name: isLendingTransaction ? personName.trim() : expenseName,
             amount: parsedAmount,
             categoryId: category.categoryId,
             categoryName: category.categoryName,
             category: category.categoryName,
-            categoryIcon: category.emoji || '📝',
-            date: date,
-            notes: notes,
-        }
-        const isDueDate = category && (category.categoryName.toLowerCase() === 'lent' || category.categoryName.toLowerCase() === 'borrowed');
-
-        const newTransaction = {
-            ...baseTransactionObj,
+            categoryIcon: category.emoji || '??',
+            date,
+            notes,
+            paymentMethodId: paymentMethodId?.value || null,
             ...(isDueDate ? { dueDate: dueDate || null } : {}),
         };
 
         try {
             setIsSubmitting(true);
-
+            const label = transactionType === 'spend' ? 'Expense' : 'Income';
             if (isEditMode) {
                 await onUpdateExpense(newTransaction);
-
-                // Clear form after successful update
-                setExpenseName('');
-                setAmount('');
-                setCategory(null);
-                setDate(new Date().toISOString().split('T')[0]);
-                setDueDate('');
-                setPersonName('');
-                setNotes('');
-
-                const title = transactionType === 'spend' ? 'Expense' : 'Income';
-                toast.success(`${title} updated successfully!`);
+                toast.success(`${label} updated successfully!`);
             } else {
                 await onAddExpense(newTransaction);
-
-                // Reset form only on success (and only when adding, not editing)
-                setExpenseName('');
-                setAmount('');
-                setCategory(null);
-                setDate(new Date().toISOString().split('T')[0]);
-                setDueDate('');
-                setPersonName('');
-                setNotes('');
-
-                const title = transactionType === 'spend' ? 'Expense' : 'Income';
-                toast.success(`${title} added successfully!`);
+                toast.success(`${label} added successfully!`);
             }
+            resetForm();
         } catch (error) {
-            console.error(`Error ${isEditMode ? 'updating' : 'adding'} transaction:`, error);
-            toast.error(error.message || `Failed to ${isEditMode ? 'update' : 'add'} transaction. Please try again.`);
+            toast.error(error.message || `Failed to ${isEditMode ? 'update' : 'add'} transaction.`);
         } finally {
             setIsSubmitting(false);
         }
     };
+
     const isLent = category && category.categoryName.toLowerCase() === 'lent';
     const isRepayment = category && category.categoryName.toLowerCase() === 'repayment';
     const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
     const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
-    // Check if it's a lending-related transaction that requires person name
     const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
+
+    const paymentMethodOptions = paymentMethods.map(pm => ({ value: pm.value, label: pm.label }));
+
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
+            {/* -- Header --------------------------------------------------- */}
             <div className={styles.formHeader}>
-                <div className='d-flex align-items-center justify-content-between mb-4'>
-                    <h3 className='mb-0'>
-                        {isEditMode ? '✏️' : '➕'} {isEditMode ? 'Edit' : 'Add'} {transactionType === 'spend' ? 'Expense' : 'Income'}
+                <div className={styles.formHeaderRow}>
+                    <h3 className={styles.formTitle}>
+                        {isEditMode
+                            ? <PencilSquare size={18} style={{ marginRight: '0.4rem' }} />
+                            : <Plus size={20} style={{ marginRight: '0.4rem' }} />}
+                        {isEditMode ? 'Edit' : 'Add'}{' '}
+                        {transactionType === 'spend' ? 'Expense' : 'Income'}
                     </h3>
                 </div>
                 <TransactionTypeSelector
@@ -164,39 +198,50 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                 />
             </div>
 
-            <Row className="g-1">
-                <Col xs={12} sm={6} md={3}>
-                    <div className={styles.formGroup}>
-                        <CategorySelectDropdown
-                            value={category}
-                            onChange={(selected) => setCategory(selected)}
-                            type={transactionType}
-                            placeholder="Select..."
+            {/* -- Category ------------------------------------------------- */}
+            <div className={styles.formGroup}>
+                <div className={styles.categoryLabelRow}>
+                    <label>Category *</label>
+                    {onGoToCategories && (
+                        <button
+                            type="button"
+                            className={styles.addNewLink}
+                            onClick={onGoToCategories}
                         >
-                        </CategorySelectDropdown>
-                    </div>
-                </Col>
-                <Col className="mb-2" xs={12} sm={6} md={3}>
+                            + Add New
+                        </button>
+                    )}
+                </div>
+                <CategorySelectDropdown
+                    value={category}
+                    onChange={setCategory}
+                    type={transactionType}
+                    placeholder="Search category..."
+                />
+                <div className={styles.topCategoriesRow}>
                     <TopCategories
-                        selectedCategory={(cat) => setCategory(cat)}
+                        selectedCategory={setCategory}
                         transactionType={transactionType}
+                        onGoToCategories={onGoToCategories}
                     />
-                </Col>
-                <Col xs={5} sm={6} md={isLendingTransaction ? 3 : 3}>
+                </div>
+            </div>
+
+            {/* -- Amount + Name/Person ------------------------------------- */}
+            <Row className="g-2">
+                <Col xs={5}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
                         <AmountInput
                             placeholder="0.00 or 10+5"
                             value={amount}
                             onValueChange={setAmount}
-                            onInvalidExpression={(message) => toast.error(message)}
-                            style={{ flex: 1 }}
+                            onInvalidExpression={(msg) => toast.error(msg)}
                         />
                     </div>
                 </Col>
-
-                {isLendingTransaction ? (
-                    <Col xs={7} sm={6} md={3}>
+                <Col xs={7}>
+                    {isLendingTransaction ? (
                         <div className={styles.formGroup}>
                             <label>Person Name *</label>
                             <PersonNameDropdown
@@ -205,22 +250,23 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                                 placeholder="Person name..."
                             />
                         </div>
-                    </Col>
-                ) : <Col xs={7} sm={6} md={3}>
-                    <div className={styles.formGroup}>
-                        <label>Name *</label>
-                        <input
-                            type="text"
-                            placeholder="Coffee, Groceries..."
-                            value={expenseName}
-                            onChange={(e) => setExpenseName(e.target.value)}
-                        />
-                    </div>
-                </Col>}
+                    ) : (
+                        <div className={styles.formGroup}>
+                            <label>Name *</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Coffee, Groceries..."
+                                value={expenseName}
+                                onChange={(e) => setExpenseName(e.target.value)}
+                            />
+                        </div>
+                    )}
+                </Col>
+            </Row>
 
-
-
-                <Col xs={(isLent || isBorrowed) ? 6 : 12} sm={6} md={4}>
+            {/* -- Date ---------------------------------------------------- */}
+            <Row className="g-2">
+                <Col xs={(isLent || isBorrowed) ? 6 : 12}>
                     <div className={styles.formGroup}>
                         <DatePickerInput
                             label="Date *"
@@ -233,7 +279,7 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                     </div>
                 </Col>
                 {(isLent || isBorrowed) && (
-                    <Col xs={6} sm={6} md={4}>
+                    <Col xs={6}>
                         <div className={styles.formGroup}>
                             <DatePickerInput
                                 label="Due Date"
@@ -246,10 +292,23 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                         </div>
                     </Col>
                 )}
-
             </Row>
 
-            <div className={styles.formGroup} style={{ marginBottom: '0.75rem' }}>
+            {/* -- Payment Method ------------------------------------------- */}
+            <div className={styles.formGroup}>
+                <label>Payment Method</label>
+                <Select
+                    options={paymentMethodOptions}
+                    value={paymentMethodId}
+                    onChange={setPaymentMethodId}
+                    isClearable
+                    placeholder="Select payment method"
+                    styles={selectStyles}
+                />
+            </div>
+
+            {/* -- Notes --------------------------------------------------- */}
+            <div className={styles.formGroup}>
                 <label>Notes (Optional)</label>
                 <textarea
                     placeholder="Add notes..."
@@ -259,6 +318,7 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                 />
             </div>
 
+            {/* -- Submit -------------------------------------------------- */}
             <div className="d-flex gap-2">
                 <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
                     {isSubmitting ? (
@@ -269,11 +329,10 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                     ) : (
                         <>
                             <Plus size={18} style={{ marginRight: '0.4rem' }} />
-                            {isEditMode ? 'Update' : 'Add'}
+                            {isEditMode ? 'Update' : `Add ${transactionType === 'spend' ? 'Expense' : 'Income'}`}
                         </>
                     )}
                 </button>
-
                 {isEditMode && (
                     <button
                         type="button"
@@ -285,12 +344,6 @@ function AddExpenseForm({ onAddExpense, onUpdateExpense, editingTransaction, isE
                     </button>
                 )}
             </div>
-
-            <CategoryManagementModal
-                show={showCategoryModal}
-                onHide={() => setShowCategoryModal(false)}
-                onCategoriesChanged={onCategoriesChanged}
-            />
         </form>
     );
 }
@@ -302,6 +355,7 @@ AddExpenseForm.propTypes = {
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
     onCategoriesChanged: PropTypes.func,
+    onGoToCategories: PropTypes.func,
 };
 
 export default AddExpenseForm;

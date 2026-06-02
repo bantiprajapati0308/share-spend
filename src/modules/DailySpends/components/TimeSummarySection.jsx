@@ -6,8 +6,13 @@ import { useTimeSummary } from '../hooks/useTimeSummary';
 import TimeSummaryDetailModal from '../MasterReport/components/TimeSummaryDetailModal';
 import styles from '../styles/TimeSummarySection.module.scss';
 
+// ── Today's date mini-badge ─────────────────────────────────────────────────
+const TODAY = new Date();
+const TODAY_DAY = TODAY.getDate();
+const TODAY_MONTH = TODAY.toLocaleString('default', { month: 'short' });
+
 // ── Single period card (Today / Last 7 Days) ─────────────────────────────────
-function SummaryCard({ label, subLabel, amount, pct, isIncome, txs, onOpen }) {
+function SummaryCard({ label, subLabel, amount, pct, isIncome, txs, onOpen, isToday }) {
     let PctIcon = Dash;
     let pctClass = styles.pctNeutral;
     let pctLabel = '';
@@ -32,7 +37,12 @@ function SummaryCard({ label, subLabel, amount, pct, isIncome, txs, onOpen }) {
     return (
         <div className={styles.card} onClick={() => onOpen(txs, label, isIncome)}>
             <div className={`${styles.iconCircle} ${iconClass}`}>
-                {isIncome ? '💰' : '📅'}
+                {isIncome ? '💰' : isToday ? (
+                    <span className={styles.dateCircle}>
+                        <span className={styles.dateDay}>{TODAY_DAY}</span>
+                        <span className={styles.dateMonth}>{TODAY_MONTH}</span>
+                    </span>
+                ) : '📅'}
             </div>
             <div className={styles.cardContent}>
                 <div className={styles.cardLabel}>{label}</div>
@@ -59,6 +69,11 @@ SummaryCard.propTypes = {
     isIncome: PropTypes.bool.isRequired,
     txs: PropTypes.array.isRequired,
     onOpen: PropTypes.func.isRequired,
+    isToday: PropTypes.bool,
+};
+
+SummaryCard.defaultProps = {
+    isToday: false,
 };
 
 // ── Main exported component ──────────────────────────────────────────────────
@@ -103,6 +118,7 @@ function TimeSummarySection({ transactions, selectedType }) {
                     isIncome={isIncome}
                     txs={todayTxs}
                     onOpen={openModal}
+                    isToday
                 />
                 <SummaryCard
                     label={`Last 7 Days ${typeLabel}`}

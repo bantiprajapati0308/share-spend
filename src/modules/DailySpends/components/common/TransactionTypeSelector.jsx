@@ -1,53 +1,49 @@
 import PropTypes from 'prop-types';
 import styles from '../../styles/TransactionTypeSelector.module.scss';
 
+const DEFAULT_OPTIONS = [
+    { value: 'spend', label: '💰 Spend' },
+    { value: 'income', label: '📈 Income' },
+];
+
 /**
- * Reusable Transaction Type Selector Component
- * Used in multiple places: AddExpenseForm, CategoryLimitsManagement, etc.
- * Handles spend/income selection with consistent styling
+ * Pill-style toggle used in AddExpenseForm, CategoryManager, LimitsManager.
+ * Pass a custom `options` array to override labels/values.
  */
-function TransactionTypeSelector({
-    value,
-    onChange,
-    label = 'Transaction Type',
-    showLabel = true,
-    variant = 'inline' // 'inline' or 'stacked'
-}) {
+function TransactionTypeSelector({ value, onChange, options, showLabel, label }) {
+    const opts = options || DEFAULT_OPTIONS;
     return (
-        <div className={`${styles.typeSelector} ${styles[variant]}`}>
-            {showLabel && <label className={styles.label}>{label}</label>}
-            <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                    <input
-                        type="radio"
-                        name="transactionType"
-                        value="spend"
-                        checked={value === 'spend'}
-                        onChange={(e) => onChange(e.target.value)}
-                    />
-                    <span className={styles.radioText}>💰 Spend</span>
-                </label>
-                <label className={styles.radioLabel}>
-                    <input
-                        type="radio"
-                        name="transactionType"
-                        value="income"
-                        checked={value === 'income'}
-                        onChange={(e) => onChange(e.target.value)}
-                    />
-                    <span className={styles.radioText}>📈 Income</span>
-                </label>
+        <div className={styles.pillToggle}>
+            {showLabel && <span className={styles.toggleLabel}>{label}</span>}
+            <div className={styles.pillGroup}>
+                {opts.map((opt) => (
+                    <button
+                        key={opt.value}
+                        type="button"
+                        className={`${styles.pillBtn} ${value === opt.value ? styles.pillBtnActive : ''}`}
+                        onClick={() => onChange(opt.value)}
+                    >
+                        {opt.label}
+                    </button>
+                ))}
             </div>
         </div>
     );
 }
 
 TransactionTypeSelector.propTypes = {
-    value: PropTypes.oneOf(['spend', 'income']).isRequired,
+    value: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
+    options: PropTypes.arrayOf(PropTypes.shape({ value: PropTypes.string, label: PropTypes.string })),
     label: PropTypes.string,
     showLabel: PropTypes.bool,
-    variant: PropTypes.oneOf(['inline', 'stacked']),
+};
+
+TransactionTypeSelector.defaultProps = {
+    options: null,
+    label: 'Transaction Type',
+    showLabel: false,
 };
 
 export default TransactionTypeSelector;
+

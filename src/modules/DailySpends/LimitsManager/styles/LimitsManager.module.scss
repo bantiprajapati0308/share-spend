@@ -38,33 +38,10 @@
     }
 }
 
-// ==================== Tab Toggle ====================
-.tabToggle {
-    background: #e2e5ef;
-    border-radius: 30px;
-    padding: 3px;
-    @include flex-between;
-    margin: 0.875rem 1rem;
-}
-
-.tabBtn {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 0.5rem 0.625rem;
-    border-radius: 26px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-
-    &.tabBtnActive {
-        background: white;
-        color: $brand-primary;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
+// ==================== Tab Toggle Wrapper ====================
+.tabToggleWrap {
+    padding: 0 1rem;
+    margin-bottom: 0.875rem;
 }
 
 // ==================== Content ====================

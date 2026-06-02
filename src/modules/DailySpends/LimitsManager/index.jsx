@@ -8,6 +8,7 @@ import { useSelectedDateRange } from '../hooks/useSelectedDateRange';
 import LimitsPanel from './components/LimitsPanel';
 import LimitForm from './components/LimitForm';
 import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
+import TransactionTypeSelector from '../components/common/TransactionTypeSelector';
 import styles from './styles/LimitsManager.module.scss';
 
 const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
@@ -21,7 +22,7 @@ function LimitsManager({ embedded = false }) {
 
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [activeTab, setActiveTab] = useState('spending');
+    const [activeTab, setActiveTab] = useState('spend');
     const [showLimitForm, setShowLimitForm] = useState(false);
     const [editingLimit, setEditingLimit] = useState(null);
     const [formSubmitting, setFormSubmitting] = useState(false);
@@ -29,7 +30,7 @@ function LimitsManager({ embedded = false }) {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [categoryTransactions, setCategoryTransactions] = useState([]);
 
-    const currentLimitType = activeTab === 'spending' ? 'spend' : 'income';
+    const currentLimitType = activeTab;
 
     const {
         limits,
@@ -148,22 +149,17 @@ function LimitsManager({ embedded = false }) {
             )}
 
             {/* Tab Toggle */}
-            <div className={styles.tabToggle}>
-                <button
-                    type="button"
-                    className={`${styles.tabBtn} ${activeTab === 'spending' ? styles.tabBtnActive : ''}`}
-                    onClick={() => handleTabChange('spending')}
-                >
-                    💰 Spending Limits
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.tabBtn} ${activeTab === 'income' ? styles.tabBtnActive : ''}`}
-                    onClick={() => handleTabChange('income')}
-                >
-                    🎯 Income Limits
-                </button>
-            </div>            {/* Content */}
+            <div className={styles.tabToggleWrap}>
+                <TransactionTypeSelector
+                    value={activeTab}
+                    onChange={handleTabChange}
+                    options={[
+                        { value: 'spend', label: '💰 Spending Limits' },
+                        { value: 'income', label: '🎯 Income Limits' },
+                    ]}
+                />
+            </div>
+            {/* Content */}
             <div className={styles.content}>
                 {!startDate || !endDate ? (
                     <div className={styles.loadingState}>

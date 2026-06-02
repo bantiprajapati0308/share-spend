@@ -184,6 +184,7 @@ function DailySpends() {
                     isEditMode={isEditMode}
                     onCancelEdit={handleCancelEdit}
                     onCategoriesChanged={refreshTransactions}
+                    onGoToCategories={() => setActiveLandingTab('category')}
                 />
             );
         }
@@ -343,6 +344,7 @@ function DailySpends() {
                                             isEditMode={isEditMode}
                                             onCancelEdit={handleCancelEdit}
                                             onCategoriesChanged={refreshTransactions}
+                                            onGoToCategories={() => setActiveLandingTab('category')}
                                         />
                                     </div>
                                 )}

@@ -36,10 +36,12 @@ app.use('/api/categories', require('./src/routes/categories'));
 app.use('/api/category-limits', require('./src/routes/categoryLimits'));
 app.use('/api/settings', require('./src/routes/settings'));
 app.use('/api/borrow-lend', require('./src/routes/borrowLend'));
-
+app.use('/api/app-config', require('./src/routes/appConfig'));
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`[server] Running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`[server] Running on http://localhost:${PORT}`);
+});

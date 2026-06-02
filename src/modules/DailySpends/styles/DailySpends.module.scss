@@ -1072,6 +1072,53 @@
     }
 }
 
+.formHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.formTitle {
+    margin: 0 !important;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: $text-primary;
+}
+
+.categoryLabelRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+
+    label {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $text-primary;
+    }
+}
+
+.addNewLink {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $primary-color;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        opacity: 0.8;
+    }
+}
+
+.topCategoriesRow {
+    margin-top: 0.5rem;
+}
+
 .radioGroup {
     display: flex;
     gap: 1rem;

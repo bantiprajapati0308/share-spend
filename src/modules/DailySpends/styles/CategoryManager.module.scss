@@ -8,45 +8,6 @@
     padding-bottom: 1rem;
 }
 
-.categoryTypeToggle {
-    display: flex;
-    background: rgba($primary-color, 0.06);
-    border-radius: 0.75rem;
-    padding: 0.25rem;
-    margin-bottom: 1rem;
-    gap: 0.25rem;
-}
-
-.categoryTypeBtn {
-    flex: 1;
-    padding: 0.55rem 0.5rem;
-    border: none;
-    border-radius: 0.6rem;
-    background: transparent;
-    color: $text-secondary;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-
-    &:hover {
-        color: $text-primary;
-    }
-}
-
-.categoryTypeBtnActive {
-    background: white;
-    color: $primary-color;
-    box-shadow: $shadow-sm;
-}
-
-.categoryTypeIncomeBtnActive {
-    background: white;
-    color: #e05c19;
-    box-shadow: $shadow-sm;
-}
-
 .categoriesHeader {
     display: flex;
     align-items: center;

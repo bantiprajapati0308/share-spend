@@ -162,22 +162,14 @@ function CategoryManager({ onCategoriesChanged }) {
     return (
         <div className={styles.categoryManager}>
             {/* Type Toggle */}
-            <div className={styles.categoryTypeToggle}>
-                <button
-                    type="button"
-                    className={`${styles.categoryTypeBtn} ${activeType === 'spend' ? styles.categoryTypeBtnActive : ''}`}
-                    onClick={() => setActiveType('spend')}
-                >
-                    💰 Spending ({spendCount})
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.categoryTypeBtn} ${activeType === 'income' ? styles.categoryTypeIncomeBtnActive : ''}`}
-                    onClick={() => setActiveType('income')}
-                >
-                    🎯 Income ({incomeCount})
-                </button>
-            </div>
+            <TransactionTypeSelector
+                value={activeType}
+                onChange={setActiveType}
+                options={[
+                    { value: 'spend', label: `💰 Spending (${spendCount})` },
+                    { value: 'income', label: `🎯 Income (${incomeCount})` },
+                ]}
+            />
 
 
             {/* Active Categories */}

@@ -68,7 +68,6 @@ function CategorySelectDropdown({
 
     return (
         <Form.Group>
-            <Form.Label>Category</Form.Label>
             <div className='d-flex gap-2 align-items-center justify-content-between'>
                 <div className='w-100'>
                     <Select
