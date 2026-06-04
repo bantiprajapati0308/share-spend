@@ -8,7 +8,7 @@ export const CONTACT_ITEMS = [
         title: 'Call Support',
         primary: '+91 8269248099',
         secondary: 'Mon - Sun, 10:00 AM - 7:00 PM',
-        action: () => window.open('tel:+919876543210'),
+        action: () => window.open('tel:+918269248099'),
     },
     {
         id: 'email',
