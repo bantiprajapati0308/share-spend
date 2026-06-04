@@ -73,15 +73,18 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
 
     const addTransactionHandler = async (newTransaction) => {
         try {
-            const result = await addTransaction(newTransaction);
-            // Add to local state and maintain createdAt sorting
-            const updatedTransactions = [result, ...rawTransactions].sort((a, b) => {
+            const { transaction: result, companion } = await addTransaction(newTransaction);
+
+            // Merge primary + optional companion income into local state
+            const incoming = companion ? [result, companion] : [result];
+            const updatedTransactions = [...incoming, ...rawTransactions].sort((a, b) => {
                 const dateA = a.createdAt || new Date(0);
                 const dateB = b.createdAt || new Date(0);
                 return new Date(dateB) - new Date(dateA);
             });
             setRawTransactions(updatedTransactions);
             dispatch(appendTransaction(result));
+            if (companion) dispatch(appendTransaction(companion));
 
             const normalizedCategory = (newTransaction.category || '').toLowerCase();
             const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
@@ -136,9 +139,11 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
 
     const deleteTransactionHandler = async (id) => {
         try {
-            await deleteTransaction(id);
-            setRawTransactions(rawTransactions.filter(t => t.id !== id));
+            const { deletedCompanionId } = await deleteTransaction(id);
+            const idsToRemove = new Set([id, ...(deletedCompanionId ? [deletedCompanionId] : [])]);
+            setRawTransactions(rawTransactions.filter(t => !idsToRemove.has(t.id)));
             dispatch(removeTransactionRedux(id));
+            if (deletedCompanionId) dispatch(removeTransactionRedux(deletedCompanionId));
         } catch (err) {
             console.error('Error deleting transaction:', err);
             throw err;
@@ -147,11 +152,37 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
 
     const updateTransactionHandler = async (id, updatedTransaction) => {
         try {
-            const result = await updateTransaction(id, updatedTransaction);
-            // Update local state
+            const { transaction: result, companion, deletedCompanionId } = await updateTransaction(id, updatedTransaction);
+
             const patched = { ...rawTransactions.find(t => t.id === id), ...updatedTransaction, id };
-            setRawTransactions(rawTransactions.map(t => t.id === id ? patched : t));
+
+            let newRaw = rawTransactions.map(t => t.id === id ? patched : t);
             dispatch(patchTransaction(patched));
+
+            if (companion) {
+                const companionExists = newRaw.some(t => t.id === companion.id);
+                if (companionExists) {
+                    // Patch in-place (amount/date changed while staying on credit card)
+                    newRaw = newRaw.map(t => t.id === companion.id ? { ...t, ...companion } : t);
+                    dispatch(patchTransaction({ ...companion }));
+                } else {
+                    // Newly created companion (payment switched to credit card)
+                    newRaw = [companion, ...newRaw].sort((a, b) => {
+                        const dateA = a.createdAt || new Date(0);
+                        const dateB = b.createdAt || new Date(0);
+                        return new Date(dateB) - new Date(dateA);
+                    });
+                    dispatch(appendTransaction(companion));
+                }
+            }
+
+            if (deletedCompanionId) {
+                // Payment switched away from credit card — remove companion
+                newRaw = newRaw.filter(t => t.id !== deletedCompanionId);
+                dispatch(removeTransactionRedux(deletedCompanionId));
+            }
+
+            setRawTransactions(newRaw);
             return result;
         } catch (err) {
             console.error('Error updating transaction:', err);

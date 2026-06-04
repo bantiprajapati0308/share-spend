@@ -24,7 +24,7 @@ export const PREDEFINED_INCOME_CATEGORIES = [
     { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, isEnabled: true },
 ];
 
-export const NON_DELETABLE_CATEGORIES = ['Repayment', 'Borrowed', 'Lent', 'Borrowed Pay'];
+export const NON_DELETABLE_CATEGORIES = ['Repayment', 'Borrowed', 'Lent', 'Borrowed Pay', 'Credit spends'];
 export const ALL_PREDEFINED_CATEGORIES = [
     ...PREDEFINED_SPEND_CATEGORIES,
     ...PREDEFINED_INCOME_CATEGORIES,

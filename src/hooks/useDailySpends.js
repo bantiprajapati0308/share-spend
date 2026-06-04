@@ -35,36 +35,52 @@ export const getTransactionsByType = async (type, { startDate, endDate } = {}) =
     }
 };
 
-// POST: Add a new transaction
+// POST: Add a new transaction.
+// Returns { transaction, companion } where companion is non-null when
+// the server auto-created a credit-card income entry.
 export const addTransaction = async (transactionData) => {
     try {
         const result = await dailySpendsApi.addTransaction(transactionData);
         if (!result.success) throw new Error(result.error);
-        return { ...result.data, createdAt: normalizeDate(result.data.createdAt) };
+        const { _companion, ...primaryData } = result.data;
+        return {
+            transaction: { ...primaryData, createdAt: normalizeDate(primaryData.createdAt) },
+            companion: _companion
+                ? { ..._companion, createdAt: normalizeDate(_companion.createdAt) }
+                : null,
+        };
     } catch (error) {
-        console.error("Error adding transaction:", error);
+        console.error('Error adding transaction:', error);
         throw error;
     }
 };
 
-// UPDATE: Update an existing transaction
+// UPDATE: Update an existing transaction.
+// Returns { transaction, companion, deletedCompanionId } to mirror the add shape.
 export const updateTransaction = async (transactionId, transactionData) => {
     try {
         const result = await dailySpendsApi.updateTransaction(transactionId, transactionData);
         if (!result.success) throw new Error(result.error);
-        return { id: transactionId, ...transactionData };
+        const { _companion, _deletedCompanionId, ...primaryData } = result.data;
+        return {
+            transaction: { id: transactionId, ...transactionData },
+            companion: _companion
+                ? { ..._companion, createdAt: normalizeDate(_companion.createdAt) }
+                : null,
+            deletedCompanionId: _deletedCompanionId || null,
+        };
     } catch (error) {
         console.error("Error updating transaction:", error);
         throw error;
     }
 };
 
-// DELETE: Remove a transaction
+// DELETE: Remove a transaction (and its linked companion if any)
 export const deleteTransaction = async (transactionId) => {
     try {
         const result = await dailySpendsApi.deleteTransaction(transactionId);
         if (!result.success) throw new Error(result.error);
-        return true;
+        return result.data; // { deleted: true, deletedCompanionId: string | null }
     } catch (error) {
         console.error("Error deleting transaction:", error);
         throw error;

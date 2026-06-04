@@ -22,6 +22,12 @@ const col = (uid) => db.collection('users').doc(uid).collection('categories');
 const userDoc = (uid) => db.collection('users').doc(uid);
 
 /**
+ * Category IDs that are managed by the system.
+ * These cannot be deleted — only renamed.
+ */
+const SYSTEM_CATEGORY_IDS = new Set(['credit_card']);
+
+/**
  * Seed predefined categories for a user. Idempotent — skips any that already exist
  * OR that the user has explicitly deleted.
  * Called internally on new user registration (no HTTP request/response needed).
@@ -97,6 +103,10 @@ const updateCategory = async (req, res) => {
 // DELETE /api/categories/:id
 const deleteCategory = async (req, res) => {
     try {
+        if (SYSTEM_CATEGORY_IDS.has(req.params.id)) {
+            return badRequest(res, 'This system category cannot be deleted. You may rename it.');
+        }
+
         const ref = col(req.uid).doc(req.params.id);
         const snap = await ref.get();
 

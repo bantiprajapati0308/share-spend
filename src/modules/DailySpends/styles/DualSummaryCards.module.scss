@@ -18,6 +18,26 @@ $overspent-color: #f44336;
 $progress-height: 12px;
 $progress-radius: 8px;
 
+// Clickable card sections (Income / Expense)
+.clickable {
+    cursor: pointer;
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    transition: background 0.15s;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+
+    &:active {
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $brand-primary;
+    }
+}
+
 // Mixins for reusable styles
 @mixin summary-icon($bg-color) {
     background: linear-gradient(135deg, $bg-color 0%, lighten($bg-color, 10%) 100%);

@@ -69,12 +69,13 @@ async function listAllUsers() {
     }
 
     // ── Header ──────────────────────────────────────────────────────────────
-    const COL = { email: 32, name: 20, cat: 6, lim: 6, spends: 7, borrow: 7, sets: 5, trips: 6, total: 6 };
+    const COL = { uid: 28, email: 32, name: 20, cat: 6, lim: 6, spends: 7, borrow: 7, sets: 5, trips: 6, total: 6 };
 
     const pad = (s, n) => String(s ?? '').slice(0, n).padEnd(n);
     const lpad = (s, n) => String(s ?? '').padStart(n);
 
     console.log(
+        pad('UID', COL.uid) + ' ' +
         pad('Email', COL.email) + ' ' +
         pad('Name', COL.name) + ' ' +
         lpad('Cats', COL.cat) + ' ' +
@@ -85,13 +86,14 @@ async function listAllUsers() {
         lpad('Trips', COL.trips) + ' ' +
         lpad('Total', COL.total)
     );
-    console.log('─'.repeat(COL.email + COL.name + COL.cat + COL.lim + COL.spends + COL.borrow + COL.sets + COL.trips + COL.total + 9));
+    console.log('─'.repeat(COL.uid + COL.email + COL.name + COL.cat + COL.lim + COL.spends + COL.borrow + COL.sets + COL.trips + COL.total + 10));
 
     // ── Rows ─────────────────────────────────────────────────────────────────
     let grandTotal = 0;
-    for (const { u, counts, total } of rows) {
+    for (const { uid, u, counts, total } of rows) {
         const name = u.displayName || u.username || u.firstName || '—';
         console.log(
+            pad(uid, COL.uid) + ' ' +
             pad(u.email || '(no email)', COL.email) + ' ' +
             pad(name, COL.name) + ' ' +
             lpad(counts.categories, COL.cat) + ' ' +
@@ -106,7 +108,7 @@ async function listAllUsers() {
     }
 
     // ── Footer ───────────────────────────────────────────────────────────────
-    console.log('─'.repeat(COL.email + COL.name + COL.cat + COL.lim + COL.spends + COL.borrow + COL.sets + COL.trips + COL.total + 9));
+    console.log('─'.repeat(COL.uid + COL.email + COL.name + COL.cat + COL.lim + COL.spends + COL.borrow + COL.sets + COL.trips + COL.total + 10));
     console.log(`Total users: ${rows.length}   Grand total records: ${grandTotal}\n`);
 }
 
