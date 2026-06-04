@@ -31,6 +31,37 @@ export const createOrUpdateUserProfile = async (user) => {
     }
 };
 
+/**
+ * Ensures a backend profile exists for the given Firebase user.
+ * Called on every login — creates the profile + seeds categories if missing.
+ * Does NOT throw so it never blocks the main auth flow.
+ */
+export const ensureUserProfile = async (user) => {
+    if (!user) return;
+    try {
+        const profileResult = await authApi.getProfile();
+        if (profileResult.success) return profileResult.data;
+
+        // Profile missing (404) or server error — try to create it
+        const { firstName, lastName } = parseDisplayName(user.displayName || "");
+        const createResult = await authApi.createOrUpdateProfile({
+            email: user.email,
+            firstName,
+            lastName,
+            displayName: user.displayName || "",
+            photoURL: user.photoURL || "",
+            authProvider: user.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email',
+        });
+        if (!createResult.success) {
+            console.error('ensureUserProfile: profile creation failed', createResult.error);
+        }
+        return createResult.data;
+    } catch (error) {
+        console.error('ensureUserProfile error:', error.message);
+        // Swallow — never block the app from loading
+    }
+};
+
 export const getUserProfile = async () => {
     try {
         const result = await authApi.getProfile();
