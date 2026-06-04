@@ -11,6 +11,7 @@ import AuthScreen from './components/AuthScreen';
 import Registration from './components/Registration';
 import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
+import HelpCenter from './modules/HelpCenter';
 import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
 import MasterReport from './modules/DailySpends/MasterReport';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -76,6 +77,7 @@ function App() {
             <Route path="/breakdown-report" element={<BreakdownReport />} />
             <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />
             <Route path="/lending" element={<BorrowLend />} />
+            <Route path="/help" element={<HelpCenter />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </ErrorBoundary>

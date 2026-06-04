@@ -91,3 +91,27 @@
         transform: scale(0.95);
     }
 }
+
+.helpBtn {
+    background: white;
+    border-radius: 0.5rem;
+    border: unset;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: $primary-color;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    margin-right: 10px;
+
+    &:hover {
+        background: rgba($primary-color, 0.08);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}

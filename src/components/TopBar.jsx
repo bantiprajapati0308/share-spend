@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { BoxArrowRight } from 'react-bootstrap-icons';
+import { BoxArrowRight, QuestionCircle } from 'react-bootstrap-icons';
 import styles from '../assets/scss/TopBar.module.scss';
 import { getUserProfile, parseDisplayName } from '../hooks/useUserProfile';
 
@@ -37,6 +37,9 @@ function TopBar() {
                         <div className={styles.userSubtitle}>Good to see you back!</div>
                     </div>
                 </div>
+                <button className={styles.helpBtn} onClick={() => navigate('/help')} title="Help Center">
+                    <QuestionCircle size={20} />
+                </button>
                 <button className={styles.logoutBtn} onClick={handleLogout} title="Logout">
                     <BoxArrowRight size={20} />
                 </button>
