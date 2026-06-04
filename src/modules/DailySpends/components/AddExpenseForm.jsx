@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Spinner } from 'react-bootstrap';
 import { Plus, PencilSquare } from 'react-bootstrap-icons';
-import Select from 'react-select';
 import { toast } from 'react-toastify';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import styles from '../styles/DailySpends.module.scss';
@@ -12,26 +11,8 @@ import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import TopCategories from './TopCategories';
 import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
-import usePaymentMethods from '../hooks/usePaymentMethods';
 import useCategoryContext from '../hooks/useCategoryContext';
-
-// React Select styles shared between dropdowns
-const selectStyles = {
-    control: (base) => ({
-        ...base,
-        minHeight: '40px',
-        borderRadius: '0.75rem',
-        borderColor: '#dee2e6',
-        boxShadow: 'none',
-        '&:hover': { borderColor: '#667eea' },
-    }),
-    option: (base, state) => ({
-        ...base,
-        backgroundColor: state.isSelected ? '#667eea' : state.isFocused ? '#f8f9fa' : 'white',
-        color: state.isSelected ? 'white' : '#333',
-    }),
-    placeholder: (base) => ({ ...base, color: '#adb5bd', fontSize: '0.9rem' }),
-};
+import PaymentMethodSelector from './common/PaymentMethodSelector';
 
 function AddExpenseForm({
     onAddExpense,
@@ -52,7 +33,6 @@ function AddExpenseForm({
     const [personName, setPersonName] = useState('');
     const [paymentMethodId, setPaymentMethodId] = useState(null);
     const { categories } = useCategoryContext();
-    const { paymentMethods } = usePaymentMethods();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const skipTypeClear = useRef(false);
 
@@ -89,10 +69,7 @@ function AddExpenseForm({
         setNotes(editingTransaction.notes || '');
 
         // Restore payment method selection
-        if (editingTransaction.paymentMethodId) {
-            const pm = paymentMethods.find(p => p.value === editingTransaction.paymentMethodId);
-            setPaymentMethodId(pm ? { value: pm.value, label: pm.label } : null);
-        }
+        setPaymentMethodId(editingTransaction.paymentMethodId || null);
 
         const catName = (editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
         if (['lent', 'repayment', 'borrowed', 'borrowed pay'].includes(catName)) {
@@ -101,7 +78,7 @@ function AddExpenseForm({
         } else {
             setPersonName('');
         }
-    }, [isEditMode, editingTransaction, categories, paymentMethods]);
+    }, [isEditMode, editingTransaction, categories]);
 
     const resetForm = () => {
         setExpenseName('');
@@ -117,7 +94,7 @@ function AddExpenseForm({
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if ((!isLendingTransaction && !expenseName.trim()) || !amount.trim() || !category) {
+        if ((!isLendingTransaction && !expenseName.trim()) || !amount.trim() || !category || !paymentMethodId) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -148,7 +125,7 @@ function AddExpenseForm({
             categoryIcon: category.emoji || '??',
             date,
             notes,
-            paymentMethodId: paymentMethodId?.value || null,
+            paymentMethodId: paymentMethodId || null,
             ...(isDueDate ? { dueDate: dueDate || null } : {}),
         };
 
@@ -175,8 +152,6 @@ function AddExpenseForm({
     const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
     const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
     const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
-
-    const paymentMethodOptions = paymentMethods.map(pm => ({ value: pm.value, label: pm.label }));
 
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
@@ -295,17 +270,7 @@ function AddExpenseForm({
             </Row>
 
             {/* -- Payment Method ------------------------------------------- */}
-            {false && <div className={styles.formGroup}>
-                <label>Payment Method</label>
-                <Select
-                    options={paymentMethodOptions}
-                    value={paymentMethodId}
-                    onChange={setPaymentMethodId}
-                    isClearable
-                    placeholder="Select payment method"
-                    styles={selectStyles}
-                />
-            </div>}
+            <PaymentMethodSelector value={paymentMethodId} onChange={setPaymentMethodId} />
 
             {/* -- Notes --------------------------------------------------- */}
             <div className={styles.formGroup}>

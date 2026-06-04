@@ -13,8 +13,6 @@ const PAYMENT_METHODS = [
     { id: 'cash', value: 'cash', label: 'Cash' },
     { id: 'upi', value: 'upi', label: 'UPI' },
     { id: 'credit_card', value: 'credit_card', label: 'Credit Card' },
-    { id: 'debit_card', value: 'debit_card', label: 'Debit Card' },
-    { id: 'net_banking', value: 'net_banking', label: 'Net Banking' },
 ];
 
 async function seed() {
