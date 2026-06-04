@@ -29,7 +29,7 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 
 // ── Config — set the target user UID here ────────────────────────────────────
-const TARGET_UID = 'e0YfXdgWppeYR8kDlbQK5vDav1h1'; // <-- paste the Firebase UID here
+const TARGET_UID = '2gQ7efVCFdWu7bP4T2YJ3BHlc7J2'; // <-- paste the Firebase UID here
 
 // ── Parse CLI args ────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);

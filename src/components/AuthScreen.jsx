@@ -78,12 +78,11 @@ const AuthScreen = () => {
       const credentialResult = await signInWithPopup(auth, googleProvider);
       const { user } = credentialResult;
 
-      // Create or get user profile
-      await createOrUpdateUserProfile(user);
-
-      await updateLastLogin();
-
-      // Initialize predefined categories is now handled server-side on new user creation.
+      // Fire-and-forget: profile creation is also guarded by ensureUserProfile
+      // in App.jsx. Don't block navigation if the API is slow or first-call fails.
+      createOrUpdateUserProfile(user).catch(e =>
+        console.warn('[Google auth] Initial profile creation failed, will retry on app load:', e.message)
+      );
 
       setLoadingAuth(false);
       navigate("/daily-expenses");

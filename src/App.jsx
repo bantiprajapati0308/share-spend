@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth } from './firebase';
+import { ensureUserProfile } from './hooks/useUserProfile';
 import TopBar from './components/TopBar';
 import BottomNavigation from './components/BottomNavigation';
 import Trip from './components/Trip';
@@ -36,6 +37,8 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setIsAuthLoading(false); // Auth check complete
+      // Ensure backend profile exists (creates it if missing / first Google login)
+      if (user) ensureUserProfile(user);
     });
     return () => unsubscribe();
   }, []);
@@ -57,6 +60,7 @@ function App() {
         <ErrorBoundary>
           <TopBar />
           <Routes>
+            <Route path="/" element={<Navigate to="/daily-expenses" />} />
             <Route path="/trip" element={<Trip />} />
             <Route path="/members/:tripId" element={
               <ProtectedTripRoute>
