@@ -6,21 +6,21 @@ import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
-import { NON_DELETABLE_CATEGORIES } from '../../../utils/predefinedCategories';
+import { NON_DELETABLE_CATEGORIES, NON_DELETABLE_CATEGORY_IDS } from '../../../utils/predefinedCategories';
 
 /**
  * Get tooltip message for non-deletable categories
  * @param {string} categoryName - Name of the category
  * @returns {string} Tooltip message explaining the category's purpose
  */
-const getCategoryTooltip = (categoryName) => {
+const getCategoryTooltip = (categoryId) => {
     const tooltips = {
-        'Lent': 'Use this category when you lend money to someone. It records the amount going out as a loan that you expect to be repaid.',
-        'Borrowed': 'Use this category when someone lends you money. It records the amount coming in as a loan that you need to repay.',
-        'Repayment': 'Use this category when someone repays the money you lent them. It records the repayment as income.',
-        'Borrowed Pay': 'Use this category when you repay money you borrowed. It records the repayment as an expense.'
+        'lent': 'Use this category when you lend money to someone. It records the amount going out as a loan that you expect to be repaid.',
+        'borrowed': 'Use this category when someone lends you money. It records the amount coming in as a loan that you need to repay.',
+        'repayment': 'Use this category when someone repays the money you lent them. It records the repayment as income.',
+        'borrowed_pay': 'Use this category when you repay money you borrowed. It records the repayment as an expense.'
     };
-    return tooltips[categoryName] || 'This is a system category required for Borrow/Lend functionality and cannot be deleted.';
+    return tooltips[categoryId] || 'This is a system category required for Borrow/Lend functionality and cannot be deleted.';
 };
 
 /**
@@ -121,7 +121,7 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
     };
 
     const handleDeleteCategory = async (categoryId, categoryData) => {
-        if (NON_DELETABLE_CATEGORIES.includes(categoryData.name)) {
+        if (NON_DELETABLE_CATEGORY_IDS.has(categoryId) || NON_DELETABLE_CATEGORIES.includes(categoryData.name)) {
             toast.error('This category cannot be deleted.');
             return;
         }
@@ -175,14 +175,14 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
                                 onChange={() => handleToggleCategory(category.id, category.isEnabled)}
                                 className="d-inline-block"
                             />
-                            {NON_DELETABLE_CATEGORIES.includes(category.name) ? (
+                            {NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name) ? (
                                 <OverlayTrigger
                                     placement="top"
                                     overlay={
                                         <Tooltip>
                                             <div style={{ textAlign: 'center' }}>
                                                 <Lock size={16} style={{ marginBottom: '4px' }} />
-                                                {getCategoryTooltip(category.name)}
+                                                {getCategoryTooltip(category.id)}
                                             </div>
                                         </Tooltip>
                                     }

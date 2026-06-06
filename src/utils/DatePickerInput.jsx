@@ -7,26 +7,39 @@ import styles from './DatePickerInput.module.scss';
  * Shared date picker input.
  *
  * Props:
- *   label        — field label text
- *   value        — selected date as 'yyyy-MM-dd' string (matches API format)
- *   onChange     — called with 'yyyy-MM-dd' string (or '' when cleared)
- *   minDate      — earliest selectable date as 'yyyy-MM-dd' string (optional)
- *   maxDate      — latest selectable date as 'yyyy-MM-dd' string (optional)
- *   required     — marks field required (default false)
- *   isClearable  — shows clear × button (default false)
- *   placeholder  — input placeholder text
+ *   label           — field label text
+ *   value           — selected date as 'yyyy-MM-dd' string, or 'yyyy-MM-ddTHH:mm' when showTimeSelect=true
+ *   onChange        — called with 'yyyy-MM-dd' string (or 'yyyy-MM-ddTHH:mm' when showTimeSelect=true)
+ *   minDate         — earliest selectable date as 'yyyy-MM-dd' string (optional)
+ *   maxDate         — latest selectable date as 'yyyy-MM-dd' string (optional)
+ *   required        — marks field required (default false)
+ *   isClearable     — shows clear × button (default false)
+ *   placeholder     — input placeholder text
+ *   showTimeSelect  — shows time picker alongside date (default false)
+ *   timeIntervals   — minute step for time picker (default 15)
  */
-function DatePickerInput({ label, value, onChange, minDate, maxDate, required, isClearable, placeholder }) {
-    // Convert 'yyyy-MM-dd' string → local midnight Date (avoids UTC day-shift on iOS/Safari)
-    const toDate = (str) => (str ? new Date(str + 'T00:00:00') : null);
+function DatePickerInput({ label, value, onChange, minDate, maxDate, required, isClearable, placeholder, showTimeSelect, timeIntervals }) {
+    // Convert value string → Date object
+    const toDate = (str) => {
+        if (!str) return null;
+        // If string contains 'T' it's a datetime string, parse directly
+        if (str.includes('T')) return new Date(str);
+        // Date-only string — use local midnight to avoid UTC day-shift on iOS/Safari
+        return new Date(str + 'T00:00:00');
+    };
 
-    // Convert Date → 'yyyy-MM-dd' string — safe on all browsers/locales
-    const toYMD = (d) => {
+    // Convert Date → 'yyyy-MM-dd' or 'yyyy-MM-ddTHH:mm' depending on showTimeSelect
+    const toString = (d) => {
         if (!d) return '';
         const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
+        if (showTimeSelect) {
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${y}-${mo}-${day}T${h}:${min}`;
+        }
+        return `${y}-${mo}-${day}`;
     };
 
     return (
@@ -34,8 +47,8 @@ function DatePickerInput({ label, value, onChange, minDate, maxDate, required, i
             {label && <label className={styles.label}>{label}</label>}
             <DatePicker
                 selected={toDate(value)}
-                onChange={(d) => onChange(toYMD(d))}
-                dateFormat="dd/MM/yyyy"
+                onChange={(d) => onChange(toString(d))}
+                dateFormat={showTimeSelect ? 'dd/MM/yyyy HH:mm' : 'dd/MM/yyyy'}
                 placeholderText={placeholder}
                 required={required}
                 isClearable={isClearable}
@@ -46,6 +59,10 @@ function DatePickerInput({ label, value, onChange, minDate, maxDate, required, i
                 showMonthDropdown
                 showYearDropdown
                 dropdownMode="select"
+                showTimeSelect={showTimeSelect}
+                timeFormat="HH:mm"
+                timeIntervals={timeIntervals}
+                timeCaption="Time"
             />
         </div>
     );
@@ -60,6 +77,8 @@ DatePickerInput.propTypes = {
     required: PropTypes.bool,
     isClearable: PropTypes.bool,
     placeholder: PropTypes.string,
+    showTimeSelect: PropTypes.bool,
+    timeIntervals: PropTypes.number,
 };
 
 DatePickerInput.defaultProps = {
@@ -70,6 +89,8 @@ DatePickerInput.defaultProps = {
     required: false,
     isClearable: false,
     placeholder: 'Select date',
+    showTimeSelect: false,
+    timeIntervals: 15,
 };
 
 export default DatePickerInput;

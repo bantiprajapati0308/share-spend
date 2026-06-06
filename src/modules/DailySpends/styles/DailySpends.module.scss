@@ -1807,6 +1807,268 @@
     }
 }
 
+// ==========================================
+// DATE-GROUPED EXPENSE LIST
+// ==========================================
+
+.dateGroup {
+    margin-bottom: 0.25rem;
+}
+
+.dateGroupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.35rem 0.35rem 0.25rem;
+    background: white;
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 0.45rem;
+    position: sticky;
+    top: -4px;
+    z-index: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.dateGroupLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: $text-primary;
+}
+
+.dateGroupTotal {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $primary-color;
+    white-space: nowrap;
+}
+
+.expenseItemCard {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: white;
+    border-radius: 0.85rem;
+    padding: 0.6rem 0.25rem;
+    margin-bottom: 0.5rem;
+    box-shadow: $shadow-sm;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.15s ease;
+
+    &:hover {
+        box-shadow: $shadow-base;
+    }
+}
+
+.categoryIconBox {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.categoryIconBoxSpend {
+    background: rgba($danger-color, 0.1);
+}
+
+.categoryIconBoxIncome {
+    background: rgba($success-color, 0.1);
+}
+
+.expenseItemCenter {
+    flex: 1;
+    min-width: 0;
+}
+
+.expenseItemName {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.expenseItemTags {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
+    flex-wrap: nowrap;
+}
+
+.categoryBadge {
+    font-size: 0.67rem;
+    padding: 0.1rem 0.4rem;
+    background: $light-color;
+    border: 1px solid $border-color;
+    border-radius: 0.35rem;
+    color: $text-secondary;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.pmBadge {
+    font-size: 0.62rem;
+    color: $text-secondary;
+    padding-right: 0.5rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: right;
+    display: flex;
+}
+
+.notesBadge {
+    font-size: 0.67rem;
+    padding: 0.1rem 0.4rem;
+    background: rgba(#0dcaf0, 0.1);
+    border: 1px solid rgba(#0dcaf0, 0.3);
+    border-radius: 0.35rem;
+    color: #0891b2;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.expenseItemPm {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: 0.22rem;
+    font-size: 0.68rem;
+    color: $text-secondary;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.expenseItemRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.22rem;
+    flex-shrink: 0;
+}
+
+.expenseItemInlineRow {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.expenseItemMeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.25;
+}
+
+.timeLabel {
+    font-size: 0.7rem;
+    color: $text-secondary;
+    font-weight: 600;
+    white-space: nowrap;
+    border-right: 1px solid $border-color;
+    padding-right: 0.4rem;
+}
+
+.dateLabel {
+    font-size: 0.68rem;
+    color: $text-tertiary;
+    white-space: nowrap;
+}
+
+.expenseItemAmount {
+    display: flex;
+    align-items: center;
+    gap: 0.18rem;
+    font-size: 0.88rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.amountSpend {
+    color: $danger-color;
+}
+
+.amountIncome {
+    color: $success-color;
+}
+
+.actionPopover {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid $border-color;
+    border-radius: 0.6rem;
+    box-shadow: $shadow-md;
+    z-index: $z-dropdown;
+    min-width: 170px;
+    overflow: hidden;
+}
+
+.actionPopoverItem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    background: none;
+    border: none;
+    border-bottom: 1px solid $border-light;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $text-primary;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: $neutral-100;
+    }
+}
+
+.actionPopoverItemDanger {
+    color: $danger-color;
+
+    &:hover {
+        background: $danger-50;
+    }
+}
+
+.menuBtn {
+    background: none;
+    border: none;
+    padding: 0.2rem 0.15rem;
+    cursor: pointer;
+    color: $text-tertiary;
+    display: flex;
+    align-items: center;
+    border-radius: 0.3rem;
+    line-height: 1;
+
+    &:hover {
+        background: $neutral-100;
+        color: $text-primary;
+    }
+}
+
+
 .expenseItem {
     display: flex;
     justify-content: space-between;

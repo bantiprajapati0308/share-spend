@@ -6,18 +6,18 @@ import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
-import { NON_DELETABLE_CATEGORIES } from '../../../utils/predefinedCategories';
+import { NON_DELETABLE_CATEGORIES, NON_DELETABLE_CATEGORY_IDS } from '../../../utils/predefinedCategories';
 import styles from '../styles/CategoryManager.module.scss';
 
 const SYSTEM_CATEGORY_TOOLTIPS = {
-    Lent: 'Records money lent to someone. Required for Borrow/Lend.',
-    Borrowed: 'Records money borrowed from someone. Required for Borrow/Lend.',
-    Repayment: 'Records when someone repays you. Required for Borrow/Lend.',
-    'Borrowed Pay': 'Records when you repay borrowed money. Required for Borrow/Lend.',
+    lent: 'Records money lent to someone. Required for Borrow/Lend.',
+    borrowed: 'Records money borrowed from someone. Required for Borrow/Lend.',
+    repayment: 'Records when someone repays you. Required for Borrow/Lend.',
+    borrowed_pay: 'Records when you repay borrowed money. Required for Borrow/Lend.',
 };
 
-const getSystemTooltip = (name) =>
-    SYSTEM_CATEGORY_TOOLTIPS[name] ?? 'System category required for Borrow/Lend — cannot be deleted.';
+const getSystemTooltip = (category) =>
+    SYSTEM_CATEGORY_TOOLTIPS[category.id] ?? SYSTEM_CATEGORY_TOOLTIPS[category.name] ?? 'System category required for Borrow/Lend — cannot be deleted.';
 
 function CategoryManager({ onCategoriesChanged }) {
     const {
@@ -105,7 +105,7 @@ function CategoryManager({ onCategoriesChanged }) {
     };
 
     const handleDeleteCategory = async (category) => {
-        if (NON_DELETABLE_CATEGORIES.includes(category.name)) {
+        if (NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name)) {
             toast.error('This category cannot be deleted.');
             return;
         }
@@ -121,7 +121,7 @@ function CategoryManager({ onCategoriesChanged }) {
     };
 
     const renderCategoryRow = (category) => {
-        const isSystem = NON_DELETABLE_CATEGORIES.includes(category.name);
+        const isSystem = NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name);
         return (
             <div
                 key={category.id}
@@ -141,7 +141,7 @@ function CategoryManager({ onCategoriesChanged }) {
                     type="button"
                     className={styles.categoryDeleteBtn}
                     disabled={isSystem}
-                    title={isSystem ? getSystemTooltip(category.name) : 'Delete category'}
+                    title={isSystem ? getSystemTooltip(category) : 'Delete category'}
                     onClick={() => handleDeleteCategory(category)}
                 >
                     {isSystem ? <Lock size={13} /> : <Trash3 size={13} />}
