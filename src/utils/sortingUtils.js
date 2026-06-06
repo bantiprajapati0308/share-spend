@@ -12,6 +12,31 @@ export const SORT_TYPES = {
 };
 
 /**
+ * Resolve a sortable timestamp from a transaction.
+ * - If date contains a time component (e.g. '2026-06-04T14:30'), use it directly.
+ * - If date is date-only (e.g. '2026-06-04'), combine it with createdAt time as tiebreaker.
+ * - Falls back to createdAt alone if date is missing.
+ */
+const resolveSortDate = (tx) => {
+    const raw = tx.date;
+    if (raw && raw.includes('T')) {
+        // Full datetime stored in date field — most precise
+        return new Date(raw);
+    }
+    if (raw) {
+        // Date-only field — use createdAt for same-day ordering
+        const createdAt = tx.createdAt ? new Date(tx.createdAt) : null;
+        const base = new Date(raw + 'T00:00:00');
+        if (createdAt && !isNaN(createdAt)) {
+            // Keep the calendar date from `date`, use createdAt time-of-day as tiebreaker
+            base.setHours(createdAt.getHours(), createdAt.getMinutes(), createdAt.getSeconds(), createdAt.getMilliseconds());
+        }
+        return base;
+    }
+    return tx.createdAt ? new Date(tx.createdAt) : new Date(0);
+};
+
+/**
  * Sort expenses based on the selected sort type
  * @param {Array} expenses - Array of expense objects
  * @param {string} sortType - Sort type from SORT_TYPES
@@ -25,16 +50,12 @@ export const sortExpenses = (expenses, sortType) => {
     switch (sortType) {
         case SORT_TYPES.DATE_NEWEST:
             return sortedExpenses.sort((a, b) => {
-                const dateA = new Date(a.date || a.createdAt);
-                const dateB = new Date(b.date || b.createdAt);
-                return dateB - dateA; // Newest first
+                return resolveSortDate(b) - resolveSortDate(a); // Newest first
             });
 
         case SORT_TYPES.DATE_OLDEST:
             return sortedExpenses.sort((a, b) => {
-                const dateA = new Date(a.date || a.createdAt);
-                const dateB = new Date(b.date || b.createdAt);
-                return dateA - dateB; // Oldest first
+                return resolveSortDate(a) - resolveSortDate(b); // Oldest first
             });
 
         case SORT_TYPES.LATEST_ENTRY:

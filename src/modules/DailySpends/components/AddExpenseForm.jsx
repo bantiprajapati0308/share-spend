@@ -23,11 +23,21 @@ function AddExpenseForm({
     onCategoriesChanged,
     onGoToCategories,
 }) {
+    const nowDatetime = () => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${y}-${mo}-${day}T${h}:${min}`;
+    };
+
     const [transactionType, setTransactionType] = useState('spend');
     const [expenseName, setExpenseName] = useState('');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState(null);
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(nowDatetime);
     const [dueDate, setDueDate] = useState('');
     const [notes, setNotes] = useState('');
     const [personName, setPersonName] = useState('');
@@ -64,7 +74,7 @@ function AddExpenseForm({
                     : { categoryName: editingTransaction.categoryName || editingTransaction.category, emoji: editingTransaction.categoryIcon || '??', label: `${editingTransaction.categoryIcon} ${editingTransaction.categoryName}` };
             })(),
         });
-        setDate(editingTransaction.date || new Date().toISOString().split('T')[0]);
+        setDate(editingTransaction.date || nowDatetime());
         setDueDate(editingTransaction.dueDate || '');
         setNotes(editingTransaction.notes || '');
 
@@ -84,7 +94,7 @@ function AddExpenseForm({
         setExpenseName('');
         setAmount('');
         setCategory(null);
-        setDate(new Date().toISOString().split('T')[0]);
+        setDate(nowDatetime());
         setDueDate('');
         setPersonName('');
         setNotes('');
@@ -249,7 +259,8 @@ function AddExpenseForm({
                             onChange={(val) => val && setDate(val)}
                             maxDate={new Date().toISOString().split('T')[0]}
                             required
-                            placeholder="Select date"
+                            placeholder="Select date & time"
+                            showTimeSelect
                         />
                     </div>
                 </Col>

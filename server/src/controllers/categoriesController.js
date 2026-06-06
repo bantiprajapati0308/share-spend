@@ -9,13 +9,13 @@ const PREDEFINED_CATEGORIES = [
     { name: 'Investment', emoji: '📈', type: 'spend', isPredefined: true },
     { name: 'Personal', emoji: '👤', type: 'spend', isPredefined: true },
     { name: 'Friend Spent', emoji: '👫', type: 'spend', isPredefined: true },
-    { name: 'Lent', emoji: '🤝', type: 'spend', isPredefined: true },
-    { name: 'Borrowed Pay', emoji: '💳', type: 'spend', isPredefined: true },
+    { name: 'Lent', emoji: '🤝', type: 'spend', isPredefined: true, systemId: 'lent' },
+    { name: 'Borrowed Pay', emoji: '💳', type: 'spend', isPredefined: true, systemId: 'borrowed_pay' },
     { name: 'Credit Cards Bill', emoji: '💰', type: 'spend', isPredefined: true },
     { name: 'Salary', emoji: '💼', type: 'income', isPredefined: true },
     { name: 'Bonus', emoji: '🎉', type: 'income', isPredefined: true },
-    { name: 'Borrowed', emoji: '📋', type: 'income', isPredefined: true },
-    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, isEnabled: true },
+    { name: 'Borrowed', emoji: '📋', type: 'income', isPredefined: true, systemId: 'borrowed' },
+    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, systemId: 'repayment' },
 ];
 
 const col = (uid) => db.collection('users').doc(uid).collection('categories');
@@ -25,7 +25,7 @@ const userDoc = (uid) => db.collection('users').doc(uid);
  * Category IDs that are managed by the system.
  * These cannot be deleted — only renamed.
  */
-const SYSTEM_CATEGORY_IDS = new Set(['credit_card']);
+const SYSTEM_CATEGORY_IDS = new Set(['credit_card', 'lent', 'borrowed_pay', 'borrowed', 'repayment']);
 
 /**
  * Seed predefined categories for a user. Idempotent — skips any that already exist
@@ -47,10 +47,12 @@ const seedPredefinedCategoriesForUser = async (uid) => {
     const batch = db.batch();
     let added = 0;
 
-    PREDEFINED_CATEGORIES.forEach((cat) => {
-        if (!existingNames.has(cat.name) && !deletedPredefined.has(cat.name)) {
-            const ref = col(uid).doc();
-            batch.set(ref, { ...cat, isEnabled: cat.isEnabled ?? true, createdAt: now, updatedAt: now });
+    PREDEFINED_CATEGORIES.forEach(({ name, emoji, type, systemId }) => {
+        if (!existingNames.has(name) && !deletedPredefined.has(name)) {
+            const ref = systemId ? col(uid).doc(systemId) : col(uid).doc();
+            const docData = { name, emoji: emoji || '', type, isEnabled: true, isPredefined: true, createdAt: now, updatedAt: now };
+            if (systemId) docData.systemId = systemId;
+            batch.set(ref, docData);
             added++;
         }
     });
@@ -116,6 +118,13 @@ const deleteCategory = async (req, res) => {
         }
 
         const data = snap.data();
+
+        // Block deletion of system categories identified by their systemId field
+        // (protects documents regardless of their Firestore document ID)
+        if (data.systemId && SYSTEM_CATEGORY_IDS.has(data.systemId)) {
+            return badRequest(res, 'This system category cannot be deleted. You may rename it.');
+        }
+
         await ref.delete();
 
         // If the user is deleting a predefined category, record it so the seeder

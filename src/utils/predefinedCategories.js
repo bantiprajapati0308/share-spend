@@ -12,19 +12,20 @@ export const PREDEFINED_SPEND_CATEGORIES = [
     { name: 'Investment', emoji: '📈', type: 'spend', isPredefined: true },
     { name: 'Personal', emoji: '👤', type: 'spend', isPredefined: true },
     { name: 'Friend Spent', emoji: '👫', type: 'spend', isPredefined: true },
-    { name: 'Lent', emoji: '🤝', type: 'spend', isPredefined: true },
-    { name: 'Borrowed Pay', emoji: '💳', type: 'spend', isPredefined: true },
+    { name: 'Lent', emoji: '🤝', type: 'spend', isPredefined: true, systemId: 'lent' },
+    { name: 'Borrowed Pay', emoji: '💳', type: 'spend', isPredefined: true, systemId: 'borrowed_pay' },
     { name: 'Credit Cards Bill', emoji: '💰', type: 'spend', isPredefined: true },
 ];
 
 export const PREDEFINED_INCOME_CATEGORIES = [
     { name: 'Salary', emoji: '💼', type: 'income', isPredefined: true },
     { name: 'Bonus', emoji: '🎉', type: 'income', isPredefined: true },
-    { name: 'Borrowed', emoji: '📋', type: 'income', isPredefined: true },
-    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, isEnabled: true },
+    { name: 'Borrowed', emoji: '📋', type: 'income', isPredefined: true, systemId: 'borrowed' },
+    { name: 'Repayment', emoji: '✅', type: 'income', isPredefined: true, isEnabled: true, systemId: 'repayment' },
 ];
 
 export const NON_DELETABLE_CATEGORIES = ['Repayment', 'Borrowed', 'Lent', 'Borrowed Pay', 'Credit spends'];
+export const NON_DELETABLE_CATEGORY_IDS = new Set(['repayment', 'borrowed', 'lent', 'borrowed_pay']);
 export const ALL_PREDEFINED_CATEGORIES = [
     ...PREDEFINED_SPEND_CATEGORIES,
     ...PREDEFINED_INCOME_CATEGORIES,

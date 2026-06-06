@@ -13,6 +13,19 @@
     :global(.react-datepicker__close-icon) {
         right: 0.5rem;
     }
+
+    // Time picker section
+    :global(.react-datepicker__time-container) {
+        border-left: 1px solid #aeaeae;
+    }
+
+    :global(.react-datepicker__time-list-item--selected) {
+        background-color: $primary-color !important;
+    }
+
+    :global(.react-datepicker__time-list-item:hover) {
+        background-color: rgba($primary-color, 0.1) !important;
+    }
 }
 
 .label {
