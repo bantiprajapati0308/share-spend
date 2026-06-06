@@ -239,7 +239,6 @@ function DailySpends() {
             return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr;
         });
     const sectionTitle = selectedType === 'spend' ? "Expenses" : "Income";
-    console.log(!dateRangeLoaded, loading, error);
     // Show loader while loading date range
     if (!dateRangeLoaded || loading) {
         return <FullScreenLoader />;

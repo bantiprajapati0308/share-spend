@@ -1,0 +1,235 @@
+@use '../../../assets/scss/variables' as *;
+
+/* ── Brand icons row ─────────────────────────── */
+.brandIconsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-4;
+    margin-bottom: $spacing-3;
+}
+
+.brandIcon {
+    width: 58px;
+    height: 58px;
+    border-radius: $radius-2xl;
+    background: $primary-50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-primary;
+}
+
+.brandLogoImg {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.brandIconShield {
+    background: linear-gradient(135deg, $primary-100, $primary-200);
+}
+
+/* ── Brand text ───────────────────────────────── */
+.brandRow {
+    text-align: center;
+    margin-bottom: $spacing-4;
+}
+
+.brandName {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $brand-primary;
+    margin-bottom: $spacing-1;
+}
+
+.brandTagline {
+    font-size: $font-size-xs;
+    color: $neutral-500;
+    letter-spacing: 0.8px;
+    margin: 0;
+}
+
+/* ── Headings ──────────────────────────────────── */
+.headingSection {
+    text-align: center;
+    margin-bottom: $spacing-5;
+}
+
+.heading {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    margin-bottom: $spacing-1;
+}
+
+.subtitle {
+    font-size: $font-size-sm;
+    color: $neutral-500;
+    margin: 0;
+}
+
+/* ── Input fields ──────────────────────────────── */
+.fieldWrapper {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.fieldIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $neutral-400;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.input {
+    padding-left: 2.4rem !important;
+    border-radius: $radius-xl !important;
+    border: 1.5px solid $neutral-300 !important;
+    font-size: $font-size-sm !important;
+    height: 44px !important;
+    background: $neutral-50 !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+
+    &:focus {
+        border-color: $brand-primary !important;
+        box-shadow: 0 0 0 3px rgba($brand-primary, 0.12) !important;
+        background: #fff !important;
+    }
+
+    &::placeholder {
+        color: $neutral-400 !important;
+    }
+}
+
+.inputPassword {
+    padding-right: 2.8rem !important;
+}
+
+.eyeBtn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: $neutral-400;
+    display: flex;
+    align-items: center;
+    z-index: 2;
+
+    &:hover {
+        color: $neutral-600;
+    }
+}
+
+/* ── Date picker wrapper ──────────────────────── */
+.dateWrapper {
+
+    // Ensure DatePickerInput fits the row height
+    :global(.form-control) {
+        height: 44px !important;
+        font-size: $font-size-sm !important;
+        border-radius: $radius-xl !important;
+        border: 1.5px solid $neutral-300 !important;
+        background: $neutral-50 !important;
+    }
+}
+
+/* ── Password hint ────────────────────────────── */
+.passwordHint {
+    font-size: 0.72rem;
+    color: $neutral-400;
+    margin: $spacing-1 0 $spacing-2 $spacing-1;
+}
+
+/* ── Email verification notice ────────────────── */
+.verificationNotice {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-3;
+    background: $primary-50;
+    border: 1px solid $primary-200;
+    border-radius: $radius-xl;
+    padding: $spacing-3 $spacing-4;
+    margin: $spacing-3 0 $spacing-4;
+}
+
+.verificationIcon {
+    color: $brand-primary;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.verificationTitle {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $brand-primary;
+    margin: 0 0 $spacing-1;
+}
+
+.verificationText {
+    font-size: 0.72rem;
+    color: $neutral-600;
+    margin: 0;
+    line-height: $line-height-snug;
+}
+
+/* ── Submit button ────────────────────────────── */
+.submitBtn {
+    width: 100%;
+    background: $gradient-primary;
+    border: none;
+    border-radius: $radius-xl;
+    color: #fff;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-sm;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-2;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    margin: 0 0 $spacing-4;
+    box-shadow: $shadow-primary;
+    transition: opacity 0.15s, transform 0.1s;
+
+    &:hover:not(:disabled) {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+}
+
+/* ── Switch text ──────────────────────────────── */
+.switchText {
+    text-align: center;
+    font-size: $font-size-sm;
+    color: $neutral-600;
+    margin: 0;
+}
+
+.switchLink {
+    background: none;
+    border: none;
+    padding: 0;
+    color: $brand-primary;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

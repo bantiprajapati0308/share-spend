@@ -8,8 +8,7 @@ import Trip from './components/Trip';
 import Member from './components/Member';
 import Expense from './components/Expense';
 import Report from './components/Report';
-import AuthScreen from './components/AuthScreen';
-import Registration from './components/Registration';
+import AuthModule from './modules/Auth';
 import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
 import HelpCenter from './modules/HelpCenter';
@@ -30,7 +29,6 @@ function MasterReportWrapper() {
 
 function App() {
   const [user, setUser] = useState(null);
-  const [showRegister, setShowRegister] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
@@ -54,9 +52,7 @@ function App() {
   }
 
   if (!user) {
-    return showRegister
-      ? <Registration onRegistered={() => setShowRegister(false)} />
-      : <AuthScreen onRegister={() => setShowRegister(true)} />;
+    return <AuthModule />;
   }
 
   return (

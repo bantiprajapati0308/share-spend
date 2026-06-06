@@ -42,14 +42,17 @@ export const ensureUserProfile = async (user) => {
     if (!user) return;
     try {
         const { firstName, lastName } = parseDisplayName(user.displayName || "");
-        const result = await authApi.createOrUpdateProfile({
+        const payload = {
             email: user.email,
             firstName,
             lastName,
             displayName: user.displayName || "",
             photoURL: user.photoURL || "",
             authProvider: user.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email',
-        });
+        };
+        // Google accounts expose a phone number when the user has one linked
+        if (user.phoneNumber) payload.mobile = user.phoneNumber;
+        const result = await authApi.createOrUpdateProfile(payload);
         if (!result.success) {
             console.error('ensureUserProfile: failed', result.error);
         }

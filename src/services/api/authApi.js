@@ -6,4 +6,6 @@ export const authApi = {
     updateProfile: (data) => apiClient.put('/api/auth/profile', data),
     updateLastLogin: () => apiClient.patch('/api/auth/last-login', {}),
     register: (data) => apiClient.post('/api/auth/register', data),
+    forgotPassword: (email) => apiClient.post('/api/auth/forgot-password', { email }),
+    sendVerification: () => apiClient.post('/api/auth/send-verification', {}),
 };
