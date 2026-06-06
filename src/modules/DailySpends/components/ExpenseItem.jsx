@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BoxArrowDown, BoxArrowUp, Trash3, PencilSquare, ThreeDotsVertical, CashStack, CreditCard2Front, CreditCard, Bank } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import styles from '../styles/DailySpends.module.scss';
 import { formatCurrencyINR } from '../../../Util';
@@ -95,7 +96,14 @@ function ExpenseItem({ expense, onDelete, onEdit, dateHide = false }) {
                     <div className={styles.expenseItemName} title={expense.name}>{expense.name}</div>
                     <div className={styles.expenseItemTags}>
                         <span className={styles.categoryBadge}>{expense.category}</span>
-                        {expense.notes && <span className={styles.notesBadge}>Notes</span>}
+                        {expense.notes && (
+                            <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id={`note-tooltip-${expense.id}`}>{expense.notes}</Tooltip>}
+                            >
+                                <span className={styles.notesBadge}>Notes</span>
+                            </OverlayTrigger>
+                        )}
                     </div>
                 </div>
 

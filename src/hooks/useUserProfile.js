@@ -32,19 +32,17 @@ export const createOrUpdateUserProfile = async (user) => {
 };
 
 /**
- * Ensures a backend profile exists for the given Firebase user.
- * Called on every login — creates the profile + seeds categories if missing.
+ * Ensures a backend profile exists and categories are seeded for the given Firebase user.
+ * Always calls createOrUpdateProfile so the backend's categoriesSeeded check runs on
+ * every login — this prevents the race condition where CategoryContext fetches an empty
+ * list before seeding has completed.
  * Does NOT throw so it never blocks the main auth flow.
  */
 export const ensureUserProfile = async (user) => {
     if (!user) return;
     try {
-        const profileResult = await authApi.getProfile();
-        if (profileResult.success) return profileResult.data;
-
-        // Profile missing (404) or server error — try to create it
         const { firstName, lastName } = parseDisplayName(user.displayName || "");
-        const createResult = await authApi.createOrUpdateProfile({
+        const result = await authApi.createOrUpdateProfile({
             email: user.email,
             firstName,
             lastName,
@@ -52,10 +50,10 @@ export const ensureUserProfile = async (user) => {
             photoURL: user.photoURL || "",
             authProvider: user.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email',
         });
-        if (!createResult.success) {
-            console.error('ensureUserProfile: profile creation failed', createResult.error);
+        if (!result.success) {
+            console.error('ensureUserProfile: failed', result.error);
         }
-        return createResult.data;
+        return result.data;
     } catch (error) {
         console.error('ensureUserProfile error:', error.message);
         // Swallow — never block the app from loading

@@ -34,11 +34,16 @@ function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-      setIsAuthLoading(false); // Auth check complete
-      // Ensure backend profile exists (creates it if missing / first Google login)
-      if (user) ensureUserProfile(user);
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        // Keep the FullScreenLoader visible during profile creation + category seeding.
+        // This prevents CategoryContext from fetching an empty list before seeding finishes,
+        // and gives the user visible feedback during Google first-login.
+        setIsAuthLoading(true);
+        await ensureUserProfile(firebaseUser);
+      }
+      setUser(firebaseUser);
+      setIsAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);

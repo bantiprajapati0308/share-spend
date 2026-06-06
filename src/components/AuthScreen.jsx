@@ -10,7 +10,7 @@ import { Google, LockFill } from "react-bootstrap-icons";
 import styles from "../assets/scss/AuthScreen.module.scss";
 import Logo from "../assets/images/logo.png";
 import { useNavigate } from "react-router-dom";
-import { createOrUpdateUserProfile, updateLastLogin } from "../hooks/useUserProfile";
+import { updateLastLogin } from "../hooks/useUserProfile";
 import { authApi } from "../services/api/authApi";
 import DatePickerInput from "../utils/DatePickerInput";
 import RegisterFields from "./RegisterFields";
@@ -75,15 +75,9 @@ const AuthScreen = () => {
     setError("");
     setLoadingAuth(true);
     try {
-      const credentialResult = await signInWithPopup(auth, googleProvider);
-      const { user } = credentialResult;
-
-      // Fire-and-forget: profile creation is also guarded by ensureUserProfile
-      // in App.jsx. Don't block navigation if the API is slow or first-call fails.
-      createOrUpdateUserProfile(user).catch(e =>
-        console.warn('[Google auth] Initial profile creation failed, will retry on app load:', e.message)
-      );
-
+      await signInWithPopup(auth, googleProvider);
+      // onAuthStateChanged in App.jsx will now await ensureUserProfile (profile creation
+      // + category seeding) before rendering the app — no extra call needed here.
       setLoadingAuth(false);
       navigate("/daily-expenses");
     } catch (err) {
