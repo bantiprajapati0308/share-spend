@@ -1,11 +1,14 @@
 <!doctype html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>share-spend</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2f8f5f" />
+    <link rel="apple-touch-icon" href="/assets/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <script type="text/javascript">
       (function (l) {
         if (l.search[1] === "/") {
@@ -16,7 +19,11 @@
               return s.replace(/~and~/g, "&");
             })
             .join("?");
-          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash,
+          );
         }
       })(window.location);
     </script>
@@ -25,6 +32,19 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then(function (reg) {
+              console.log("Service worker registered.", reg);
+            })
+            .catch(function (err) {
+              console.warn("Service worker registration failed:", err);
+            });
+        });
+      }
+    </script>
   </body>
-
 </html>
