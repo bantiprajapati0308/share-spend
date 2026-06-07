@@ -1,0 +1,262 @@
+﻿@use '../../../assets/scss/variables' as *;
+
+/* ══════════════════════════════════════════════════
+   Analytics Tab — card-list design
+   ══════════════════════════════════════════════════ */
+
+.wrapper {
+    padding: $spacing-3 0 $spacing-8;
+}
+
+/* ── Stats 3-column row ─────────────────────────── */
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: $spacing-3;
+    margin-bottom: $spacing-4;
+}
+
+.statCard {
+    background: #fff;
+    border-radius: $radius-2xl;
+    border: 1px solid $neutral-200;
+    box-shadow: $shadow-sm;
+    padding: $spacing-4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: $spacing-1;
+}
+
+.statIconBox {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-xl;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: $spacing-2;
+    flex-shrink: 0;
+}
+
+// Card 1 — Total Expenses/Income: indigo
+.statsGrid .statCard:nth-child(1) .statIconBox {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+// Card 2 — Total Transactions: teal
+.statsGrid .statCard:nth-child(2) .statIconBox {
+    background: #CCFBF1;
+    color: #0F766E;
+}
+
+// Card 3 — Categories: amber
+.statsGrid .statCard:nth-child(3) .statIconBox {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.statLabel {
+    font-size: 0.7rem;
+    font-weight: $font-weight-semibold;
+    color: $neutral-500;
+    letter-spacing: 0.4px;
+    line-height: $line-height-tight;
+}
+
+.statValue {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    line-height: $line-height-tight;
+}
+
+/* ── Main card ──────────────────────────────────── */
+.card {
+    background: #fff;
+    border-radius: $radius-2xl;
+    box-shadow: $shadow-md;
+    border: 1px solid $neutral-200;
+    overflow: hidden;
+}
+
+.categoryList {
+    max-height: 560px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: $neutral-300 transparent;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $neutral-300;
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+}
+
+/* ── Category row ───────────────────────────────── */
+.row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    padding: $spacing-4 $spacing-4;
+    border-bottom: 1px solid $neutral-100;
+    transition: background 0.1s;
+    cursor: pointer;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: $primary-50;
+    }
+}
+
+.rowSelected {
+    background: #EEF2FF;
+    border-left: 3px solid $brand-primary;
+
+    &:hover {
+        background: #E4EBFF;
+    }
+
+    .rowName {
+        color: $brand-primary;
+    }
+}
+
+.rowIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: $radius-xl;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rowMeta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rowName {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rowSub {
+    font-size: 0.72rem;
+    color: $neutral-500;
+    font-weight: $font-weight-medium;
+}
+
+.rowDate {
+    font-size: 0.68rem;
+    color: $neutral-400;
+}
+
+.rowRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.rowAmount {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    white-space: nowrap;
+}
+
+.rowPercent {
+    font-size: 0.72rem;
+    font-weight: $font-weight-bold;
+    color: $brand-primary;
+}
+
+.rowChevron {
+    color: $neutral-300;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* ── Selection banner ───────────────────────────── */
+.selectionBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #EEF2FF;
+    border: 1.5px solid $brand-primary;
+    border-radius: $radius-xl;
+    padding: $spacing-2 $spacing-4;
+    margin-bottom: $spacing-3;
+}
+
+.selectionText {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $brand-primary;
+}
+
+.clearSelBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-1-5;
+    background: none;
+    border: 1.5px solid $brand-primary;
+    border-radius: $radius-full;
+    padding: 3px $spacing-3;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $brand-primary;
+    cursor: pointer;
+    transition: background 0.12s;
+
+    &:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+}
+
+/* ── Stats grid active (selection mode) ──────────── */
+.statsGridActive .statCard {
+    border-color: $brand-primary;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* ── Empty / coming-soon state ──────────────────── */
+.emptyState {
+    text-align: center;
+    padding: $spacing-12 $spacing-8;
+    color: $neutral-400;
+}
+
+.emptyIcon {
+    font-size: 2.5rem;
+    margin-bottom: $spacing-3;
+}
+
+.emptyText {
+    font-size: $font-size-sm;
+    margin: 0;
+}

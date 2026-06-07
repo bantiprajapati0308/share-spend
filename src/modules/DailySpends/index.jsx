@@ -18,6 +18,7 @@ import { DailySpendTabsList } from '../../Util';
 import CategoryManager from './components/CategoryManager';
 import LimitsManager from './LimitsManager';
 import ReportsTabContent from './components/ReportsTabContent';
+import AnalyticsTabContent from './components/AnalyticsTabContent';
 
 function DailySpends() {
     const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
@@ -349,6 +350,13 @@ function DailySpends() {
                                     </div>
                                 )}
                                 {tab.id === 'set_limits' && <LimitsManager embedded />}
+                                {tab.id === 'analytics' && (
+                                    <AnalyticsTabContent
+                                        transactions={transactions}
+                                        categories={allCategories}
+                                        type={selectedType}
+                                    />
+                                )}
                                 {tab.id === 'reports' && (
                                     <ReportsTabContent
                                         transactions={transactions}
