@@ -326,10 +326,11 @@ function DailySpends() {
                                 eventKey={tab.id}
                                 title={(
                                     <span className={styles.tabTitle}>
-                                        <i
-                                            className={`${tab.iconClass} ${styles.tabIcon} ${tabIconClassById[tab.id] || ''}`}
+                                        <tab.Icon
+                                            size={14}
+                                            className={`${styles.tabIcon} ${tabIconClassById[tab.id] || ''}`}
                                             aria-hidden="true"
-                                        ></i>
+                                        />
                                         <span className={styles.tabLabel}>{tab.label}</span>
                                     </span>
                                 )}

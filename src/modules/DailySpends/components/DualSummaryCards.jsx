@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import { WalletFill, GraphUpArrow, ExclamationTriangleFill, PiggyBankFill } from 'react-bootstrap-icons';
 import styles from '../styles/DualSummaryCards.module.scss';
 import { formatCurrencyINR } from '../../../Util';
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +50,7 @@ function DualSummaryCards({
                             aria-label="View income breakdown"
                         >
                             <div className={`${styles.iconCircle} ${styles.income} d-flex align-items-center justify-content-center`}>
-                                <i className="bi bi-wallet-fill"></i>
+                                <WalletFill size={18} color="white" />
                             </div>
                             <div className={styles.value}>
                                 {formatCurrencyINR(totalIncome, { showSymbol: false, decimals: 0 })}
@@ -67,7 +68,7 @@ function DualSummaryCards({
                             aria-label="View expense breakdown"
                         >
                             <div className={`${styles.iconCircle} ${styles.expense} d-flex align-items-center justify-content-center`}>
-                                <i className="bi bi-graph-up-arrow"></i>
+                                <GraphUpArrow size={18} color="white" />
                             </div>
                             <div className={`${styles.value} ${styles.expense}`}>
                                 {formatCurrencyINR(totalSpend, { showSymbol: false, decimals: 0 })}
@@ -78,7 +79,7 @@ function DualSummaryCards({
                         {/* Saved/Overspent */}
                         <div className="d-flex flex-column align-items-center text-center">
                             <div className={`${styles.iconCircle} ${isOverspent ? styles.overspent : styles.saved} d-flex align-items-center justify-content-center`}>
-                                <i className={isOverspent ? "bi bi-exclamation-triangle-fill" : "bi bi-piggy-bank-fill"}></i>
+                                {isOverspent ? <ExclamationTriangleFill size={18} color="white" /> : <PiggyBankFill size={18} color="white" />}
                             </div>
                             <div className={`${styles.value} ${isOverspent ? styles.overspent : styles.saved}`}>
                                 {formatCurrencyINR(displayAmount, { showSymbol: false, decimals: 0 })}

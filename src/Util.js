@@ -1,3 +1,5 @@
+import { PlusCircle, GearFill, BarChartFill, TagsFill } from 'react-bootstrap-icons';
+
 // Default currency for the application
 export const DEFAULT_CURRENCY = 'INR';
 export const DEFAULT_CURRENCY_SYMBOL = '₹';
@@ -75,8 +77,8 @@ export const CURRENCY_ARRAY = [
 ]
 
 export const DailySpendTabsList = [
-    { id: 'add-transaction', label: 'Add Transaction', iconClass: 'bi bi-plus-circle' },
-    { id: 'set_limits', label: 'Set Limits', iconClass: 'bi bi-gear' },
-    { id: 'reports', label: 'Reports', iconClass: 'bi bi-bar-chart' },
-    { id: 'category', label: 'Manage Categories', iconClass: 'bi bi-tags' },
+    { id: 'add-transaction', label: 'Add Transaction', Icon: PlusCircle },
+    { id: 'set_limits', label: 'Set Limits', Icon: GearFill },
+    { id: 'reports', label: 'Reports', Icon: BarChartFill },
+    { id: 'category', label: 'Manage Categories', Icon: TagsFill },
 ]; 
