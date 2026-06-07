@@ -1,0 +1,466 @@
+@use '../../../../assets/scss/variables' as *;
+@use '../../../../assets/scss/mixins' as *;
+
+// ==================== Wrapper ====================
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    background: #f3f4f8;
+    min-height: 100%;
+}
+
+// ==================== Header (non-embedded) ====================
+.header {
+    background: $gradient-primary;
+    color: white;
+    padding: 0.75rem 1rem;
+    @include flex-between;
+
+    .backBtn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        @include flex-center;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    .headerTitle {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+// ==================== Tab Toggle Wrapper ====================
+.tabToggleWrap {
+    padding: 0 1rem;
+    margin-bottom: 0.875rem;
+}
+
+// ==================== Content ====================
+.content {
+    padding: 0 1rem 1.5rem;
+}
+
+// ==================== Summary Grid ====================
+.summaryGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
+}
+
+.statCard {
+    background: white;
+    border-radius: 12px;
+    padding: 0.875rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.statLabel {
+    font-size: 0.72rem;
+    color: $neutral-500;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.statValue {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $neutral-900;
+}
+
+// ==================== Status Modifier Classes ====================
+.danger {
+    color: $danger-500 !important;
+}
+
+.warning {
+    color: $warning-600 !important;
+}
+
+.success {
+    color: $success-600 !important;
+}
+
+.primary {
+    color: $brand-primary !important;
+}
+
+// ==================== Add Button ====================
+.addBtn {
+    width: 100%;
+    background: $brand-primary;
+    border: none;
+    color: white;
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    @include flex-center;
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+    box-shadow: 0 4px 12px rgba($brand-primary, 0.35);
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+    }
+
+    &:active {
+        opacity: 0.8;
+    }
+}
+
+// ==================== Filter Chips ====================
+.filterRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 0.875rem;
+    padding-bottom: 2px;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.filterChip {
+    flex-shrink: 0;
+    border: 1.5px solid $neutral-300;
+    background: white;
+    color: $neutral-600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+
+    &.chipActive {
+        background: $brand-primary;
+        border-color: $brand-primary;
+        color: white;
+    }
+}
+
+.chipOverLimit {
+    border-color: $danger-300;
+    color: $danger-600;
+
+    &.chipActive {
+        background: $danger-500;
+        border-color: $danger-500;
+        color: white;
+    }
+}
+
+.chipCaution {
+    border-color: $warning-400;
+    color: $warning-700;
+
+    &.chipActive {
+        background: $warning-500;
+        border-color: $warning-500;
+        color: white;
+    }
+}
+
+.chipOnTrack {
+    border-color: $success-400;
+    color: $success-700;
+
+    &.chipActive {
+        background: $success-600;
+        border-color: $success-600;
+        color: white;
+    }
+}
+
+// ==================== Loading ====================
+.loadingState {
+    @include flex-center;
+    flex-direction: column;
+    padding: 3rem 2rem;
+    gap: 0.75rem;
+    color: $neutral-500;
+}
+
+// ==================== Limits List ====================
+.limitsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+// ==================== Limit Card ====================
+.limitCard {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    // Border colour + bottom width are driven by inline style in LimitCard.jsx.
+    // box-shadow removed — the coloured border acts as the visual separator.
+}
+
+// Action Bar (edit / delete) inside card
+.cardActionsBar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    background: $neutral-100;
+    border-bottom: 1px solid $neutral-200;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+
+    &:active {
+        opacity: 0.8;
+    }
+}
+
+.actionEdit {
+    background: $primary-100;
+    color: $brand-primary;
+}
+
+.actionDelete {
+    background: $danger-100;
+    color: $danger-600;
+}
+
+// ==================== Card Row ====================
+.cardRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+}
+
+.categoryIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    @include flex-center;
+    font-size: 1.375rem;
+    flex-shrink: 0;
+}
+
+.cardInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.cardName {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: $neutral-900;
+    margin: 0 0 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardAmount {
+    font-size: 0.8rem;
+    color: $neutral-500;
+    margin: 0;
+}
+
+.cardRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.cardPercentage {
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.statusBadge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.18rem 0.5rem;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.badgeDanger {
+    background: $danger-50;
+    color: $danger-600;
+}
+
+.badgeWarning {
+    background: $warning-50;
+    color: $warning-700;
+}
+
+.badgeSuccess {
+    background: $primary-50;
+    color: $brand-primary;
+}
+
+.actionsToggle {
+    background: none;
+    border: none;
+    color: $neutral-400;
+    font-size: 1.125rem;
+    padding: 0 0.25rem;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+
+    &:hover {
+        color: $neutral-600;
+    }
+}
+
+// ==================== Progress Bar ====================
+@keyframes tipPulse {
+
+    0%,
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: translateY(-50%) scale(1.75);
+        opacity: 0.25;
+    }
+}
+
+.progressTrack {
+    height: 8px;
+    background: $neutral-200;
+    border-radius: 0 0 14px 14px; // follow card bottom corners
+    position: relative; // needed so the tip dot isn't clipped
+}
+
+.progressFill {
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    transition: width 0.5s ease;
+    position: relative;
+
+    // Pulsing dot at the tip of the bar
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -1px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: inherit; // same colour as the bar segment
+        transform: translateY(-50%);
+        animation: tipPulse 1.6s ease-in-out infinite;
+        pointer-events: none;
+    }
+}
+
+// 6-step colour scale: green → dark green → yellow → dark yellow → red → dark red
+.progressGreen {
+    background: $success-500; // 0–30 %
+}
+
+.progressDarkGreen {
+    background: $success-700; // 30–55 %
+}
+
+.progressYellow {
+    background: $warning-400; // 55–75 %
+}
+
+.progressDarkYellow {
+    background: $warning-600; // 75–90 %
+}
+
+.progressRed {
+    background: $danger-500; // 90–100 %
+}
+
+.progressOverLimit {
+    background: $danger-700; // > 100 % (bar capped at 100 % width)
+}
+
+// ==================== Empty State ====================
+.emptyState {
+    @include flex-center;
+    flex-direction: column;
+    padding: 3rem 2rem;
+    gap: 0.625rem;
+    text-align: center;
+    background: white;
+    border-radius: 14px;
+
+    .addBtn {
+        margin-top: 0.5rem;
+        width: auto;
+        padding: 0.7rem 1.5rem;
+    }
+}
+
+.emptyIcon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.emptyTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $neutral-800;
+    margin: 0;
+}
+
+.emptyText {
+    font-size: 0.875rem;
+    color: $neutral-500;
+    margin: 0;
+}
+
+// ==================== Limit Form — Manage Category Btn ====================
+.addCategoryBtn {
+    background: rgba($brand-primary, 0.1);
+    border: 1px solid $brand-primary;
+    color: $brand-primary;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    @include flex-center;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: $brand-primary;
+        color: white;
+    }
+}

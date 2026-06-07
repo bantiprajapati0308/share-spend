@@ -1,0 +1,130 @@
+.progressContainer {
+    width: 100%;
+    margin-top: 0.75rem;
+
+    &.small {
+        .progressBackground {
+            height: 6px;
+        }
+    }
+
+    &.medium {
+        .progressBackground {
+            height: 12px;
+        }
+    }
+
+    &.large {
+        .progressBackground {
+            height: 20px;
+        }
+    }
+
+    .progressWrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .progressBackground {
+            flex: 1;
+            background-color: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+
+            .progressFill {
+                height: 100%;
+                border-radius: 12px;
+                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(180deg,
+                            rgba(255, 255, 255, 0.3) 0%,
+                            rgba(255, 255, 255, 0) 50%,
+                            rgba(0, 0, 0, 0.1) 100%);
+                    border-radius: 12px;
+                }
+
+                &.green {
+                    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+                }
+
+                &.yellow {
+                    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+                }
+
+                &.orange {
+                    box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3);
+                }
+
+                &.red {
+                    box-shadow: 0 2px 8px rgba(248, 113, 113, 0.3);
+                }
+            }
+        }
+
+        .progressLabel {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+
+            .exceeded {
+                color: #dc2626;
+                font-size: 0.75rem;
+                margin-left: 0.25rem;
+            }
+        }
+    }
+
+    .warningText {
+        margin-top: 0.5rem;
+        color: #dc2626;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+}
+
+// Animation for progress bar
+@keyframes progressGlow {
+    0% {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    100% {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+// High-risk state (exceeding limits)
+@media (prefers-reduced-motion: no-preference) {
+    .progressContainer {
+        .progressWrapper {
+            .progressBackground {
+                .progressFill {
+                    &.red {
+                        animation: progressGlow 2s ease-in-out infinite;
+                    }
+                }
+            }
+        }
+    }
+}

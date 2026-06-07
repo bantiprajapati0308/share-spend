@@ -1,0 +1,132 @@
+@use '../../../assets/scss/variables' as *;
+
+.topSection {
+    margin-bottom: 1.5rem;
+}
+
+/* ── Card grid ─────────────────────────────────── */
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+}
+
+.card {
+    background: #fff;
+    border-radius: 1.1rem;
+    padding: 1.1rem 0.5rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.28rem;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    text-align: center;
+    min-height: 148px;
+    justify-content: center;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+        box-shadow: 0 5px 22px rgba(0, 0, 0, 0.12);
+    }
+}
+
+/* ── Tinted balance card ────────────────────────── */
+.balancePos {
+    background: linear-gradient(150deg, #e6f9f1 0%, #ccf0e1 100%);
+}
+
+.balanceNeg {
+    background: linear-gradient(150deg, #fff0ee 0%, #fdddd9 100%);
+}
+
+/* ── SVG icon circle ────────────────────────────── */
+.iconWrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.3rem;
+    flex-shrink: 0;
+
+    svg {
+        width: 22px;
+        height: 22px;
+        color: #fff;
+    }
+}
+
+.iconWrapGreen {
+    background: #10b981;
+}
+
+.iconWrapRed {
+    background: #ef4444;
+}
+
+/* ── Balance emoji ──────────────────────────────── */
+.balanceFace {
+    font-size: 3.1rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+}
+
+/* ── Typography ─────────────────────────────────── */
+.cardLabel {
+    font-size: 0.63rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.cardAmount {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.15;
+
+    @media (max-width: 380px) {
+        font-size: 1rem;
+    }
+}
+
+.amountGreen {
+    color: #059669;
+}
+
+.amountRed {
+    color: #dc2626;
+}
+
+.cardSub {
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ── Add button ─────────────────────────────────── */
+.addButton {
+    width: 100%;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e62d0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+
+    &:hover {
+        box-shadow: 0 6px 18px rgba(59, 130, 246, 0.38);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}

@@ -1,0 +1,167 @@
+// Summary Cards Component Styles
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.summaryCard {
+    border: none;
+    border-radius: $radius-lg;
+    transition: $transition-slow;
+    box-shadow: $shadow-md;
+    background: $card-gradient;
+    position: relative;
+    overflow: hidden;
+
+    @include gradient-border-top;
+    @include card-hover;
+
+    &:hover {
+        &::after {
+            @include modal-overlay;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+    }
+
+    // Card variants
+    &.income {
+        @include gradient-border-top($height: 4px, $gradient: $success-gradient);
+
+        .cardLabel {
+            color: $success-color;
+        }
+
+        .cardAmount {
+            color: $success-color;
+            @include gradient-text($success-bg);
+        }
+
+        &:hover::after {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+        }
+    }
+
+    &.highlight {
+        @include gradient-border-top($height: 6px, $gradient: $secondary-gradient);
+
+        .cardLabel {
+            color: #667eea;
+        }
+
+        .cardAmount {
+            @include gradient-text;
+            font-weight: 800;
+        }
+
+        &:hover::after {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        }
+    }
+
+    &.success {
+        @include gradient-border-top($height: 4px, $gradient: $success-gradient);
+
+        .cardLabel,
+        .cardAmount {
+            color: $success-color;
+        }
+    }
+
+    &.warning {
+        @include gradient-border-top($height: 4px, $gradient: $warning-gradient);
+
+        .cardLabel,
+        .cardAmount {
+            color: #d97706;
+        }
+    }
+
+    &.danger {
+        @include gradient-border-top($height: 4px, $gradient: $danger-gradient);
+
+        .cardLabel,
+        .cardAmount {
+            color: $danger-color;
+        }
+    }
+
+    // Bootstrap override
+    :global(.card-body) {
+        @include responsive-padding(1rem 0.75rem, 1.5rem 1rem);
+        position: relative;
+    }
+
+    .cardLabel {
+        margin: 0 0 0.75rem 0;
+        color: $text-secondary;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: currentColor;
+            opacity: 0.3;
+            border-radius: 1px;
+        }
+    }
+
+    .cardAmount {
+        margin: $spacing-md 0 $spacing-sm 0;
+        color: $text-primary;
+        font-weight: 800;
+        font-size: 1.8rem;
+        line-height: 1.2;
+        position: relative;
+    }
+
+    .cardSubtext {
+        margin: 0.75rem 0 0 0;
+        color: $text-muted;
+        font-size: 0.85rem;
+        font-weight: 500;
+        @include flex-center;
+        gap: $spacing-sm;
+
+        &::before {
+            content: '📊';
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+    }
+}
+
+// Loading state
+.loadingContainer {
+    @include flex-center;
+    flex-direction: column;
+    padding: 6rem 2rem;
+    background: $card-gradient;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    margin: $spacing-xl 0;
+    position: relative;
+
+    @include gradient-border-top;
+
+    :global(.spinner-border) {
+        width: 3rem;
+        height: 3rem;
+        color: #667eea;
+        @include loading-animation;
+    }
+
+    p {
+        margin-top: $spacing-xl;
+        font-size: 1.1rem;
+        color: $text-secondary;
+        font-weight: 500;
+        text-align: center;
+        @include gradient-text(linear-gradient(135deg, #64748b 0%, #94a3b8 100%));
+    }
+}

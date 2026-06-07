@@ -1,0 +1,474 @@
+@use '../../../assets/scss/variables' as *;
+@use '../../../assets/scss/mixins' as *;
+
+// ── Page shell ────────────────────────────────────────────
+.page {
+    min-height: 100vh;
+    background: #f7f8fc;
+}
+
+// ── Header bar ────────────────────────────────────────────
+.header {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid $border-color;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    box-shadow: $shadow-sm;
+}
+
+.headerBack {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $text-primary;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #f0f0f0;
+    }
+
+    i {
+        font-size: 1.2rem;
+    }
+}
+
+.headerTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0;
+}
+
+.headerHelp {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $text-secondary;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #f0f0f0;
+    }
+
+    i {
+        font-size: 1.2rem;
+    }
+}
+
+// ── Scrollable body ───────────────────────────────────────
+.body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+// ── Banner ────────────────────────────────────────────────
+.banner {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+}
+
+.bannerText {
+    flex: 1;
+}
+
+.bannerTitle {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: $text-primary;
+    margin: 0 0 0.3rem;
+}
+
+.bannerSubtitle {
+    font-size: 0.82rem;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.bannerIllustration {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.illustrationCircle {
+    width: 64px;
+    height: 64px;
+    background: $primary-color;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    i {
+        font-size: 1.8rem;
+        color: white;
+    }
+}
+
+@mixin dot($size, $color, $top, $left) {
+    position: absolute;
+    width: $size;
+    height: $size;
+    background: $color;
+    border-radius: 50%;
+    top: $top;
+    left: $left;
+}
+
+.illustrationDot1 {
+    @include dot(10px, rgba($primary-color, 0.4), 5px, 60px);
+}
+
+.illustrationDot2 {
+    @include dot(7px, rgba($primary-color, 0.25), 55px, 65px);
+}
+
+.illustrationDot3 {
+    @include dot(6px, rgba($primary-color, 0.2), 10px, 10px);
+}
+
+// ── Section shell ─────────────────────────────────────────
+.section {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: $shadow-sm;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.2rem;
+}
+
+.sectionSubtitle {
+    font-size: 0.8rem;
+    color: $text-secondary;
+    margin: 0 0 1rem;
+}
+
+.viewAll {
+    font-size: 0.8rem;
+    color: $primary-color;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+// ── Contact list ──────────────────────────────────────────
+.contactList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: #fafafa;
+    border: 1px solid $border-color;
+    border-radius: 0.875rem;
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s, box-shadow 0.15s;
+
+    &:hover {
+        background: #f3f4f6;
+        box-shadow: $shadow-sm;
+    }
+}
+
+.contactIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        font-size: 1.15rem;
+    }
+}
+
+.contactBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.contactTitle {
+    font-size: 0.82rem;
+    color: $text-secondary;
+    margin: 0 0 0.1rem;
+    font-weight: 500;
+}
+
+.contactPrimary {
+    font-size: 0.88rem;
+    color: $text-primary;
+    font-weight: 600;
+    margin: 0 0 0.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.contactSecondary {
+    font-size: 0.75rem;
+    color: $text-secondary;
+    margin: 0;
+}
+
+.contactChevron {
+    color: #ccc;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+// ── FAQ ───────────────────────────────────────────────────
+.faqList {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.faqItem {
+    border-bottom: 1px solid $border-color;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &.faqItemOpen .faqQuestion {
+        color: $primary-color;
+    }
+}
+
+.faqQuestion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.85rem 0;
+    text-align: left;
+    font-size: 0.9rem;
+    color: $text-primary;
+    font-weight: 500;
+    gap: 0.75rem;
+    transition: color 0.15s;
+
+    span {
+        flex: 1;
+    }
+}
+
+.faqChevron {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    color: $text-secondary;
+}
+
+.faqAnswer {
+    padding: 0 0 0.85rem;
+
+    p {
+        font-size: 0.85rem;
+        color: $text-secondary;
+        margin: 0;
+        line-height: 1.6;
+    }
+}
+
+// ── More Options ──────────────────────────────────────────
+.moreOptionsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.moreOptionCard {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: #fafafa;
+    border: 1px solid $border-color;
+    border-radius: 0.875rem;
+    padding: 1rem;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s, box-shadow 0.15s;
+
+    &:hover {
+        background: #f3f4f6;
+        box-shadow: $shadow-sm;
+    }
+}
+
+.moreOptionIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        font-size: 1.15rem;
+    }
+}
+
+.moreOptionBody {
+    flex: 1;
+}
+
+.moreOptionTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.15rem;
+}
+
+.moreOptionSubtitle {
+    font-size: 0.78rem;
+    color: $text-secondary;
+    margin: 0;
+}
+
+.moreOptionChevron {
+    color: #ccc;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+// ── Feedback card ─────────────────────────────────────────
+.feedbackCard {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow: $shadow-sm;
+    flex-wrap: wrap;
+}
+
+.feedbackLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.feedbackIconCircle {
+    width: 40px;
+    height: 40px;
+    background: #fce4ec;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        color: #e91e63;
+        font-size: 1rem;
+    }
+}
+
+.feedbackTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.15rem;
+}
+
+.feedbackSubtitle {
+    font-size: 0.75rem;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.feedbackBtn {
+    background: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.65rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+// ── Privacy note ──────────────────────────────────────────
+.privacyNote {
+    text-align: center;
+    font-size: 0.78rem;
+    color: $text-secondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0;
+
+    i {
+        color: #28a745;
+        font-size: 0.9rem;
+    }
+}

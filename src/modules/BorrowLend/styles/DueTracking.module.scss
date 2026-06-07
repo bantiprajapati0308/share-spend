@@ -1,0 +1,222 @@
+// Due Tracking Section Styles
+// Following existing theme patterns and variables
+@use '../../../assets/scss/variables' as *;
+@use '../../../assets/scss/mixins' as *;
+
+.dueTrackingSection {
+    background: $gradient-background;
+    border-radius: $spacing-3;
+    padding: $spacing-3;
+    margin: $spacing-3 0;
+    border: 1px solid $neutral-200;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    @include mobile-up {
+        padding: $spacing-4;
+        margin: $spacing-4 0;
+    }
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: $spacing-2;
+
+    @include mobile-up {
+        margin-bottom: $spacing-3;
+    }
+
+    @include tablet-up {
+        text-align: left;
+        margin-bottom: $spacing-4;
+    }
+}
+
+.sectionTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $neutral-800;
+    margin-bottom: $spacing-1;
+
+    @include flex-center;
+    gap: $spacing-2;
+
+    &::before {
+        content: "📊";
+        font-size: $font-size-base;
+    }
+
+    @include mobile-up {
+        font-size: $font-size-xl;
+
+        &::before {
+            font-size: $font-size-lg;
+        }
+    }
+
+    @include tablet-up {
+        justify-content: flex-start;
+        font-size: $font-size-2xl;
+    }
+}
+
+.sectionSubtitle {
+    font-size: $font-size-base;
+    color: $neutral-600;
+    margin-bottom: 0;
+    font-weight: $font-weight-normal;
+}
+
+.statusSection {
+    margin-bottom: $spacing-2;
+
+    @include mobile-up {
+        margin-bottom: $spacing-3;
+    }
+
+    @include tablet-up {
+        margin-bottom: $spacing-4;
+    }
+}
+
+.statusSectionTitle {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-2;
+    padding: $spacing-1-5 $spacing-2;
+    border-radius: $spacing-2;
+    @include flex-start;
+    gap: $spacing-1-5;
+
+    @include mobile-up {
+        font-size: $font-size-lg;
+        margin-bottom: $spacing-3;
+        padding: $spacing-2 $spacing-3;
+        gap: $spacing-2;
+    }
+
+    &.overdue {
+        background: $gradient-danger-bg;
+        color: $danger-700;
+        border-left: 4px solid $danger-500;
+
+        &::before {
+            content: "🚨";
+        }
+    }
+
+    &.upcoming {
+        background: $gradient-warning-bg;
+        color: $warning-700;
+        border-left: 4px solid $warning-500;
+
+        &::before {
+            content: "⏰";
+        }
+    }
+}
+
+// Empty State Styling
+.emptyState {
+    text-align: center;
+    padding: $spacing-8 $spacing-4;
+    background: $neutral-50;
+    border-radius: $spacing-3;
+    border: 2px dashed $neutral-300;
+    margin: $spacing-4 0;
+}
+
+.emptyStateIcon {
+    font-size: 3rem;
+    margin-bottom: $spacing-3;
+    opacity: 0.6;
+}
+
+.emptyStateTitle {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $neutral-700;
+    margin-bottom: $spacing-2;
+}
+
+.emptyStateText {
+    font-size: $font-size-base;
+    color: $neutral-600;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: $line-height-relaxed;
+}
+
+// Loading State
+.dueTrackingSection .spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+// Responsive Design
+@media (max-width: 576px) {
+    .dueTrackingSection {
+        padding: $spacing-2;
+        margin: $spacing-2 0;
+        border-radius: $spacing-2;
+    }
+
+    .sectionTitle {
+        font-size: $font-size-base;
+    }
+
+    .statusSectionTitle {
+        font-size: $font-size-sm;
+        padding: $spacing-1 $spacing-1-5;
+        margin-bottom: $spacing-1-5;
+    }
+
+    .emptyState {
+        padding: $spacing-4 $spacing-2;
+    }
+
+    .emptyStateIcon {
+        font-size: 1.5rem;
+    }
+
+    .emptyStateTitle {
+        font-size: $font-size-base;
+    }
+}
+
+@media (max-width: 768px) {
+    .statusSection {
+        margin-bottom: $spacing-3;
+    }
+
+    .statusSectionTitle {
+        margin-bottom: $spacing-2;
+    }
+}
+
+// Animation for section loading
+@keyframes sectionSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dueTrackingSection {
+    animation: sectionSlideIn 0.4s ease-out;
+}
+
+// Hover effect for status sections
+.statusSection {
+    transition: all 0.2s ease;
+
+    &:hover {
+        .statusSectionTitle {
+            transform: translateX(4px);
+        }
+    }
+}

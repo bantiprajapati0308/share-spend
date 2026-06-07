@@ -1,0 +1,233 @@
+/* Charts Carousel Styles */
+.chartsCarousel {
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+    width: 100%;
+}
+
+.carouselHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.headerRow1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.headerRow2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chartTitle {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chartSubtitle {
+    font-size: 0.7rem;
+    color: #6c757d;
+    line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.navButtons {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.typeSelect {
+    font-size: 0.72rem !important;
+    padding: 0.2rem 0.4rem !important;
+    height: 26px !important;
+    width: 90px !important;
+    flex-shrink: 0;
+    display: block;
+}
+
+.carouselBtn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+        color: #495057;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+}
+
+.carouselContainer {
+    overflow: hidden;
+    position: relative;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.carouselSlider {
+    display: flex;
+    min-height: 450px;
+    transition: transform 0.3s ease-in-out;
+    will-change: transform;
+}
+
+.carouselSlide {
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.chartContainer {
+    width: 100%;
+    min-height: 450px;
+    position: relative;
+
+    :global(.chart-wrapper),
+    :global(.chart-container) {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 400px !important;
+        max-width: 100% !important;
+    }
+
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+    }
+}
+
+.chartWrapper {
+    width: 100%;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carouselIndicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.carouselDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: #dee2e6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+
+    &:hover {
+        background: #adb5bd;
+    }
+
+    &.active {
+        background: #007bff;
+        transform: scale(1.2);
+    }
+
+    &:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+
+
+    .chartTitle {
+        font-size: 0.75rem;
+    }
+
+    .chartSubtitle {
+        font-size: 0.68rem;
+    }
+
+    .carouselBtn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .chartContainer {
+        min-height: 400px;
+    }
+
+    .carouselSlider {
+        min-height: 400px;
+    }
+
+    .carouselDot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .chartContainer {
+        min-height: 350px;
+    }
+
+    .carouselSlider {
+        min-height: 350px;
+    }
+
+    .chartTitle {
+        font-size: 0.72rem;
+    }
+
+    .chartSubtitle {
+        font-size: 0.65rem;
+    }
+}

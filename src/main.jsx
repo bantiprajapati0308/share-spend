@@ -6,16 +6,14 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App.jsx'
 import './index.css'
 import './assets/scss/main.scss';
-import store, { persistor } from './redux/store.js';
+import store from './redux/store.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <Router>
-          <App />
-        </Router>
-      </PersistGate>
+      <Router>
+        <App />
+      </Router>
     </Provider>
   </React.StrictMode>,
 )

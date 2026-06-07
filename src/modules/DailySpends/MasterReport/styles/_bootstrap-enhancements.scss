@@ -1,0 +1,240 @@
+// Bootstrap Component Enhancements
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Alert Enhancements
+:global(.alert) {
+    border-radius: $radius-sm;
+    border: none;
+    box-shadow: $shadow-sm;
+    font-weight: 500;
+    margin: $spacing-md 0;
+    @include responsive-padding(0.75rem 1rem, 1rem 1.5rem);
+
+    @media (min-width: $tablet) {
+        border-radius: $radius-md;
+        margin: $spacing-lg 0;
+        box-shadow: $shadow-md;
+    }
+
+    &.alert-danger {
+        background: $danger-bg;
+        color: #991b1b;
+        border-left: 4px solid $danger-color;
+    }
+
+    &.alert-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+
+    &.alert-success {
+        background: $success-bg;
+        color: #166534;
+        border-left: 4px solid $success-color;
+    }
+
+    &.alert-warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+}
+
+// Progress Bar Enhancements
+:global(.progress) {
+    height: 8px;
+    border-radius: $radius-sm;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    @media (min-width: $tablet) {
+        height: 10px;
+        border-radius: $radius-md;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    :global(.progress-bar) {
+        background: $primary-gradient;
+        border-radius: inherit;
+        box-shadow: 0 1px 3px rgba(103, 126, 234, 0.3);
+        transition: width 0.8s ease;
+        position: relative;
+
+        @media (min-width: $tablet) {
+            box-shadow: 0 2px 4px rgba(103, 126, 234, 0.3);
+        }
+
+        &::after {
+            content: '';
+            @include modal-overlay;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+    }
+}
+
+// Button Enhancements
+:global(.btn) {
+    border-radius: $radius-sm;
+    font-weight: 600;
+    transition: $transition-normal;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @media (min-width: $tablet) {
+        border-radius: $radius-md;
+    }
+
+    &.btn-primary {
+        background: $primary-gradient;
+        border: none;
+        box-shadow: 0 4px 16px rgba(103, 126, 234, 0.3);
+
+        &:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+            @include button-hover;
+            box-shadow: 0 8px 24px rgba(103, 126, 234, 0.4);
+        }
+    }
+
+    &.btn-success {
+        background: $success-gradient;
+        border: none;
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+
+        &:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            @include button-hover;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+    }
+
+    &.btn-outline-primary {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+
+        &:hover {
+            background: $primary-gradient;
+            border-color: #667eea;
+            @include button-hover;
+        }
+    }
+}
+
+// Card Enhancements
+:global(.card) {
+    border: none;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    background: $card-gradient;
+
+    @media (min-width: $tablet) {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-md;
+    }
+
+    :global(.card-header) {
+        background: transparent;
+        border-bottom: 2px solid #e2e8f0;
+        @include responsive-padding;
+    }
+
+    :global(.card-body) {
+        @include responsive-padding;
+    }
+
+    :global(.card-footer) {
+        background: transparent;
+        border-top: 1px solid #e2e8f0;
+        @include responsive-padding;
+    }
+}
+
+// Table Enhancements (Bootstrap table improvements)
+:global(.table) {
+    margin-bottom: 0;
+
+    :global(.table-striped) tbody tr:nth-of-type(odd) {
+        background: linear-gradient(135deg, #fafbff 0%, #f8fafc 100%);
+    }
+
+    :global(.table-hover) tbody tr:hover {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+}
+
+// Badge Enhancements
+:global(.badge) {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 15px;
+
+    &.bg-primary {
+        background: $primary-gradient !important;
+    }
+
+    &.bg-success {
+        background: $success-gradient !important;
+    }
+
+    &.bg-danger {
+        background: $danger-gradient !important;
+    }
+
+    &.bg-warning {
+        background: $warning-gradient !important;
+    }
+}
+
+// Dropdown Enhancements
+:global(.dropdown-menu) {
+    border: none;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    padding: $spacing-sm;
+
+    :global(.dropdown-item) {
+        border-radius: $radius-sm;
+        margin-bottom: $spacing-xs;
+        transition: $transition-fast;
+
+        &:hover {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: $text-primary;
+            transform: translateX(4px);
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Form Control Enhancements
+:global(.form-control) {
+    border-radius: $radius-sm;
+    border: 2px solid #e2e8f0;
+    transition: $transition-fast;
+
+    &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+}
+
+// Nav Enhancement
+:global(.nav-pills) {
+    :global(.nav-link) {
+        border-radius: $radius-md;
+        transition: $transition-normal;
+
+        &.active {
+            background: $primary-gradient;
+            box-shadow: 0 4px 16px rgba(103, 126, 234, 0.3);
+        }
+    }
+}

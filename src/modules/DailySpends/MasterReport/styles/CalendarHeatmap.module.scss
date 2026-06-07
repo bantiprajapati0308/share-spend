@@ -1,0 +1,265 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ── Color Levels ────────────────────────────────────────────────────────────
+// Light backgrounds → dark text | Dark backgrounds → white text
+// Level 0 – no spend
+$level-0-bg: #f1f5f9;
+$level-0-text: #64748b;
+
+// Level 1 – very low (lightest green)
+$level-1-bg: #bbf7d0;
+$level-1-text: #166534; // dark green on light green ✔
+
+// Level 2 – low-medium (solid green)
+$level-2-bg: #22c55e;
+$level-2-text: #ffffff; // white on medium green ✔
+
+// Level 3 – medium (amber)
+$level-3-bg: #f59e0b;
+$level-3-text: #ffffff; // white on amber ✔
+
+// Level 4 – high (orange)
+$level-4-bg: #f97316;
+$level-4-text: #ffffff; // white on orange ✔
+
+// Level 5 – peak (danger red)
+$level-5-bg: #dc2626;
+$level-5-text: #ffffff; // white on red ✔
+
+// ── Container ───────────────────────────────────────────────────────────────
+.calendarWrapper {
+    width: 100%;
+    padding: 0.75rem 0.5rem 0.5rem;
+    overflow-x: auto;
+}
+
+// ── Legend ──────────────────────────────────────────────────────────────────
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    font-size: 0.7rem;
+    color: $text-secondary;
+}
+
+.legendLabel {
+    margin-right: 0.15rem;
+    font-weight: 500;
+}
+
+.legendSwatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
+.legendText {
+    margin-right: 0.35rem;
+}
+
+// ── Standalone level classes ──────────────────────────────────────────────────
+// Applied to both .dayCell and .legendSwatch so both get bg + correct text color
+.level0 {
+    background: $level-0-bg;
+    color: $level-0-text;
+}
+
+.level1 {
+    background: $level-1-bg;
+    color: $level-1-text;
+}
+
+.level2 {
+    background: $level-2-bg;
+    color: $level-2-text;
+}
+
+.level3 {
+    background: $level-3-bg;
+    color: $level-3-text;
+}
+
+.level4 {
+    background: $level-4-bg;
+    color: $level-4-text;
+}
+
+.level5 {
+    background: $level-5-bg;
+    color: $level-5-text;
+}
+
+// ── Grid ────────────────────────────────────────────────────────────────────
+.calendarGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    min-width: 300px;
+}
+
+// ── Day headers (Sun, Mon …) ────────────────────────────────────────────────
+.dayHeader {
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: $text-muted;
+    padding: 0.2rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    &.weekend {
+        color: #6366f1;
+    }
+}
+
+// ── Day cell ────────────────────────────────────────────────────────────────
+.dayCell {
+    border-radius: 6px;
+    padding: 0.3rem 0.2rem 0.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: default;
+    border: 1.5px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    min-height: 48px;
+    position: relative;
+
+    // Out-of-range padding days
+    &.outOfRange {
+        opacity: 0.25;
+        pointer-events: none;
+        background: #f8fafc !important;
+        border-color: transparent !important;
+    }
+
+    &.hasData {
+        cursor: pointer;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            z-index: 2;
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    // Today indicator
+    &.today {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+
+    // Color levels — only background here; text color comes from standalone .levelX
+    &.level0 {
+        background: $level-0-bg;
+    }
+
+    &.level1 {
+        background: $level-1-bg;
+    }
+
+    &.level2 {
+        background: $level-2-bg;
+    }
+
+    &.level3 {
+        background: $level-3-bg;
+    }
+
+    &.level4 {
+        background: $level-4-bg;
+    }
+
+    &.level5 {
+        background: $level-5-bg;
+    }
+}
+
+// .dateNum and .amountBadge inherit color from the parent .levelX class
+.dateNum {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+    color: inherit;
+}
+
+.amountBadge {
+    font-size: 0.58rem;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 1px 3px;
+    border-radius: 3px;
+    color: inherit;
+}
+
+// Peak badge on the highest day
+.peakBadge {
+    position: absolute;
+    top: -5px;
+    right: -4px;
+    font-size: 0.55rem;
+    background: #dc2626;
+    color: white;
+    border-radius: 3px;
+    padding: 1px 3px;
+    font-weight: 700;
+    line-height: 1.2;
+    pointer-events: none;
+}
+
+// ── Summary bar at bottom ────────────────────────────────────────────────────
+.summaryBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.7rem;
+    color: $text-secondary;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.summaryItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+
+    strong {
+        font-size: 0.8rem;
+        color: $text-primary;
+    }
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: $mobile) {
+    .calendarGrid {
+        gap: 3px;
+    }
+
+    .dayCell {
+        min-height: 40px;
+        padding: 0.25rem 0.1rem;
+    }
+
+    .amountBadge {
+        font-size: 0.75rem;
+    }
+}

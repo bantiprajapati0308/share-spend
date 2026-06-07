@@ -1,15 +1,18 @@
 import React from 'react';
-import styles from '../assets/scss/Footer.module.scss'; // Import SCSS for styling
+import styles from '../assets/scss/Footer.module.scss';
+import { EnvelopeFill } from 'react-bootstrap-icons';
 
 const Footer = () => {
     return (
         <footer className={styles.footer}>
             <div className={styles.container}>
-                <p className={styles.contact}>
-                    Manage all your trip and party expenses effortlessly. Contact us at:
-                    <a href="mailto:bantiprajapati30@gmail.com">bantiprajapati30@gmail.com</a>
-                </p>
-                <p className={styles.copyright}>Powered by Banti Prajapati &copy; 2024 All Rights Reserved</p>
+                <span className={styles.contact}>
+                    <EnvelopeFill size={14} className="me-1 text-primary" />
+                    <a href="mailto:bantiprajapati30@gmail.com" style={{ color: '#1e62d0', textDecoration: 'none', fontWeight: 500 }}>Contact</a>
+                </span>
+                <span className={styles.copyright}>
+                    &copy; 2025 Banti Prajapati
+                </span>
             </div>
         </footer>
     );

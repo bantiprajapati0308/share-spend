@@ -1,0 +1,81 @@
+@use './variables' as *;
+
+.bottomNav {
+    position: fixed;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: white;
+    border-top: 1px solid $border-color;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 99;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+
+    @media (min-width: 992px) {
+        height: 80px;
+    }
+}
+
+.navItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: $text-secondary;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    flex: 1;
+    height: 100%;
+
+    &:hover {
+        color: $primary-color;
+        background-color: rgba($primary-color, 0.05);
+    }
+
+    &.active {
+        color: $primary-color;
+        background-color: rgba($primary-color, 0.08);
+        border-top: 3px solid $primary-color;
+
+        svg {
+            animation: scaleIn 0.3s ease;
+        }
+    }
+
+    svg {
+        display: flex;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+}
+
+.label {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+
+    @media (min-width: 768px) {
+        font-size: 0.85rem;
+    }
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

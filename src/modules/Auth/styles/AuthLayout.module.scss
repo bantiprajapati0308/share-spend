@@ -1,0 +1,54 @@
+@use '../../../assets/scss/variables' as *;
+
+.authBg {
+    min-height: 100vh;
+    background-image: url('../../../assets/images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+
+    // Subtle overlay so the card reads clearly on any background colour
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(240, 244, 255, 0.45);
+    }
+}
+
+.card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: $radius-3xl;
+    box-shadow: $shadow-2xl;
+    padding: 2rem 1.75rem 1.5rem;
+    width: 100%;
+    max-width: 400px;
+    max-height: 95vh;
+    overflow-y: auto;
+
+    // Hide scrollbar visually but keep scroll behaviour
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    @media (max-width: 480px) {
+        padding: 1.5rem 1.25rem 1.25rem;
+        max-width: 100%;
+        border-radius: $radius-2xl;
+    }
+}
+
+.errorAlert {
+    font-size: $font-size-sm;
+    border-radius: $radius-xl;
+    margin-bottom: $spacing-4;
+}
