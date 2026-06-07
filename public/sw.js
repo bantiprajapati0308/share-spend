@@ -1,9 +1,9 @@
 const CACHE_NAME = "share-spend-cache-v1";
 const PRECACHE_URLS = [
-  "/",
-  "/index.html",
-  "/assets/icon-192.svg",
-  "/assets/icon-512.svg",
+  "./",
+  "index.html",
+  "assets/icon-192.svg",
+  "assets/icon-512.svg",
 ];
 
 self.addEventListener("install", (event) => {
@@ -40,7 +40,7 @@ self.addEventListener("fetch", (event) => {
         .catch(() => {
           // fallback to cached root for navigation requests
           if (event.request.mode === "navigate") {
-            return caches.match("/index.html");
+            return caches.match("index.html");
           }
         });
     }),
