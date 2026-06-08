@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Form } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { ChevronLeft, ChevronRight } from 'react-bootstrap-icons';
 import { StackedBarChart, PieChart } from '../../../../components/charts';
 import CalendarHeatmap from './CalendarHeatmap';
@@ -201,43 +201,59 @@ function ChartsCarousel({
         <div className={`${styles.chartsCarousel} chartsCarousel`} ref={carouselRef}>
             {/* Navigation Header */}
             <div className={styles.carouselHeader}>
-                {/* Row 1: title + prev/next */}
-                <div className={styles.headerRow1}>
-                    <span className={styles.chartTitle}>{charts[currentIndex].title}</span>
-                    <div className={styles.navButtons}>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={handlePrev}
-                            disabled={charts.length <= 1}
-                            className={styles.carouselBtn}
-                        >
-                            <ChevronLeft size={14} />
-                        </Button>
-                        <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={handleNext}
-                            disabled={charts.length <= 1}
-                            className={styles.carouselBtn}
-                        >
-                            <ChevronRight size={14} />
-                        </Button>
+                <div className={styles.headerTopRow}>
+                    <div className={styles.reportHeadingBlock}>
+                        <h3 className={styles.reportEyebrow}>Spending Insights</h3>
+                    </div>
+
+                    <div className={styles.headerControls}>
+                        <div className={styles.typeToggle} role="group" aria-label="Select transaction type">
+                            {['spend', 'income'].map((type) => {
+                                const isActive = transactionType === type;
+
+                                return (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        className={`${styles.typeToggleBtn} ${isActive ? styles.typeToggleBtnActive : ''}`}
+                                        onClick={() => onTransactionTypeChange?.(type)}
+                                        aria-pressed={isActive}
+                                    >
+                                        {type === 'spend' ? 'Spend' : 'Income'}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-                {/* Row 2: subtitle + dropdown */}
-                <div className={styles.headerRow2}>
-                    <span className={styles.chartSubtitle}>{charts[currentIndex].subtitle}</span>
-                    <Form.Select
+
+                <div className={styles.headerMain}>
+                    <Button
+                        variant="link"
                         size="sm"
-                        value={transactionType}
-                        onChange={(event) => onTransactionTypeChange(event.target.value)}
-                        aria-label="Select transaction type"
-                        className={styles.typeSelect}
+                        onClick={handlePrev}
+                        disabled={charts.length <= 1}
+                        className={styles.carouselBtn}
+                        aria-label="Previous chart"
                     >
-                        <option value="spend">Spend</option>
-                        <option value="income">Income</option>
-                    </Form.Select>
+                        <ChevronLeft size={18} />
+                    </Button>
+
+                    <div className={styles.headerContent}>
+                        <span className={styles.chartTitle}>{charts[currentIndex].title}</span>
+                        <span className={styles.chartSubtitle}>{charts[currentIndex].subtitle}</span>
+                    </div>
+
+                    <Button
+                        variant="link"
+                        size="sm"
+                        onClick={handleNext}
+                        disabled={charts.length <= 1}
+                        className={styles.carouselBtn}
+                        aria-label="Next chart"
+                    >
+                        <ChevronRight size={18} />
+                    </Button>
                 </div>
             </div>
 
@@ -271,7 +287,7 @@ function ChartsCarousel({
                 {charts.map((_, index) => (
                     <button
                         key={index}
-                        className={`${styles.carouselDot} ${index === currentIndex ? styles.active : ''}`}
+                        className={`${styles.carouselDot} ${index === currentIndex ? styles.carouselDotActive : ''}`}
                         onClick={() => handleDotClick(index)}
                         aria-label={`Go to chart ${index + 1}`}
                     />
