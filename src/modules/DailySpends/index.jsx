@@ -30,6 +30,7 @@ function DailySpends() {
     // Edit functionality state
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [formResetKey, setFormResetKey] = useState(0);
     const addFormRef = useRef(null);
 
     const {
@@ -138,13 +139,14 @@ function DailySpends() {
     const handleEditTransaction = async (transaction) => {
         // Set edit mode and populate form
         setEditingTransaction(transaction);
+        setActiveLandingTab('add-transaction');
         setIsEditMode(true);
 
         // Scroll to form
         if (addFormRef.current) {
             addFormRef.current.scrollIntoView({
                 behavior: 'smooth',
-                block: 'start'
+                block: 'start',
             });
         }
     };
@@ -185,7 +187,8 @@ function DailySpends() {
                     isEditMode={isEditMode}
                     onCancelEdit={handleCancelEdit}
                     onCategoriesChanged={refreshTransactions}
-                    onGoToCategories={() => setActiveLandingTab('category')}
+                    onGoToCategories={() => handleLandingTabChange('category')}
+                    key={formResetKey}
                 />
             );
         }
@@ -223,11 +226,12 @@ function DailySpends() {
     const handleLandingTabChange = (tabId) => {
         if (!tabId) return;
 
-        setActiveLandingTab(tabId);
-
-        if (tabId !== 'add-transaction' && isEditMode) {
-            handleCancelEdit();
+        if (tabId !== 'add-transaction') {
+            setFormResetKey(k => k + 1);
+            if (isEditMode) handleCancelEdit();
         }
+
+        setActiveLandingTab(tabId);
     };
 
 
@@ -312,65 +316,65 @@ function DailySpends() {
                         startDate={startDate}
                         endDate={endDate}
                     />
-
-                    <Tabs
-                        id="daily-spends-tabs"
-                        activeKey={activeLandingTab}
-                        onSelect={handleLandingTabChange}
-                        className={`${styles.dailyTabs} mb-2`}
-                        mountOnEnter
-                        unmountOnExit={false}
-                    >
-                        {DailySpendTabsList.map(tab => (
-                            <Tab
-                                key={tab.id}
-                                eventKey={tab.id}
-                                title={(
-                                    <span className={styles.tabTitle}>
-                                        <tab.Icon
-                                            size={14}
-                                            className={`${styles.tabIcon} ${tabIconClassById[tab.id] || ''}`}
-                                            aria-hidden="true"
+                    <div ref={addFormRef}>
+                        <Tabs
+                            id="daily-spends-tabs"
+                            activeKey={activeLandingTab}
+                            onSelect={handleLandingTabChange}
+                            className={`${styles.dailyTabs} mb-2`}
+                            mountOnEnter
+                            unmountOnExit={false}
+                        >
+                            {DailySpendTabsList.map(tab => (
+                                <Tab
+                                    key={tab.id}
+                                    eventKey={tab.id}
+                                    title={(
+                                        <span className={styles.tabTitle}>
+                                            <tab.Icon
+                                                size={14}
+                                                className={`${styles.tabIcon} ${tabIconClassById[tab.id] || ''}`}
+                                                aria-hidden="true"
+                                            />
+                                            <span className={styles.tabLabel}>{tab.label}</span>
+                                        </span>
+                                    )}
+                                >
+                                    {tab.id === 'add-transaction' && (
+                                        <div>
+                                            <AddExpenseForm
+                                                onAddExpense={handleAddTransaction}
+                                                onUpdateExpense={handleUpdateTransaction}
+                                                editingTransaction={editingTransaction}
+                                                isEditMode={isEditMode}
+                                                onCancelEdit={handleCancelEdit}
+                                                onCategoriesChanged={refreshTransactions}
+                                                onGoToCategories={() => handleLandingTabChange('category')}
+                                                key={formResetKey}
+                                            />
+                                        </div>
+                                    )}
+                                    {tab.id === 'set_limits' && <LimitsManager embedded />}
+                                    {tab.id === 'analytics' && (
+                                        <AnalyticsTabContent
+                                            transactions={transactions}
+                                            categories={allCategories}
                                         />
-                                        <span className={styles.tabLabel}>{tab.label}</span>
-                                    </span>
-                                )}
-                            >
-                                {tab.id === 'add-transaction' && (
-                                    <div ref={addFormRef}>
-                                        <AddExpenseForm
-                                            onAddExpense={handleAddTransaction}
-                                            onUpdateExpense={handleUpdateTransaction}
-                                            editingTransaction={editingTransaction}
-                                            isEditMode={isEditMode}
-                                            onCancelEdit={handleCancelEdit}
-                                            onCategoriesChanged={refreshTransactions}
-                                            onGoToCategories={() => setActiveLandingTab('category')}
+                                    )}
+                                    {tab.id === 'reports' && (
+                                        <ReportsTabContent
+                                            transactions={transactions}
+                                            startDate={startDate}
+                                            endDate={endDate}
                                         />
-                                    </div>
-                                )}
-                                {tab.id === 'set_limits' && <LimitsManager embedded />}
-                                {tab.id === 'analytics' && (
-                                    <AnalyticsTabContent
-                                        transactions={transactions}
-                                        categories={allCategories}
-                                        type={selectedType}
-                                    />
-                                )}
-                                {tab.id === 'reports' && (
-                                    <ReportsTabContent
-                                        transactions={transactions}
-                                        startDate={startDate}
-                                        endDate={endDate}
-                                    />
-                                )}
-                                {tab.id === 'category' && (
-                                    <CategoryManager onCategoriesChanged={refreshTransactions} />
-                                )}
-                            </Tab>
-                        ))}
-                    </Tabs>
-
+                                    )}
+                                    {tab.id === 'category' && (
+                                        <CategoryManager onCategoriesChanged={refreshTransactions} />
+                                    )}
+                                </Tab>
+                            ))}
+                        </Tabs>
+                    </div>
                     {/* Transaction View Toggle */}
                     <TransactionViewToggle
                         selectedType={selectedType}

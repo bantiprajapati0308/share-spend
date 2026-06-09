@@ -1,7 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { PencilFill, TrashFill } from 'react-bootstrap-icons';
+import { PencilFill, TrashFill, ThreeDotsVertical } from 'react-bootstrap-icons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 import styles from '../styles/LimitsManager.module.scss';
+import actionStyles from '../../../../assets/scss/ActionPopover.module.scss';
 import {
     calculateLimitPercentage,
     getStatusText,
@@ -31,8 +33,7 @@ const getIconBg = (name = '') => {
  * Tapping the card opens category transactions; ⋮ reveals edit / delete.
  */
 function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCategoryClick, emoji = '📝' }) {
-    const [showActions, setShowActions] = useState(false);
-
+    const [showPopover, setShowPopover] = useState(false);
     const percentage = useMemo(
         () => formatPercentage(calculateLimitPercentage(spent, limit.limit)),
         [spent, limit.limit]
@@ -51,23 +52,18 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCate
     const iconBg = useMemo(() => getIconBg(limit.category), [limit.category]);
 
     const handleCardClick = useCallback(() => {
-        if (!showActions && onCategoryClick) onCategoryClick(limit.category);
-    }, [showActions, onCategoryClick, limit.category]);
-
-    const handleActionsToggle = useCallback((e) => {
-        e.stopPropagation();
-        setShowActions(prev => !prev);
-    }, []);
+        if (onCategoryClick) onCategoryClick(limit.category);
+    }, [onCategoryClick, limit.category]);
 
     const handleEdit = useCallback((e) => {
         e.stopPropagation();
-        setShowActions(false);
+        setShowPopover(false);
         onEdit(limit);
     }, [onEdit, limit]);
 
     const handleDelete = useCallback((e) => {
         e.stopPropagation();
-        setShowActions(false);
+        setShowPopover(false);
         if (window.confirm(`Delete limit for "${limit.category}"?`)) {
             onDelete(limit.id);
         }
@@ -125,18 +121,6 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCate
                 borderBottomWidth: '1px',
             }}
         >
-            {/* Inline action bar (edit / delete) */}
-            {showActions && (
-                <div className={styles.cardActionsBar}>
-                    <button type="button" className={`${styles.actionBtn} ${styles.actionEdit}`} onClick={handleEdit}>
-                        <PencilFill size={11} /> Edit
-                    </button>
-                    <button type="button" className={`${styles.actionBtn} ${styles.actionDelete}`} onClick={handleDelete}>
-                        <TrashFill size={11} /> Delete
-                    </button>
-                </div>
-            )}
-
             {/* Main row */}
             <div className={styles.cardRow}>
                 {/* Category icon */}
@@ -159,15 +143,42 @@ function LimitCard({ limit, spent, onEdit, onDelete, limitType = 'spend', onCate
                 </div>
 
                 {/* Options toggle */}
-                <button
-                    type="button"
-                    className={styles.actionsToggle}
-                    onClick={handleActionsToggle}
-                    title="Options"
-                    aria-label="Card options"
+                <OverlayTrigger
+                    placement="left"
+                    rootClose
+                    show={showPopover}
+                    onToggle={(nextShow) => !nextShow && setShowPopover(false)}
+                    overlay={
+                        <Popover id={`limit-actions-${limit.id}`}>
+                            <Popover.Body className="p-1">
+                                <button
+                                    className={actionStyles.actionPopoverItem}
+                                    onClick={handleEdit}
+                                >
+                                    <PencilFill size={14} className="text-primary" />
+                                    Edit Limit
+                                </button>
+                                <button
+                                    className={`${actionStyles.actionPopoverItem} ${actionStyles.actionPopoverItemDanger}`}
+                                    onClick={handleDelete}
+                                >
+                                    <TrashFill size={14} />
+                                    Delete Limit
+                                </button>
+                            </Popover.Body>
+                        </Popover>
+                    }
                 >
-                    ⋮
-                </button>
+                    <button
+                        type="button"
+                        className={actionStyles.menuBtn}
+                        onClick={(e) => { e.stopPropagation(); setShowPopover(prev => !prev); }}
+                        title="Options"
+                        aria-label="Card options"
+                    >
+                        <ThreeDotsVertical size={14} />
+                    </button>
+                </OverlayTrigger>
             </div>
 
             {/* Progress bar */}

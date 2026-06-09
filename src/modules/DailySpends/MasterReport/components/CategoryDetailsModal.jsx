@@ -32,7 +32,11 @@ function CategoryDetailsModal({
         const day = dateObj.getDate();
         const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
         const year = dateObj.getFullYear();
-        return { day, month, year };
+        const hasTime = date && date.includes('T');
+        const time = hasTime
+            ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+            : null;
+        return { day, month, year, time };
     };
 
     // Sort transactions by date (most recent first)
@@ -113,6 +117,7 @@ function CategoryDetailsModal({
                                         </div>
                                         <div className="d-flex align-items-center gap-2 small text-muted">
                                             <span>{dateDisplay}</span>
+                                            {dateInfo.time && <span>· {dateInfo.time}</span>}
                                         </div>
                                         <div className="small text-secondary mt-1">
                                             <span>{transaction.notes ?? '-'}</span>

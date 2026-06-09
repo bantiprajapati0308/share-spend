@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Spinner } from 'react-bootstrap';
 import { Plus, PencilSquare } from 'react-bootstrap-icons';
@@ -44,23 +44,10 @@ function AddExpenseForm({
     const [paymentMethodId, setPaymentMethodId] = useState(null);
     const { categories } = useCategoryContext();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const skipTypeClear = useRef(false);
-
-    // Clear category & person name when type changes
-    // skipTypeClear prevents clearing when type is set programmatically during edit population
-    useEffect(() => {
-        if (skipTypeClear.current) {
-            skipTypeClear.current = false;
-            return;
-        }
-        setCategory(null);
-        setPersonName('');
-    }, [transactionType]);
 
     // Populate form when editing
     useEffect(() => {
         if (!isEditMode || !editingTransaction) return;
-        skipTypeClear.current = true; // flag so the clear effect ignores this programmatic type change
         setTransactionType(editingTransaction.type || 'spend');
         setExpenseName(editingTransaction.name || '');
         setAmount(editingTransaction.amount?.toString() || '');
@@ -100,7 +87,14 @@ function AddExpenseForm({
         setNotes('');
         setPaymentMethodId(null);
     };
-
+    const cancelHanlder = () => {
+        resetForm();
+        onCancelEdit && onCancelEdit();
+    };
+    const toggleHandler = (type) => {
+        resetForm();
+        setTransactionType(type);
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -178,7 +172,7 @@ function AddExpenseForm({
                 </div>
                 <TransactionTypeSelector
                     value={transactionType}
-                    onChange={setTransactionType}
+                    onChange={type => toggleHandler(type)}
                     showLabel={false}
                 />
             </div>
@@ -313,7 +307,7 @@ function AddExpenseForm({
                     <button
                         type="button"
                         className={`${styles.submitBtn} ${styles.cancelBtn}`}
-                        onClick={onCancelEdit}
+                        onClick={cancelHanlder}
                         disabled={isSubmitting}
                     >
                         Cancel
