@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { BoxArrowDown, BoxArrowUp, Trash3, PencilSquare, ThreeDotsVertical, CashStack, CreditCard2Front, CreditCard, Bank } from 'react-bootstrap-icons';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { useState } from 'react';
+import { Trash3, PencilSquare, ThreeDotsVertical, CashStack, CreditCard2Front, CreditCard, Bank } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip, Popover } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import styles from '../styles/DailySpends.module.scss';
+import actionStyles from '../../../assets/scss/ActionPopover.module.scss';
 import { formatCurrencyINR } from '../../../Util';
 import { DeleteModal } from '../../../utils/CustomModal';
 
@@ -22,22 +23,9 @@ const PM_ICONS = {
 function ExpenseItem({ expense, onDelete, onEdit, dateHide = false }) {
     const incomeTypeData = expense.type;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [popoverOpen, setPopoverOpen] = useState(false);
-    const popoverRef = useRef(null);
+    const [showPopover, setShowPopover] = useState(false);
 
     const paymentMethods = useSelector((state) => state.appConfig.paymentMethods);
-
-    // Close popover when clicking outside
-    useEffect(() => {
-        if (!popoverOpen) return;
-        const handler = (e) => {
-            if (popoverRef.current && !popoverRef.current.contains(e.target)) {
-                setPopoverOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [popoverOpen]);
 
     const handleConfirmDelete = () => {
         setShowDeleteModal(false);
@@ -118,37 +106,44 @@ function ExpenseItem({ expense, onDelete, onEdit, dateHide = false }) {
                             {formatCurrencyINR(expense.amount)}
                         </div>
                         {showActions && (
-                            <div ref={popoverRef} style={{ position: 'relative' }}>
+                            <OverlayTrigger
+                                placement="left"
+                                rootClose
+                                show={showPopover}
+                                onToggle={(nextShow) => !nextShow && setShowPopover(false)}
+                                overlay={
+                                    <Popover id={`expense-actions-${expense.id}`}>
+                                        <Popover.Body className="p-1">
+                                            {typeof onEdit === 'function' && (
+                                                <button
+                                                    className={actionStyles.actionPopoverItem}
+                                                    onClick={() => { setShowPopover(false); onEdit(expense); }}
+                                                >
+                                                    <PencilSquare size={14} className="text-primary" />
+                                                    Edit Transaction
+                                                </button>
+                                            )}
+                                            {typeof onDelete === 'function' && (
+                                                <button
+                                                    className={`${actionStyles.actionPopoverItem} ${actionStyles.actionPopoverItemDanger}`}
+                                                    onClick={() => { setShowPopover(false); setShowDeleteModal(true); }}
+                                                >
+                                                    <Trash3 size={14} />
+                                                    Delete Transaction
+                                                </button>
+                                            )}
+                                        </Popover.Body>
+                                    </Popover>
+                                }
+                            >
                                 <button
-                                    className={styles.menuBtn}
-                                    onClick={() => setPopoverOpen((o) => !o)}
+                                    className={actionStyles.menuBtn}
+                                    onClick={() => setShowPopover((o) => !o)}
                                     title="More options"
                                 >
                                     <ThreeDotsVertical size={14} />
                                 </button>
-                                {popoverOpen && (
-                                    <div className={styles.actionPopover}>
-                                        {typeof onEdit === 'function' && (
-                                            <button
-                                                className={styles.actionPopoverItem}
-                                                onClick={() => { setPopoverOpen(false); onEdit(expense); }}
-                                            >
-                                                <PencilSquare size={14} className="text-primary" />
-                                                Edit Transaction
-                                            </button>
-                                        )}
-                                        {typeof onDelete === 'function' && (
-                                            <button
-                                                className={`${styles.actionPopoverItem} ${styles.actionPopoverItemDanger}`}
-                                                onClick={() => { setPopoverOpen(false); setShowDeleteModal(true); }}
-                                            >
-                                                <Trash3 size={14} />
-                                                Delete Transaction
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                            </OverlayTrigger>
                         )}
                     </div>
                     {pmLabel && (

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { ArrowLeftRight, ChevronRight, PieChart, Wallet, XCircleFill } from 'react-bootstrap-icons';
 import { formatCurrencyINR } from '../../../Util';
 import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
+import TransactionTypeSelector from './common/TransactionTypeSelector';
 import styles from '../styles/AnalyticsTab.module.scss';
 
 const LONG_PRESS_MS = 500;
@@ -99,7 +100,8 @@ CategoryRow.propTypes = {
     isSelectionMode: PropTypes.bool,
 };
 
-export default function AnalyticsTabContent({ transactions, categories, type }) {
+export default function AnalyticsTabContent({ transactions, categories }) {
+    const [analyticsType, setAnalyticsType] = useState('spend');
     const [modalCategory, setModalCategory] = useState(null);
     const [selectedCategories, setSelectedCategories] = useState(new Set());
 
@@ -118,7 +120,7 @@ export default function AnalyticsTabContent({ transactions, categories, type }) 
     const clearSelection = useCallback(() => setSelectedCategories(new Set()), []);
 
     // Reset selection when switching type
-    useEffect(() => { setSelectedCategories(new Set()); }, [type]);
+    useEffect(() => { setSelectedCategories(new Set()); }, [analyticsType]);
 
     const emojiByName = useMemo(() => {
         const map = {};
@@ -127,8 +129,8 @@ export default function AnalyticsTabContent({ transactions, categories, type }) 
     }, [categories]);
 
     const filteredTx = useMemo(() =>
-        (transactions || []).filter(tx => tx.type === type),
-        [transactions, type]);
+        (transactions || []).filter(tx => tx.type === analyticsType),
+        [transactions, analyticsType]);
 
     const modalTransactions = useMemo(() =>
         modalCategory ? filteredTx.filter(tx => (tx.category || 'Others') === modalCategory) : [],
@@ -183,9 +185,20 @@ export default function AnalyticsTabContent({ transactions, categories, type }) 
     return (
         <div className={styles.wrapper}>
 
+            {/* Type toggle */}
+            <TransactionTypeSelector
+                value={analyticsType}
+                onChange={setAnalyticsType}
+                options={[
+                    { value: 'spend', label: '💰 Spending' },
+                    { value: 'income', label: '📈 Income' },
+                ]}
+                showLabel={false}
+            />
+
             {/* 3-column stats row */}
             <div className={`${styles.statsGrid} ${isSelectionMode ? styles.statsGridActive : ''}`}>
-                <StatCard label={type === 'spend' ? 'Total Expenses' : 'Total Income'} value={formatCurrencyINR(displayAmount, { decimals: 0 })} Icon={Wallet} />
+                <StatCard label={analyticsType === 'spend' ? 'Total Expenses' : 'Total Income'} value={formatCurrencyINR(displayAmount, { decimals: 0 })} Icon={Wallet} />
                 <StatCard label="Transactions" value={displayTxCount} Icon={ArrowLeftRight} />
                 <StatCard label="Categories" value={displayCatCount} Icon={PieChart} />
             </div>
@@ -208,7 +221,7 @@ export default function AnalyticsTabContent({ transactions, categories, type }) 
                 <div className={styles.card}>
                     <div className={styles.emptyState}>
                         <div className={styles.emptyIcon}>ðŸ“Š</div>
-                        <p className={styles.emptyText}>No {type === 'spend' ? 'expense' : 'income'} data in this period</p>
+                        <p className={styles.emptyText}>No {analyticsType === 'spend' ? 'expense' : 'income'} data in this period</p>
                     </div>
                 </div>
             ) : (
@@ -248,5 +261,4 @@ export default function AnalyticsTabContent({ transactions, categories, type }) 
 AnalyticsTabContent.propTypes = {
     transactions: PropTypes.array.isRequired,
     categories: PropTypes.array,
-    type: PropTypes.string.isRequired,
 };
