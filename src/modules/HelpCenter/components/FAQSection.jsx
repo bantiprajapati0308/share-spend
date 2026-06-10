@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronRight, ChevronUp } from 'react-bootstrap-icons';
 import { FAQ_ITEMS } from '../constants/helpData';
 import styles from '../styles/HelpCenter.module.scss';
 
@@ -13,7 +14,7 @@ function FAQItem({ item }) {
                 aria-expanded={open}
             >
                 <span>{item.question}</span>
-                <i className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-right'} ${styles.faqChevron}`} />
+                {open ? <ChevronUp className={styles.faqChevron} /> : <ChevronRight className={styles.faqChevron} />}
             </button>
             {open && (
                 <div className={styles.faqAnswer}>

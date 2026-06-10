@@ -4,6 +4,18 @@ import { formatCurrencyINR } from '../../../Util';
 import { formatPercentage } from '../../../utils/helper';
 import { usePaymentBreakdown } from '../hooks/usePaymentBreakdown';
 import styles from '../styles/PaymentBreakdownModal.module.scss';
+import { GraphUpArrow, WalletFill, XLg, ChevronRight, ClockHistory, CashStack, CreditCard2Front } from 'react-bootstrap-icons';
+
+const PM_ICONS = {
+    cash: <CashStack size={20} />,
+    upi: (
+        <svg width="22" height="18" viewBox="0 0 30 24" fill="none">
+            <polygon points="8,0 16,16 0,16" fill="#FF6B00" />
+            <polygon points="22,24 14,8 30,8" fill="#00A651" />
+        </svg>
+    ),
+    credit_card: <CreditCard2Front size={20} />,
+};
 
 function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransactions }) {
     const { rows, total } = usePaymentBreakdown(type);
@@ -32,7 +44,7 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                 {/* Header */}
                 <div className={styles.header}>
                     <div className={`${styles.headerIcon} ${isIncome ? styles.incomeIcon : styles.expenseIcon}`}>
-                        <i className={isIncome ? 'bi bi-wallet-fill' : 'bi bi-graph-up-arrow'} />
+                        {isIncome ? <WalletFill color='white' /> : <GraphUpArrow color='white' />}
                     </div>
                     <div className={styles.headerText}>
                         <h2 className={styles.headerTitle}>
@@ -41,7 +53,7 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                         <p className={styles.headerDate}>{formatDateRange()}</p>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-                        <i className="bi bi-x-lg" />
+                        <XLg />
                     </button>
                 </div>
 
@@ -56,7 +68,8 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                         </p>
                     </div>
                     <div className={styles.bannerIllustration}>
-                        <i className={isIncome ? 'bi bi-cash-stack' : 'bi bi-bag-fill'} />
+                        {isIncome ? <WalletFill size={24} color="white" /> : <GraphUpArrow size={24} color="white" />}
+
                     </div>
                 </div>
 
@@ -71,7 +84,7 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                                     className={styles.rowIcon}
                                     style={{ background: `${row.color}1a`, color: row.color }}
                                 >
-                                    <i className={`bi ${row.icon}`} />
+                                    {PM_ICONS[row.paymentMethodId] ?? <CreditCard2Front size={20} />}
                                 </div>
                                 <div className={styles.rowBody}>
                                     <div className={styles.rowTop}>
@@ -93,7 +106,7 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                                         />
                                     </div>
                                 </div>
-                                <i className="bi bi-chevron-right" style={{ color: '#ccc', fontSize: '0.8rem', marginLeft: '0.5rem' }} />
+                                <ChevronRight style={{ color: '#ccc', fontSize: '0.8rem', marginLeft: '0.5rem' }} />
                             </div>
                         ))
                     )}
@@ -119,9 +132,9 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                     className={`${styles.viewBtn} ${isIncome ? styles.viewBtnIncome : styles.viewBtnExpense}`}
                     onClick={onViewTransactions}
                 >
-                    <i className="bi bi-clock-history" style={{ marginRight: '0.5rem' }} />
+                    <ClockHistory style={{ marginRight: '0.5rem' }} />
                     View {isIncome ? 'Income' : 'Expense'} Transactions
-                    <i className="bi bi-chevron-right" style={{ marginLeft: '0.5rem' }} />
+                    <ChevronRight style={{ marginLeft: '0.5rem' }} />
                 </button>
             </div>
         </div>

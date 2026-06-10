@@ -1,3 +1,4 @@
+import { HeartFill, SendFill, ShieldFillCheck } from 'react-bootstrap-icons';
 import { SUPPORT_EMAIL } from '../constants/helpData';
 import styles from '../styles/HelpCenter.module.scss';
 
@@ -13,7 +14,7 @@ function FeedbackSection() {
             <section className={styles.feedbackCard}>
                 <div className={styles.feedbackLeft}>
                     <div className={styles.feedbackIconCircle}>
-                        <i className="bi bi-heart-fill" />
+                        <HeartFill color='red' size={20} />
                     </div>
                     <div>
                         <p className={styles.feedbackTitle}>We value your feedback</p>
@@ -23,13 +24,13 @@ function FeedbackSection() {
                     </div>
                 </div>
                 <button className={styles.feedbackBtn} onClick={handleFeedback}>
-                    <i className="bi bi-send-fill" />
+                    <SendFill />
                     Send Feedback
                 </button>
             </section>
 
             <p className={styles.privacyNote}>
-                <i className="bi bi-shield-check-fill" />
+                <ShieldFillCheck />
                 Your privacy is important to us. We never share your information.
             </p>
         </>

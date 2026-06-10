@@ -1,5 +1,12 @@
+import { TelephoneFill, EnvelopeFill, Globe, ChevronRight } from 'react-bootstrap-icons';
 import { CONTACT_ITEMS } from '../constants/helpData';
 import styles from '../styles/HelpCenter.module.scss';
+
+const CONTACT_ICONS = {
+    phone: <TelephoneFill size={20} />,
+    email: <EnvelopeFill size={20} />,
+    website: <Globe size={20} />,
+};
 
 function ContactUs() {
     return (
@@ -18,14 +25,14 @@ function ContactUs() {
                             className={styles.contactIcon}
                             style={{ background: item.bg, color: item.color }}
                         >
-                            <i className={`bi ${item.icon}`} />
+                            {CONTACT_ICONS[item.id]}
                         </div>
                         <div className={styles.contactBody}>
                             <p className={styles.contactTitle}>{item.title}</p>
                             <p className={styles.contactPrimary}>{item.primary}</p>
                             <p className={styles.contactSecondary}>{item.secondary}</p>
                         </div>
-                        <i className={`bi bi-chevron-right ${styles.contactChevron}`} />
+                        <ChevronRight className={styles.contactChevron} />
                     </button>
                 ))}
             </div>
