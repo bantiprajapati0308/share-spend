@@ -1,4 +1,4 @@
-import { membersApi, expensesApi } from '../services/api/expensesApi';
+import { membersApi, expensesApi } from '../../../services/api/expensesApi';
 
 export const getMembers = async (tripId) => {
     const result = await membersApi.getMembers(tripId);

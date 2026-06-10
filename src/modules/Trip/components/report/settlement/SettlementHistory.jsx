@@ -1,8 +1,8 @@
 import React from 'react';
 import { Table, Badge, Accordion } from 'react-bootstrap';
 import { Clock, CheckCircle, Person } from 'react-bootstrap-icons';
-import { getCurrencySymbol } from '../../../Util';
-import styles from '../../../assets/scss/Report.module.scss';
+import styles from '../../../../../assets/scss/Report.module.scss';
+import { getCurrencySymbol } from '../../../../../Util';
 
 function SettlementHistory({ settlements, currency, show = false }) {
     if (!settlements || settlements.length === 0) {

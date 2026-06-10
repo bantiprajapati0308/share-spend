@@ -1,6 +1,6 @@
 import React from 'react';
 import { Accordion } from 'react-bootstrap';
-import styles from '../../assets/scss/Report.module.scss';
+import styles from '../../../../assets/scss/Report.module.scss';
 
 function ReportAccordion({ activeKey, onSelect, eventKey, icon: Icon, title, children }) {
     return (

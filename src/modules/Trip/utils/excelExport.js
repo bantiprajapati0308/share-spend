@@ -1,5 +1,5 @@
 import { utils, writeFile } from 'xlsx';
-import { auth } from '../firebase';
+import { auth } from '../../../firebase';
 
 export const generateExcelReport = (expenses, spentAmounts, balances, totalExpense, transactions) => {
     const user = auth.currentUser;

@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { getCurrencySymbol, DEFAULT_CURRENCY } from '../Util';
-import styles from '../assets/scss/Report.module.scss';
+import { getCurrencySymbol, DEFAULT_CURRENCY } from '../../../Util';
+import styles from '../../../assets/scss/Report.module.scss';
 import { useNavigate, useParams } from 'react-router-dom';
-import FullScreenLoader from './common/FullScreenLoader';
-import { filterExpenses } from '../utils/expenseFilterUtils';
+import FullScreenLoader from '../../../components/common/FullScreenLoader';
+import { filterExpenses } from '../../../utils/expenseFilterUtils';
 
 // Import components that are still directly used
 import ParticipantsModal from './report/ParticipantsModal';
 import ExportActions from './report/ExportActions';
 import SettlementModal from './report/settlement/SettlementModal';
-import ToastNotification from './common/ToastNotification';
+import ToastNotification from '../../../components/common/ToastNotification';
 
 // Import hooks and utilities
 import useReportCalculations from '../hooks/useReportCalculations';

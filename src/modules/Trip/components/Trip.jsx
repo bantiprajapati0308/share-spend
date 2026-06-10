@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
-import { selectCurrency, setTrip } from '../redux/tripSlice';
+import { selectCurrency, setTrip } from '../../../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
-import { CURRENCY_ARRAY, DEFAULT_CURRENCY } from '../Util';
+import { CURRENCY_ARRAY, DEFAULT_CURRENCY } from '../../../Util';
 import { PeopleFill, Globe2, InfoCircle, ArrowRightCircle, Trash } from 'react-bootstrap-icons';
-import styles from '../assets/scss/Trip.module.scss';
-import ConfirmationModal from './common/ConfirmationModal';
-import PasscodeInput from './common/PasscodeInput';
+import styles from '../../../assets/scss/Trip.module.scss';
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
 import { addTrip, getTrips, deleteTrip } from '../hooks/useTrips'; // <-- Import deleteTrip
-import FullScreenLoader from './common/FullScreenLoader';
+import FullScreenLoader from '../../../components/common/FullScreenLoader';
 
 function Trip() {
     const [tripName, setTripName] = useState('');
@@ -17,7 +16,6 @@ function Trip() {
     const [organizer, setOrganizer] = useState('');
     const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
     const [date, setDate] = useState('');
-    const [passcode, setPasscode] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [trips, setTrips] = useState([]); // <-- State for trips
     const [loadingTrips, setLoadingTrips] = useState(true); // <-- Loading state
@@ -30,14 +28,14 @@ function Trip() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Prepare trip data
-        const tripData = { name: tripName, description, organizer, currency, date, passcode };
+        const tripData = { name: tripName, description, organizer, currency, date };
         try {
             // Add trip to Firestore and get the new trip's reference
             const tripRef = await addTrip(tripData);
             // Get the tripId from Firestore
             const tripId = tripRef.id;
             // Dispatch to Redux if needed
-            dispatch(setTrip({ name: tripName, description, organizer, currency, date, passcode, id: tripId }));
+            dispatch(setTrip({ name: tripName, description, organizer, currency, date, id: tripId }));
             // Navigate to members page with tripId
             navigate(`/members/${tripId}`);
             // Reset form
@@ -46,7 +44,6 @@ function Trip() {
             setOrganizer('');
             setCurrency('INR');
             setDate('');
-            setPasscode('');
         } catch (err) {
             alert("Error creating trip: " + err.message);
         }
@@ -222,13 +219,6 @@ function Trip() {
                                         ))}
                                     </Form.Control>
                                 </Form.Group>
-                                <PasscodeInput
-                                    value={passcode}
-                                    onChange={setPasscode}
-                                    placeholder="Create a passcode to protect editing"
-                                    label="Trip Passcode (Optional)"
-                                    helperText="Set a passcode to restrict who can add/edit expenses. Leave empty for open access."
-                                />
                                 <div className={styles.displaySpaceBetween}>
                                     {/* <Button variant='danger' onClick={handleShowModal} className='mt-2'>Clear Data</Button> */}
                                     <Button variant="success" className='mt-2' type="submit" disabled={!tripName || !date}>

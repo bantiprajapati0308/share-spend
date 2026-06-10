@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, InputGroup } from 'react-bootstrap';
-import { getCurrencySymbol } from '../../../Util';
+import { getCurrencySymbol } from '../../../../../Util';
 
 function MoneyInput({
     value,
