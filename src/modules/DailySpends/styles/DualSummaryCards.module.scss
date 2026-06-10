@@ -1,235 +1,394 @@
 @use '../../../assets/scss/variables' as *;
 @use '../../../assets/scss/mixins' as *;
 
-// Variables specific to DualSummaryCards
-$summary-card-bg: linear-gradient(135deg, #e8f4f8 0%, #f5f9fc 100%);
-$summary-card-radius: 20px;
-$summary-card-padding: 1.5rem;
-$summary-card-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-
-$icon-size: 50px;
-$icon-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-
+// ─── Color tokens ─────────────────────────────────────────────────────────────
 $income-color: #4caf50;
 $expense-color: #e91e63;
-$saved-color: #2196f3;
-$overspent-color: #f44336;
+$card-radius: 20px;
 
-$progress-height: 12px;
-$progress-radius: 8px;
-
-// Clickable card sections (Income / Expense)
-.clickable {
-    cursor: pointer;
-    border-radius: 0.75rem;
-    padding: 0.35rem 0.6rem;
-    transition: background 0.15s;
-
-    &:hover {
-        background: rgba(0, 0, 0, 0.04);
-    }
-
-    &:active {
-        background: rgba(0, 0, 0, 0.08);
-    }
-
-    &:focus-visible {
-        outline: 2px solid $brand-primary;
-    }
-}
-
-// Mixins for reusable styles
-@mixin summary-icon($bg-color) {
-    background: linear-gradient(135deg, $bg-color 0%, lighten($bg-color, 10%) 100%);
-    box-shadow: $icon-shadow;
-}
-
-@mixin summary-value-color($color) {
-    color: $color;
-}
-
-// Main component styles
+// ─── Wrapper / Card ───────────────────────────────────────────────────────────
 .wrapper {
     margin-bottom: 1.25rem;
 }
 
 .card {
-    background: $summary-card-bg;
-    border-radius: $summary-card-radius;
-    padding: $summary-card-padding;
-    box-shadow: $summary-card-shadow;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: $card-radius;
+    padding: 1.25rem;
+    box-shadow: $shadow-lg;
+    border: 1px solid transparent;
 }
 
-.iconCircle {
-    width: $icon-size;
-    height: $icon-size;
+.cardOverspent {
+    background: linear-gradient(150deg, #fff0f3 0%, #ffe4ed 100%);
+    border-color: rgba($expense-color, 0.15);
+}
+
+.cardSaving {
+    background: linear-gradient(150deg, #f4fbf4 0%, #e6f4e6 100%);
+    border-color: rgba($income-color, 0.15);
+}
+
+// ─── Shared text helpers ─────────────────────────────────────────────────────
+.incomeText {
+    color: $income-color;
+}
+
+.expenseText {
+    color: $expense-color;
+}
+
+// ─── Top row ─────────────────────────────────────────────────────────────────
+.topRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    padding: 0.3rem 0.75rem;
+    border-radius: $radius-full;
+}
+
+.badgeOverspent {
+    background: rgba($expense-color, 0.1);
+    color: $expense-color;
+    border: 1px solid rgba($expense-color, 0.2);
+}
+
+.badgeSaving {
+    background: rgba($income-color, 0.1);
+    color: darken($income-color, 8%);
+    border: 1px solid rgba($income-color, 0.2);
+}
+
+.illustration {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-
-    i {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    &.income {
-        @include summary-icon($income-color);
-    }
-
-    &.expense {
-        @include summary-icon($expense-color);
-    }
-
-    &.saved {
-        @include summary-icon($saved-color);
-    }
-
-    &.overspent {
-        @include summary-icon($overspent-color);
-        animation: pulse-warning 2s infinite;
-    }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0.25rem 0 0.25rem;
+.illustrationOverspent {
+    background: rgba($expense-color, 0.1);
+    color: $expense-color;
+}
+
+.illustrationSaving {
+    background: rgba($income-color, 0.1);
+    color: $income-color;
+}
+
+// ─── Main row (amount + ring) ─────────────────────────────────────────────────
+.mainRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+}
+
+.mainLeft {
+    flex: 1;
+    min-width: 0;
+}
+
+.mainAmount {
+    font-size: 2rem;
+    font-weight: $font-weight-bold;
     letter-spacing: -0.5px;
-
-    @include summary-value-color($income-color);
-
-    &.expense {
-        @include summary-value-color($expense-color);
-    }
-
-    &.saved {
-        @include summary-value-color($saved-color);
-    }
-
-    &.overspent {
-        @include summary-value-color($overspent-color);
-        font-weight: 900;
-    }
+    margin: 0 0 0.25rem;
+    line-height: 1.1;
 }
 
-.label {
-    font-size: 0.9rem;
+.mainLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: $font-size-sm;
     color: $text-secondary;
-    font-weight: 500;
-    margin: 0;
+    font-weight: $font-weight-medium;
+    margin: 0 0 0.5rem;
 }
 
-.warningFlag {
-    color: $overspent-color;
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
-    animation: wave-flag 1.5s ease-in-out infinite;
+.infoIcon {
+    color: $text-tertiary;
 }
 
-.overspentPercentage {
-    font-size: 0.7rem;
-    color: $overspent-color;
-    font-weight: 600;
-    margin-top: 0.2rem;
-    background: rgba($overspent-color, 0.1);
-    padding: 0.1rem 0.4rem;
-    border-radius: 8px;
-    border: 1px solid rgba($overspent-color, 0.2);
+.subBadge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: $font-weight-semibold;
+    padding: 0.18rem 0.55rem;
+    border-radius: $radius-xl;
 }
 
-.progressContainer {
-    margin-top: 1.25rem;
+.subBadgeOverspent {
+    background: rgba($expense-color, 0.1);
+    color: $expense-color;
+    border: 1px solid rgba($expense-color, 0.18);
 }
 
-.progressBar {
-    height: $progress-height;
-    background: linear-gradient(90deg,
-            rgba($income-color, 0.15) 0%,
-            rgba($expense-color, 0.15) 50%,
-            rgba($saved-color, 0.15) 100%);
-    border-radius: $progress-radius;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.subBadgeSaving {
+    background: rgba($income-color, 0.1);
+    color: darken($income-color, 10%);
+    border: 1px solid rgba($income-color, 0.18);
 }
 
-// Animations
-@keyframes pulse-warning {
-    0% {
-        box-shadow: $icon-shadow;
+// ─── Ring chart ───────────────────────────────────────────────────────────────
+.ringWrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+}
+
+.ringCenter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+}
+
+.ringPct {
+    font-size: 0.925rem;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+}
+
+.ringOverspent {
+    color: $expense-color;
+}
+
+.ringSaving {
+    color: $income-color;
+}
+
+.ringOfIncome {
+    font-size: 0.62rem;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    text-align: center;
+}
+
+// ─── Mini cards row ───────────────────────────────────────────────────────────
+.miniCards {
+    display: flex;
+    gap: 0.625rem;
+    margin-bottom: 1.1rem;
+}
+
+.miniCard {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: $radius-2xl;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: background $transition-fast, box-shadow $transition-fast;
+    text-align: left;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: $shadow-base;
     }
 
-    50% {
-        box-shadow: 0 3px 15px rgba($overspent-color, 0.4);
+    &:active {
+        background: rgba(255, 255, 255, 0.6);
     }
 
-    100% {
-        box-shadow: $icon-shadow;
+    &:focus-visible {
+        outline: 2px solid $brand-primary;
+        outline-offset: 2px;
     }
 }
 
-@keyframes wave-flag {
+.miniCardIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
-    0%,
-    100% {
-        transform: rotate(0deg);
-    }
+// Scoped icon background via parent class
+.miniIncome .miniCardIcon {
+    background: rgba($income-color, 0.15);
+}
 
-    25% {
-        transform: rotate(5deg);
-    }
+.miniExpense .miniCardIcon {
+    background: rgba($expense-color, 0.15);
+}
 
-    75% {
-        transform: rotate(-5deg);
-    }
+.miniCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.miniCardLabel {
+    font-size: 0.72rem;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    line-height: 1;
+}
+
+.miniCardAmount {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+}
+
+.miniCardChevron {
+    color: $neutral-400;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: color $transition-fast, transform $transition-fast;
+}
+
+.miniCard:hover .miniCardChevron {
+    color: $neutral-600;
+    transform: translateX(2px);
+}
+
+.miniIncome .miniCardAmount {
+    color: $income-color;
+}
+
+.miniExpense .miniCardAmount {
+    color: $expense-color;
+}
+
+// ─── Progress section ─────────────────────────────────────────────────────────
+.progressSection {
+    margin-top: 0.25rem;
+}
+
+.progressLabels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+}
+
+.progressLabelItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.progressLabelRight {
+    align-items: flex-end;
+}
+
+.progressLabelName {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $text-secondary;
+    line-height: 1;
+}
+
+.progressLabelAmt {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    line-height: 1;
+    // inherits parent color via incomeText / expenseText
+}
+
+// Track
+.progressTrack {
+    position: relative;
+    display: flex;
+    height: 10px;
+    border-radius: $radius-full;
+    overflow: visible;
+    background: $neutral-200;
 }
 
 .progressFill {
     height: 100%;
-    background: linear-gradient(90deg, $income-color 0%, $expense-color 45%, $saved-color 100%);
-    border-radius: $progress-radius;
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-
-    &::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 50%);
-        border-radius: $progress-radius;
-    }
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.percentage {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: $text-primary;
-    min-width: 35px;
+// First fill segment gets left-rounded corners, last gets right
+.progressTrack .progressFill:first-child {
+    border-radius: $radius-full 0 0 $radius-full;
 }
 
-.overspentPercentage {
-    font-size: 14px;
-    ;
+.progressTrack .progressFill:last-of-type {
+    border-radius: 0 $radius-full $radius-full 0;
 }
 
-// Responsive design
-@media (max-width: 576px) {
-    .card {
-        padding: 1rem;
+.fillGreen {
+    background: $income-color;
+}
+
+.fillRed {
+    background: $expense-color;
+}
+
+.fillGreenLight {
+    background: rgba($income-color, 0.28);
+}
+
+// Tick / split marker
+.progressTick {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 2px;
+    transform: translateX(-50%);
+}
+
+.progressTickArrow {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid rgba(0, 0, 0, 0.22);
+}
+
+.progressStatus {
+    text-align: center;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    margin: 0.45rem 0 0;
+    letter-spacing: 0.01em;
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 360px) {
+    .mainAmount {
+        font-size: 1.65rem;
     }
 
-    .iconCircle {
-        width: 45px;
-        height: 45px;
-
-        i {
-            font-size: 1.3rem;
-        }
+    .ringWrap {
+        width: 95px;
+        height: 95px;
     }
 
-    .value {
-        font-size: 1.3rem;
+    .miniCard {
+        padding: 0.5rem 0.6rem;
     }
 }
