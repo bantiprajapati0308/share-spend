@@ -4,10 +4,10 @@ import { auth } from './firebase';
 import { ensureUserProfile } from './hooks/useUserProfile';
 import TopBar from './components/TopBar';
 import BottomNavigation from './components/BottomNavigation';
-import Trip from './components/Trip';
-import Member from './components/Member';
-import Expense from './components/Expense';
-import Report from './components/Report';
+import Trip from './modules/Trip';
+import Member from './modules/Trip/components/Member';
+import Expense from './modules/Trip/components/Expense';
+import Report from './modules/Trip/components/Report';
 import AuthModule from './modules/Auth';
 import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
@@ -15,7 +15,6 @@ import HelpCenter from './modules/HelpCenter';
 import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
 import MasterReport from './modules/DailySpends/MasterReport';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import ProtectedTripRoute from './components/common/ProtectedTripRoute';
 import { ToastContainer } from 'react-toastify';
 import { CategoryProvider } from './modules/DailySpends/context/CategoryContext.jsx';
 import FullScreenLoader from './components/common/FullScreenLoader';
@@ -63,21 +62,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/daily-expenses" />} />
             <Route path="/trip" element={<Trip />} />
-            <Route path="/members/:tripId" element={
-              <ProtectedTripRoute>
-                <Member />
-              </ProtectedTripRoute>
-            } />
-            <Route path="/expenses/:tripId" element={
-              <ProtectedTripRoute>
-                <Expense />
-              </ProtectedTripRoute>
-            } />
-            <Route path="/report/:tripId" element={
-              <ProtectedTripRoute>
-                <Report />
-              </ProtectedTripRoute>
-            } />
+            <Route path="/members/:tripId" element={<Member />} />
+            <Route path="/expenses/:tripId" element={<Expense />} />
+            <Route path="/report/:tripId" element={<Report />} />
             <Route path="/daily-expenses" element={<DailySpends />} />
             <Route path="/breakdown-report" element={<BreakdownReport />} />
             <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />

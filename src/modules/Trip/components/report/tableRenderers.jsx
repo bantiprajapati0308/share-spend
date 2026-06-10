@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCurrencySymbol, getGradientColor } from '../../Util';
+import { getCurrencySymbol, getGradientColor } from '../../../../Util';
 
 export const createSpentAmountsRenderer = (currency, spentAmounts, totalExpense) => {
     return (member, index, sortedArray) => {

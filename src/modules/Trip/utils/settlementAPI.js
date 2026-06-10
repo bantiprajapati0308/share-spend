@@ -1,4 +1,4 @@
-import { settlementsApi } from '../services/api/settlementsApi';
+import { settlementsApi } from '../../../services/api/settlementsApi';
 
 export const processSettlement = async (tripId, settlementData) => {
     const { amount, payer, receiver, originalTransaction } = settlementData;

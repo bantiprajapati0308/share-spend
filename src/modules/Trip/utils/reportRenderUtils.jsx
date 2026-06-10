@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCurrencySymbol } from '../Util';
+import { getCurrencySymbol } from '../../../Util';
 import { PeopleFill, PiggyBank, CashStack, CheckCircle } from 'react-bootstrap-icons';
 
 // Import components

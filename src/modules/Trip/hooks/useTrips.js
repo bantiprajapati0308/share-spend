@@ -1,4 +1,4 @@
-import { tripsApi } from '../services/api/tripsApi';
+import { tripsApi } from '../../../services/api/tripsApi';
 
 export const getTrips = async () => {
     const result = await tripsApi.getTrips();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { PeopleFill } from 'react-bootstrap-icons';
-import { getCurrencySymbol } from '../../Util';
+import { getCurrencySymbol } from '../../../../Util';
 import ReportTable from './ReportTable';
 
 function ExpenseTable({ expenses, filteredExpenses, currency, onShowParticipants }) {

@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import ReportTable from '../../../components/report/ReportTable';
+import ReportTable from '../../Trip/components/report/ReportTable';
 import { prepareAggregatedTableData } from '../utils/borrowLendTableUtils';
 import { createEnhancedBorrowLendRenderer } from '../utils/borrowLendTableRenderers';
 import TransactionDetailsModal from './TransactionDetailsModal';

@@ -5,14 +5,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip, Spinner } from 'react-bootstrap';
 import { PencilSquare, Trash, PersonCircle, PlusCircle, ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import styles from '../assets/scss/Member.module.scss';
+import styles from '../../../assets/scss/Member.module.scss';
 import { addMember as addMemberToDB, deleteMember, getMembers } from '../hooks/useMembers'; // Import Firestore API
-import FullScreenLoader from './common/FullScreenLoader';
-import InlineLoader from './common/InlineLoader';
-import { removeMember } from '../redux/tripSlice';
+import FullScreenLoader from '../../../components/common/FullScreenLoader';
+import InlineLoader from '../../../components/common/InlineLoader';
+import { removeMember } from '../../../redux/tripSlice';
 import { getExpenses } from '../hooks/useExpenses';
 
-function Member({ canEdit = true }) {
+function Member() {
     const [memberName, setMemberName] = useState('');
     const [editIndex, setEditIndex] = useState(null);
     const [members, setMembers] = useState([]);
@@ -46,12 +46,6 @@ function Member({ canEdit = true }) {
 
     const handleAddMember = async (e) => {
         e.preventDefault();
-
-        // Check permissions
-        if (!canEdit) {
-            toast.error('You need to enter the correct passcode to add members.');
-            return;
-        }
 
         const form = e.currentTarget;
         if (form.checkValidity() === false) {
@@ -106,12 +100,7 @@ function Member({ canEdit = true }) {
     };
 
     const handleDelete = async (memberId) => {
-        if (!tripId || !canEdit) {
-            if (!canEdit) {
-                toast.error('You need to enter the correct passcode to delete members.');
-            }
-            return;
-        }
+        if (!tripId) return;
         try {
             setDeleteLoader(true)
             await deleteMember(tripId, memberId); // delete from Firestore
@@ -161,18 +150,18 @@ function Member({ canEdit = true }) {
                                             <Form.Control
                                                 required
                                                 type="text"
-                                                placeholder={canEdit ? "Enter member's name" : "View only - passcode required to edit"}
+                                                placeholder="Enter member's name"
                                                 value={memberName}
                                                 onChange={(e) => setMemberName(e.target.value)}
                                                 className={styles.formControl}
-                                                disabled={addLoader || !canEdit}
+                                                disabled={addLoader}
                                             />
                                             <Button
                                                 variant={editIndex !== null ? "info" : "success"}
                                                 type="submit"
                                                 className={styles.iconBtn}
-                                                title={!canEdit ? 'Passcode required to add members' : (editIndex !== null ? 'Edit Member' : 'Add Member')}
-                                                disabled={addLoader || !canEdit}
+                                                title={editIndex !== null ? 'Edit Member' : 'Add Member'}
+                                                disabled={addLoader}
                                             >
                                                 {addLoader ? <Spinner animation="border" size="sm" /> : (editIndex !== null ? <PencilSquare size={22} /> : <PlusCircle size={22} />)}
                                             </Button>
@@ -199,17 +188,16 @@ function Member({ canEdit = true }) {
                                         <div className={styles.memberActions}>
                                             <OverlayTrigger
                                                 placement="top"
-                                                overlay={!canEdit ? <Tooltip id={`tooltip-access-${index}`}>Passcode required to edit members</Tooltip> : (used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to edit</Tooltip> : <></>)}
+                                                overlay={used ? <Tooltip id={`tooltip-edit-${index}`}>Please remove this user from all expenses to edit</Tooltip> : <></>}
                                             >
                                                 <span>
                                                     <Button
-                                                        variant={used || !canEdit ? "outline-secondary" : "outline-primary"}
+                                                        variant={used ? "outline-secondary" : "outline-primary"}
                                                         size="sm"
                                                         className={styles.iconBtn}
                                                         onClick={() => handleEdit(index)}
-                                                        disabled={used || !canEdit}
-                                                        style={{ pointerEvents: (used || !canEdit) ? 'auto' : 'auto' }}
-                                                        title={!canEdit ? 'Access denied' : (used ? 'Cannot edit' : 'Edit')}
+                                                        disabled={used}
+                                                        title={used ? 'Cannot edit' : 'Edit'}
                                                     >
                                                         <PencilSquare size={18} />
                                                     </Button>
@@ -217,15 +205,14 @@ function Member({ canEdit = true }) {
                                             </OverlayTrigger>
                                             <OverlayTrigger
                                                 placement="top"
-                                                overlay={!canEdit ? <Tooltip id={`tooltip-delete-access-${index}`}>Passcode required to delete members</Tooltip> : (used ? <Tooltip id={`tooltip-delete-${index}`}>Please remove this user from all expenses to delete</Tooltip> : <></>)}
+                                                overlay={used ? <Tooltip id={`tooltip-delete-${index}`}>Please remove this user from all expenses to delete</Tooltip> : <></>}
                                             >
-                                                <Button variant={(used || !canEdit) ? "outline-secondary" : "outline-danger"}
+                                                <Button variant={used ? "outline-secondary" : "outline-danger"}
                                                     size="sm"
                                                     className={styles.iconBtn}
-                                                    disabled={used || deleteLoader || !canEdit}
-                                                    style={{ pointerEvents: (used || !canEdit) ? 'auto' : 'auto' }}
+                                                    disabled={used || deleteLoader}
                                                     onClick={() => handleDelete(member.id)}
-                                                    title={!canEdit ? 'Access denied' : (used ? 'Cannot delete' : 'Delete')}>
+                                                    title={used ? 'Cannot delete' : 'Delete'}>
                                                     {deleteLoader ? <Spinner animation="border" size="sm" /> : <Trash size={18} />}
                                                 </Button>
                                             </OverlayTrigger>
