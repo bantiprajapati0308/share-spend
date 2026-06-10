@@ -1,52 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>share-spend</title>
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#2f8f5f" />
-    <link rel="apple-touch-icon" href="assets/icon-192.png" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <script type="text/javascript">
-      (function (l) {
-        if (l.search[1] === "/") {
-          var decoded = l.search
-            .slice(1)
-            .split("&")
-            .map(function (s) {
-              return s.replace(/~and~/g, "&");
-            })
-            .join("?");
-          window.history.replaceState(
-            null,
-            null,
-            l.pathname.slice(0, -1) + decoded + l.hash,
-          );
-        }
-      })(window.location);
-    </script>
-  </head>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <script>
-      (function () {
-        if (!("serviceWorker" in navigator)) return;
-        // Try to fetch the service worker first to avoid 404 in dev
-        fetch("sw.js", { method: "GET", cache: "no-store" })
-          .then((res) => {
-            if (!res.ok) throw new Error("sw.js not found");
-            return navigator.serviceWorker.register("sw.js");
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>share-spend</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#2f8f5f" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <script type="text/javascript">
+    (function (l) {
+      if (l.search[1] === "/") {
+        var decoded = l.search
+          .slice(1)
+          .split("&")
+          .map(function (s) {
+            return s.replace(/~and~/g, "&");
           })
-          .then((reg) => console.log("Service worker registered.", reg))
-          .catch((err) => {
-            // Silent in dev; log for debugging
-            console.debug("Service worker not registered:", err.message || err);
-          });
-      })();
-    </script>
-  </body>
+          .join("?");
+        window.history.replaceState(
+          null,
+          null,
+          l.pathname.slice(0, -1) + decoded + l.hash,
+        );
+      }
+    })(window.location);
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <!-- SW registration is injected by vite-plugin-pwa at build time -->
+</body>
+
 </html>
