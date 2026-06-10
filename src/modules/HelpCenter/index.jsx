@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, QuestionCircle } from 'react-bootstrap-icons';
 import HelpBanner from './components/HelpBanner';
 import ContactUs from './components/ContactUs';
 import FAQSection from './components/FAQSection';
@@ -14,11 +15,11 @@ function HelpCenter() {
             {/* Header */}
             <div className={styles.header}>
                 <button className={styles.headerBack} onClick={() => navigate(-1)} aria-label="Go back">
-                    <i className="bi bi-arrow-left" />
+                    <ArrowLeft />
                 </button>
                 <h1 className={styles.headerTitle}>Help Center</h1>
                 <button className={styles.headerHelp} aria-label="Help">
-                    <i className="bi bi-question-circle" />
+                    <QuestionCircle />
                 </button>
             </div>
 

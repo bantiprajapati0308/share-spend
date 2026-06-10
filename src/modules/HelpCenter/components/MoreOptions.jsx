@@ -1,10 +1,11 @@
+import { BugFill, LightbulbFill, ChevronRight } from 'react-bootstrap-icons';
 import { SUPPORT_EMAIL } from '../constants/helpData';
 import styles from '../styles/HelpCenter.module.scss';
 
 const MORE_OPTIONS = [
     {
         id: 'bug',
-        icon: 'bi-bug-fill',
+        icon: <BugFill size={20} />,
         color: '#fd7e14',
         bg: '#fff3e0',
         title: 'Report a Bug',
@@ -14,7 +15,7 @@ const MORE_OPTIONS = [
     },
     {
         id: 'feature',
-        icon: 'bi-lightbulb-fill',
+        icon: <LightbulbFill size={20} />,
         color: '#667eea',
         bg: '#f0f4ff',
         title: 'Suggest a Feature',
@@ -45,13 +46,13 @@ function MoreOptions() {
                             className={styles.moreOptionIcon}
                             style={{ background: opt.bg, color: opt.color }}
                         >
-                            <i className={`bi ${opt.icon}`} />
+                            {opt.icon}
                         </div>
                         <div className={styles.moreOptionBody}>
                             <p className={styles.moreOptionTitle}>{opt.title}</p>
                             <p className={styles.moreOptionSubtitle}>{opt.subtitle}</p>
                         </div>
-                        <i className={`bi bi-chevron-right ${styles.moreOptionChevron}`} />
+                        <ChevronRight className={styles.moreOptionChevron} />
                     </button>
                 ))}
             </div>

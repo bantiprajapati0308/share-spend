@@ -1,3 +1,4 @@
+import { Headset } from 'react-bootstrap-icons';
 import styles from '../styles/HelpCenter.module.scss';
 
 function HelpBanner() {
@@ -9,7 +10,7 @@ function HelpBanner() {
             </div>
             <div className={styles.bannerIllustration}>
                 <div className={styles.illustrationCircle}>
-                    <i className="bi bi-headset" />
+                    <Headset color='white' size={32} />
                 </div>
                 <div className={styles.illustrationDot1} />
                 <div className={styles.illustrationDot2} />
