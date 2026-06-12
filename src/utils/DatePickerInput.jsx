@@ -63,6 +63,7 @@ function DatePickerInput({ label, value, onChange, minDate, maxDate, required, i
                 timeFormat="HH:mm"
                 timeIntervals={timeIntervals}
                 timeCaption="Time"
+                onFocus={(e) => e.target.blur()}
             />
         </div>
     );
