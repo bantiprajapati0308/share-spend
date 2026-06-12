@@ -83,6 +83,7 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
                                 showMonthDropdown
                                 showYearDropdown
                                 dropdownMode="select"
+                                onFocus={(e) => e.target.blur()}
                             />
                         </div>
                     </Col>
@@ -103,6 +104,7 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
                                 showMonthDropdown
                                 showYearDropdown
                                 dropdownMode="select"
+                                onFocus={(e) => e.target.blur()}
                             />
                         </div>
                     </Col>

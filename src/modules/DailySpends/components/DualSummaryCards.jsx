@@ -1,14 +1,21 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import {
     WalletFill, GraphUpArrow, ExclamationTriangleFill,
     CheckCircleFill, PiggyBankFill, InfoCircle, ChevronRight,
+    CreditCard2Front,
 } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/DualSummaryCards.module.scss';
 import { formatCurrencyINR } from '../../../Util';
 import { formatPercentage } from '../../../utils/helper';
 import PaymentBreakdownModal from './PaymentBreakdownModal';
+import useCategoryContext from '../hooks/useCategoryContext';
+import {
+    buildDisabledCategoryLookup,
+    filterTransactionsByDisabledCategories,
+} from '../utils/transactionVisibility';
 
 // ─── Ring / Donut chart ───────────────────────────────────────────────────────
 const RING_R = 44;
@@ -79,54 +86,73 @@ MiniCard.propTypes = {
     onClick: PropTypes.func,
 };
 
-// ─── Progress bar with split + tick marker ────────────────────────────────────
-function ProgressSection({ totalIncome, totalSpend, isOverspent }) {
-    // For overspent: income covers X% of total expense → green | red
-    // For saving:    expense is X% of total income    → red   | light-green
-    const splitPct = isOverspent
-        ? Math.min((totalIncome / totalSpend) * 100, 100)
-        : Math.min((totalSpend / totalIncome) * 100, 100);
-
-    const leftLabel = isOverspent ? 'Income' : 'Expense';
-    const rightLabel = isOverspent ? 'Expense' : 'Income';
-    const leftAmt = isOverspent ? totalIncome : totalSpend;
-    const rightAmt = isOverspent ? totalSpend : totalIncome;
+// ─── Progress bar (3 segments: Red = Personal Funds, Yellow = CC, Green = Savings) ──
+function ProgressSection({ cashIncome, cashExpenses, creditCardExpenses }) {
+    // Use max(income, totalSpent) as denominator so all three segments always render
+    // proportionally — yellow never gets squeezed to 0 when red alone exceeds income.
+    const totalSpent = cashExpenses + creditCardExpenses;
+    const denominator = Math.max(cashIncome, totalSpent) || 1;
+    const redPct = (cashExpenses / denominator) * 100;
+    const yellowPct = (creditCardExpenses / denominator) * 100;
+    const greenPct = Math.max(0, ((cashIncome - totalSpent) / denominator) * 100);
+    const isOverspent = totalSpent > cashIncome;
+    const hasCreditCard = creditCardExpenses > 0;
 
     return (
         <div className={styles.progressSection}>
             {/* Labels row */}
             <div className={styles.progressLabels}>
-                <div className={`${styles.progressLabelItem} ${isOverspent ? styles.incomeText : styles.expenseText}`}>
-                    <span className={styles.progressLabelName}>{leftLabel}</span>
+                <div className={`${styles.progressLabelItem} ${styles.incomeText}`}>
+                    <span className={styles.progressLabelName}>Income</span>
                     <span className={styles.progressLabelAmt}>
-                        {formatCurrencyINR(leftAmt, { decimals: 0 })}
+                        {formatCurrencyINR(cashIncome, { decimals: 0 })}
                     </span>
                 </div>
                 <div className={`${styles.progressLabelItem} ${styles.progressLabelRight} ${isOverspent ? styles.expenseText : styles.incomeText}`}>
-                    <span className={styles.progressLabelName}>{rightLabel}</span>
+                    <span className={styles.progressLabelName}>Total Spent</span>
                     <span className={styles.progressLabelAmt}>
-                        {formatCurrencyINR(rightAmt, { decimals: 0 })}
+                        {formatCurrencyINR(cashExpenses + creditCardExpenses, { decimals: 0 })}
                     </span>
                 </div>
             </div>
 
-            {/* Track */}
+            {/* 3-segment track: Red (personal) | Yellow (CC) | Green (savings) */}
             <div className={styles.progressTrack}>
-                {/* Left fill */}
-                <div
-                    className={`${styles.progressFill} ${isOverspent ? styles.fillGreen : styles.fillRed}`}
-                    style={{ width: `${splitPct}%` }}
-                />
-                {/* Right fill */}
-                <div
-                    className={`${styles.progressFill} ${isOverspent ? styles.fillRed : styles.fillGreenLight}`}
-                    style={{ width: `${100 - splitPct}%` }}
-                />
-                {/* Split tick */}
-                <div className={styles.progressTick} style={{ left: `calc(${splitPct}% - 1px)` }}>
-                    <div className={styles.progressTickArrow} />
-                </div>
+                {redPct > 0 && (
+                    <div
+                        className={`${styles.progressFill} ${styles.fillRed}`}
+                        style={{ width: `${redPct}%` }}
+                    />
+                )}
+                {yellowPct > 0 && (
+                    <div
+                        className={`${styles.progressFill} ${styles.fillYellow}`}
+                        style={{ width: `${yellowPct}%` }}
+                    />
+                )}
+                {greenPct > 0 && (
+                    <div
+                        className={`${styles.progressFill} ${styles.fillGreen}`}
+                        style={{ width: `${greenPct}%` }}
+                    />
+                )}
             </div>
+
+            {/* CC legend — only shown when credit card spending exists */}
+            {hasCreditCard && (
+                <div className={styles.progressLegend}>
+                    <span className={`${styles.legendDot} ${styles.legendDotRed}`} />
+                    <span className={styles.legendLabel}>(Online Banking + Cash)</span>
+                    <span className={`${styles.legendDot} ${styles.legendDotYellow}`} />
+                    <span className={styles.legendLabel}>Credit Card</span>
+                    {!isOverspent && (
+                        <>
+                            <span className={`${styles.legendDot} ${styles.legendDotGreen}`} />
+                            <span className={styles.legendLabel}>Savings</span>
+                        </>
+                    )}
+                </div>
+            )}
 
             {/* Status label */}
             <p className={`${styles.progressStatus} ${isOverspent ? styles.expenseText : styles.incomeText}`}>
@@ -137,17 +163,58 @@ function ProgressSection({ totalIncome, totalSpend, isOverspent }) {
 }
 
 ProgressSection.propTypes = {
-    totalIncome: PropTypes.number.isRequired,
-    totalSpend: PropTypes.number.isRequired,
-    isOverspent: PropTypes.bool.isRequired,
+    cashIncome: PropTypes.number.isRequired,
+    cashExpenses: PropTypes.number.isRequired,
+    creditCardExpenses: PropTypes.number.isRequired,
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
-function DualSummaryCards({ totalSpend, totalIncome, spendPercentage, startDate, endDate }) {
-    const savedAmount = totalIncome - totalSpend;
-    const isOverspent = savedAmount < 0;
-    const displayAmount = Math.abs(savedAmount);
-    const diffPct = totalIncome > 0 ? Math.abs((savedAmount / totalIncome) * 100) : 0;
+function DualSummaryCards({ startDate, endDate }) {
+    const rawTransactions = useSelector(state => state.dailySpends.transactions);
+    const { categories } = useCategoryContext();
+
+    // All financial values are derived directly from the Redux store — no useEffect.
+    const {
+        cashIncome,
+        cashExpenses,
+        creditCardExpenses,
+        actualSavings,
+        totalOverspent,
+        isOverspent,
+        spendPercentage,
+    } = useMemo(() => {
+        const disabledLookup = buildDisabledCategoryLookup(categories);
+        const txns = filterTransactionsByDisabledCategories(rawTransactions, disabledLookup);
+
+        const ci = txns
+            .filter(t => t.type === 'income' && !t.isCreditCardCompanion)
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+        const ce = txns
+            .filter(t => t.type === 'spend' && t.paymentMethodId !== 'credit_card')
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+        const ccExp = txns
+            .filter(t => t.type === 'spend' && t.paymentMethodId === 'credit_card')
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+        const totalSpent = ce + ccExp;
+        // Overspent = (Total Spent + CC debt) - Income: adds CC a second time to
+        // surface the full financial exposure (cash deficit + borrowed money owed).
+        return {
+            cashIncome: ci,
+            cashExpenses: ce,
+            creditCardExpenses: ccExp,
+            actualSavings: totalSpent <= ci ? ci - totalSpent : 0,
+            totalOverspent: totalSpent > ci ? (totalSpent + ccExp) - ci : 0,
+            isOverspent: totalSpent > ci,
+            spendPercentage: ci > 0 ? (totalSpent / ci) * 100 : 0,
+        };
+    }, [rawTransactions, categories]);
+
+    const displayAmount = isOverspent ? totalOverspent : actualSavings;
+    const diffPct = cashIncome > 0 ? (displayAmount / cashIncome) * 100 : 0;
+    const totalExpense = cashExpenses + creditCardExpenses;
 
     const navigate = useNavigate();
     const [breakdownType, setBreakdownType] = useState(null);
@@ -158,7 +225,7 @@ function DualSummaryCards({ totalSpend, totalIncome, spendPercentage, startDate,
     };
 
     const subBadgeText = isOverspent
-        ? `${formatPercentage(diffPct)}% more than income`
+        ? `${formatPercentage(diffPct)}% over budget`
         : `${formatPercentage(diffPct)}% of income`;
 
     return (
@@ -189,6 +256,17 @@ function DualSummaryCards({ totalSpend, totalIncome, spendPercentage, startDate,
                                 {isOverspent ? 'Overspent' : 'Saved'}
                                 <InfoCircle size={13} className={styles.infoIcon} />
                             </p>
+                            {creditCardExpenses > 0 && (
+                                <button
+                                    type="button"
+                                    className={styles.ccInline}
+                                    onClick={() => setBreakdownType('spend')}
+                                    aria-label="View Credit Card breakdown"
+                                >
+                                    <CreditCard2Front size={12} color="#2196f3" />
+                                    <span>incl. {formatCurrencyINR(creditCardExpenses, { decimals: 0 })} credit card</span>
+                                </button>
+                            )}
                             <span className={`${styles.subBadge} ${isOverspent ? styles.subBadgeOverspent : styles.subBadgeSaving}`}>
                                 {subBadgeText}
                             </span>
@@ -196,29 +274,29 @@ function DualSummaryCards({ totalSpend, totalIncome, spendPercentage, startDate,
                         <RingChart percentage={spendPercentage} isOverspent={isOverspent} />
                     </div>
 
-                    {/* ── Mini cards: Income + Expense ── */}
+                    {/* ── Mini cards: Income + Expense (2-up row) ── */}
                     <div className={styles.miniCards}>
                         <MiniCard
                             icon={<WalletFill size={18} color="#4caf50" />}
                             label="Income"
-                            amount={totalIncome}
+                            amount={cashIncome}
                             accentClass={styles.miniIncome}
                             onClick={() => setBreakdownType('income')}
                         />
                         <MiniCard
                             icon={<GraphUpArrow size={18} color="#e91e63" />}
                             label="Expense"
-                            amount={totalSpend}
+                            amount={totalExpense}
                             accentClass={styles.miniExpense}
                             onClick={() => setBreakdownType('spend')}
                         />
                     </div>
 
-                    {/* ── Progress bar ── */}
+                    {/* ── Progress bar (3-segment) ── */}
                     <ProgressSection
-                        totalIncome={totalIncome}
-                        totalSpend={totalSpend}
-                        isOverspent={isOverspent}
+                        cashIncome={cashIncome}
+                        cashExpenses={cashExpenses}
+                        creditCardExpenses={creditCardExpenses}
                     />
                 </div>
             </div>
@@ -237,9 +315,6 @@ function DualSummaryCards({ totalSpend, totalIncome, spendPercentage, startDate,
 }
 
 DualSummaryCards.propTypes = {
-    totalSpend: PropTypes.number.isRequired,
-    totalIncome: PropTypes.number.isRequired,
-    spendPercentage: PropTypes.number,
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
 };

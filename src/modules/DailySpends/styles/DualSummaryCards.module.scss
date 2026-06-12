@@ -4,6 +4,7 @@
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 $income-color: #4caf50;
 $expense-color: #e91e63;
+$cc-color: #2196f3; // Material Blue 500 — distinct from green/red, universally "credit card" in fintech
 $card-radius: 20px;
 
 // ─── Wrapper / Card ───────────────────────────────────────────────────────────
@@ -12,7 +13,7 @@ $card-radius: 20px;
 }
 
 .card {
-    border-radius: $card-radius;
+    border-radius: 20px;
     padding: 1.25rem;
     box-shadow: $shadow-lg;
     border: 1px solid transparent;
@@ -35,6 +36,10 @@ $card-radius: 20px;
 
 .expenseText {
     color: $expense-color;
+}
+
+.ccText {
+    color: $cc-color;
 }
 
 // ─── Top row ─────────────────────────────────────────────────────────────────
@@ -235,6 +240,14 @@ $card-radius: 20px;
     background: rgba($expense-color, 0.15);
 }
 
+.miniCC .miniCardIcon {
+    background: rgba($cc-color, 0.15);
+}
+
+.miniCC .miniCardAmount {
+    color: $cc-color;
+}
+
 .miniCardBody {
     display: flex;
     flex-direction: column;
@@ -273,6 +286,32 @@ $card-radius: 20px;
 
 .miniExpense .miniCardAmount {
     color: $expense-color;
+}
+
+// ─── CC inline hint (sits below the Overspent/Saved label) ───────────────────
+.ccInline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba($cc-color, 0.1);
+    border: 1px solid rgba($cc-color, 0.25);
+    border-radius: $radius-full;
+    padding: 0.2rem 0.55rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: $font-weight-semibold;
+    color: $cc-color;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover {
+        background: rgba($cc-color, 0.18);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $cc-color;
+        outline-offset: 2px;
+    }
 }
 
 // ─── Progress section ─────────────────────────────────────────────────────────
@@ -346,6 +385,10 @@ $card-radius: 20px;
     background: rgba($income-color, 0.28);
 }
 
+.fillYellow {
+    background: $cc-color;
+}
+
 // Tick / split marker
 .progressTick {
     position: absolute;
@@ -375,6 +418,44 @@ $card-radius: 20px;
     font-weight: $font-weight-semibold;
     margin: 0.45rem 0 0;
     letter-spacing: 0.01em;
+}
+
+// ─── 3-segment legend (shown when CC spending present) ────────────────────────────────
+.progressLegend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem 0.3rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.legendDot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.legendDotGreen {
+    background: $income-color;
+}
+
+.legendDotRed {
+    background: $expense-color;
+}
+
+.legendDotYellow {
+    background: $cc-color;
+}
+
+.legendLabel {
+    font-size: 0.68rem;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    line-height: 1;
 }
 
 // ─── Responsive ───────────────────────────────────────────────────────────────

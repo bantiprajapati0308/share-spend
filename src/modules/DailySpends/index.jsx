@@ -310,9 +310,6 @@ function DailySpends() {
 
                     {/* Date Range Summary Cards */}
                     <DualSummaryCards
-                        totalSpend={getDateRangeSummary()}
-                        totalIncome={getDateRangeIncome()}
-                        spendPercentage={getDateRangePercentage()}
                         startDate={startDate}
                         endDate={endDate}
                     />
