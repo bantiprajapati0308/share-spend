@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
+import { PlusLg } from 'react-bootstrap-icons';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import useCategoryContext from './hooks/useCategoryContext';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
@@ -12,6 +13,7 @@ import ExpenseList from './components/ExpenseList';
 import DateRangePicker from './components/DateRangePicker';
 import TimeSummarySection from './components/TimeSummarySection';
 import styles from './styles/DailySpends.module.scss';
+import fabStyles from './styles/FAB.module.scss';
 import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { DailySpendTabsList } from '../../Util';
@@ -166,6 +168,22 @@ function DailySpends() {
     const handleCancelEdit = () => {
         setEditingTransaction(null);
         setIsEditMode(false);
+    };
+
+    const handleFAB = () => {
+        // 1. Reset form by bumping key (clears all fields)
+        setFormResetKey(k => k + 1);
+        // 2. Cancel any active edit
+        if (isEditMode) {
+            setEditingTransaction(null);
+            setIsEditMode(false);
+        }
+        // 3. Switch to add-transaction tab
+        setActiveLandingTab('add-transaction');
+        // 4. Smooth-scroll to the form section
+        requestAnimationFrame(() => {
+            addFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     };
 
 
@@ -390,6 +408,16 @@ function DailySpends() {
                     />
                 </Col>
             </Row>
+
+            {/* ── Floating Action Button ── */}
+            <button
+                type="button"
+                className={fabStyles.fab}
+                onClick={handleFAB}
+                aria-label="Add new transaction"
+            >
+                <PlusLg size={22} />
+            </button>
         </Container>
     );
 }

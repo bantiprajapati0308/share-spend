@@ -1,0 +1,42 @@
+@use '../../../assets/scss/variables' as *;
+
+// ─── Floating Action Button ───────────────────────────────────────────────────
+.fab {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.25rem;
+    z-index: 1050;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $brand-primary 0%, $brand-secondary 100%);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba($brand-primary, 0.45);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 20px rgba($brand-primary, 0.55);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba($brand-primary, 0.5);
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 480px) {
+        bottom: 3.4rem;
+        right: 0.8rem;
+        width: 48px;
+        height: 48px;
+    }
+}
