@@ -1,0 +1,11 @@
+/*
+ * Prevent iOS Safari from auto-zooming when an input is focused.
+ * The browser zooms in whenever font-size < 16px on a focusable field.
+ * Setting font-size to 1rem (= 16px) globally on all interactive fields
+ * stops the zoom without disabling user pinch-to-zoom (accessibility safe).
+ */
+input,
+textarea,
+select {
+    font-size: max(1rem, 16px) !important;
+}
