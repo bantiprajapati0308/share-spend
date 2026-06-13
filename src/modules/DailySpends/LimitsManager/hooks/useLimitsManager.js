@@ -2,6 +2,8 @@ import { useState, useCallback, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { getCategoryLimits, addCategoryLimit, updateCategoryLimit, deleteCategoryLimit } from '../../../../hooks/useCategoryLimits';
 import { toast } from 'react-toastify';
+import useCategoryContext from '../../hooks/useCategoryContext';
+import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../../utils/transactionVisibility';
 
 const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
 
@@ -18,6 +20,7 @@ const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d 
 export const useLimitsManager = (startDate, endDate, transactionType = 'spend') => {
     // Read the already-loaded transactions from Redux — zero API cost
     const allTransactions = useSelector(state => state.dailySpends.transactions);
+    const { categories } = useCategoryContext();
 
     const [limits, setLimits] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -26,15 +29,17 @@ export const useLimitsManager = (startDate, endDate, transactionType = 'spend') 
 
     /**
      * Derive category totals from Redux transactions.
-     * Re-runs automatically whenever transactions, dates, or type change —
-     * no manual refresh needed.
+     * Re-runs automatically whenever transactions, dates, type, or categories change.
+     * Transactions in disabled categories are excluded.
      */
     const categoryTotals = useMemo(() => {
         if (!startDate || !endDate) return {};
         const startStr = toDateStr(startDate);
         const endStr = toDateStr(endDate);
+        const disabledLookup = buildDisabledCategoryLookup(categories);
+        const visibleTransactions = filterTransactionsByDisabledCategories(allTransactions, disabledLookup);
         const totals = {};
-        allTransactions.forEach(tx => {
+        visibleTransactions.forEach(tx => {
             if (tx.type !== transactionType) return;
             const txDate = tx.date
                 ?? (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
@@ -43,7 +48,7 @@ export const useLimitsManager = (startDate, endDate, transactionType = 'spend') 
             totals[cat] = (totals[cat] || 0) + (parseFloat(tx.amount) || 0);
         });
         return totals;
-    }, [allTransactions, startDate, endDate, transactionType]);
+    }, [allTransactions, startDate, endDate, transactionType, categories]);
 
     /** Load category limits once. Subsequent calls are no-ops. */
     const loadLimits = useCallback(async () => {

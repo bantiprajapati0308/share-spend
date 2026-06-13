@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
-import { NON_DELETABLE_CATEGORIES, NON_DELETABLE_CATEGORY_IDS } from '../../../utils/predefinedCategories';
 import styles from '../styles/CategoryManager.module.scss';
 
 const SYSTEM_CATEGORY_TOOLTIPS = {
@@ -17,7 +16,7 @@ const SYSTEM_CATEGORY_TOOLTIPS = {
 };
 
 const getSystemTooltip = (category) =>
-    SYSTEM_CATEGORY_TOOLTIPS[category.id] ?? SYSTEM_CATEGORY_TOOLTIPS[category.name] ?? 'System category required for Borrow/Lend — cannot be deleted.';
+    SYSTEM_CATEGORY_TOOLTIPS[category.id] ?? 'System category required for Borrow/Lend — cannot be deleted.'
 
 function CategoryManager({ onCategoriesChanged }) {
     const {
@@ -48,17 +47,17 @@ function CategoryManager({ onCategoriesChanged }) {
 
     const filteredCategories = useMemo(() => {
         return [...categories.filter((c) => c.type === activeType)].sort((a, b) => {
-            if (a.isEnabled === b.isEnabled) return 0;
-            return a.isEnabled ? -1 : 1;
+            if (a.isEnable === b.isEnable) return 0;
+            return a.isEnable ? -1 : 1;
         });
     }, [categories, activeType]);
 
     const activeCategories = useMemo(
-        () => filteredCategories.filter((c) => c.isEnabled),
+        () => filteredCategories.filter((c) => c.isEnable),
         [filteredCategories]
     );
     const hiddenCategories = useMemo(
-        () => filteredCategories.filter((c) => !c.isEnabled),
+        () => filteredCategories.filter((c) => !c.isEnable),
         [filteredCategories]
     );
 
@@ -89,13 +88,13 @@ function CategoryManager({ onCategoriesChanged }) {
 
     const handleToggleCategory = async (category) => {
         try {
-            if (category.isEnabled) {
+            if (category.isEnable) {
                 await disableCategory(category.id);
-                updateCategoryInState(category.id, { isEnabled: false });
+                updateCategoryInState(category.id, { isEnable: false });
                 toast.success('Category hidden');
             } else {
                 await enableCategory(category.id);
-                updateCategoryInState(category.id, { isEnabled: true });
+                updateCategoryInState(category.id, { isEnable: true });
                 toast.success('Category shown');
             }
             if (onCategoriesChanged) await onCategoriesChanged();
@@ -105,7 +104,7 @@ function CategoryManager({ onCategoriesChanged }) {
     };
 
     const handleDeleteCategory = async (category) => {
-        if (NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name)) {
+        if (category.noDeletable === true) {
             toast.error('This category cannot be deleted.');
             return;
         }
@@ -121,19 +120,19 @@ function CategoryManager({ onCategoriesChanged }) {
     };
 
     const renderCategoryRow = (category) => {
-        const isSystem = NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name);
+        const isSystem = category.noDeletable === true;
         return (
             <div
                 key={category.id}
-                className={`${styles.categoryRow} ${!category.isEnabled ? styles.categoryRowHidden : ''}`}
+                className={`${styles.categoryRow} ${!category.isEnable ? styles.categoryRowHidden : ''}`}
             >
-                <span className={styles.categoryDragHandle} aria-hidden="true">⠿</span>
+                <span className={styles.categoryDragHandle} aria-hidden="true">⠇</span>
                 <span className={styles.categoryRowEmoji}>{category.emoji}</span>
                 <span className={styles.categoryRowName}>{category.name}</span>
                 <Form.Check
                     type="switch"
                     id={`cat-switch-${category.id}`}
-                    checked={category.isEnabled}
+                    checked={category.isEnable ?? true}
                     onChange={() => handleToggleCategory(category)}
                     className="ms-auto flex-shrink-0"
                 />

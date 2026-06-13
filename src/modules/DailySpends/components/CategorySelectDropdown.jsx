@@ -26,7 +26,7 @@ function CategorySelectDropdown({
         if (!categories.length) return [];
 
         return categories
-            .filter(cat => cat.isEnabled && cat.type === type)
+            .filter(cat => cat.isEnable && cat.type === type)
             .map((cat) => ({
                 value: cat.id,
                 label: `${cat.emoji} ${cat.name}`,

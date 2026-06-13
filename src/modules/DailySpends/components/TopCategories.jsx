@@ -13,7 +13,7 @@ const TopCategories = ({ selectedCategory, transactionType, onGoToCategories }) 
         const top = getTopCategories[transactionType]
             ?.map(name =>
                 categories.find(cat =>
-                    cat.type === transactionType && cat.isEnabled && cat.name === name
+                    cat.type === transactionType && cat.isEnable && cat.name === name
                 )
             )
             .filter(Boolean)
@@ -28,7 +28,7 @@ const TopCategories = ({ selectedCategory, transactionType, onGoToCategories }) 
         // Append any enabled categories not already in top list
         const topNames = new Set(top.map(c => c.categoryName));
         const rest = categories
-            .filter(cat => cat.type === transactionType && cat.isEnabled && !topNames.has(cat.name))
+            .filter(cat => cat.type === transactionType && cat.isEnable && !topNames.has(cat.name))
             .map(cat => ({
                 label: `${cat.emoji} ${cat.name}`,
                 value: cat.id,

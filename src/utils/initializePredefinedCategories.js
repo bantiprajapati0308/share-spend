@@ -1,24 +1,18 @@
 import { categoriesApi } from '../services/api/categoriesApi';
-import { ALL_PREDEFINED_CATEGORIES } from './predefinedCategories';
 
+/**
+ * Trigger the server-side idempotent category seeder.
+ * The server owns the authoritative PREDEFINED_CATEGORIES list and ignores any
+ * request body — so we send none.  Safe to call multiple times.
+ */
 export const initializePredefinedCategories = async () => {
     try {
-        const result = await categoriesApi.initializeCategories(
-            ALL_PREDEFINED_CATEGORIES.map(c => ({
-                name: c.name,
-                emoji: c.emoji,
-                type: c.type,
-                isPredefined: true,
-                isEnabled: true,
-            }))
-        );
+        const result = await categoriesApi.initializeCategories();
         if (!result.success) throw new Error(result.error);
         return {
             success: true,
             message: result.data?.message || 'Categories initialized',
-            addedCount: result.data?.addedCount ?? 0,
-            totalCount: result.data?.totalCount ?? ALL_PREDEFINED_CATEGORIES.length,
-            addedCategories: result.data?.addedCategories ?? [],
+            added: result.data?.added ?? 0,
         };
     } catch (error) {
         console.error('Error initializing predefined categories:', error);
@@ -26,23 +20,29 @@ export const initializePredefinedCategories = async () => {
     }
 };
 
+/**
+ * Returns true when the user already has categories in the database.
+ * A non-empty categories collection means seeding already ran.
+ */
 export const isUserCategoriesInitialized = async () => {
     try {
         const result = await categoriesApi.getCategories();
-        if (!result.success) return false;
-        const existingNames = result.data.map(c => c.name);
-        return ALL_PREDEFINED_CATEGORIES.every(c => existingNames.includes(c.name));
-    } catch (error) {
+        return result.success && result.data.length > 0;
+    } catch {
         return false;
     }
 };
 
+/**
+ * Call the idempotent seeder only when the user has no categories yet.
+ */
 export const ensurePredefinedCategories = async () => {
     try {
-        const isInitialized = await isUserCategoriesInitialized();
-        if (!isInitialized) return await initializePredefinedCategories();
-        return { success: true, message: 'Predefined categories already exist', alreadyInitialized: true };
+        const initialized = await isUserCategoriesInitialized();
+        if (initialized) return { success: true, message: 'Predefined categories already exist', alreadyInitialized: true };
+        return await initializePredefinedCategories();
     } catch (error) {
         return { success: false, message: error.message };
     }
 };
+

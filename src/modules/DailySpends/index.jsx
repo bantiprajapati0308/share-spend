@@ -48,7 +48,7 @@ function DailySpends() {
 
     const { categories: allCategories } = useCategoryContext();
     const userCategories = useMemo(
-        () => allCategories.filter(c => c.isEnabled !== false).map(c => c.name),
+        () => allCategories.filter(c => c.isEnable !== false).map(c => c.name),
         [allCategories]
     );
     const { loadDateRange, saveDateRange } = useSelectedDateRange();
