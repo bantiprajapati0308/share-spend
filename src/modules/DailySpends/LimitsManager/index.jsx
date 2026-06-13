@@ -10,6 +10,8 @@ import LimitForm from './components/LimitForm';
 import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
 import TransactionTypeSelector from '../components/common/TransactionTypeSelector';
 import styles from './styles/LimitsManager.module.scss';
+import useCategoryContext from '../hooks/useCategoryContext';
+import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../utils/transactionVisibility';
 
 const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
 
@@ -19,6 +21,7 @@ function LimitsManager({ embedded = false }) {
 
     // Read transactions already loaded by useDailyExpenses — no extra API call
     const allTransactions = useSelector(state => state.dailySpends.transactions);
+    const { categories } = useCategoryContext();
 
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
@@ -79,7 +82,9 @@ function LimitsManager({ embedded = false }) {
         if (!startDate || !endDate) return;
         const startStr = toDateStr(startDate);
         const endStr = toDateStr(endDate);
-        const filtered = allTransactions.filter(tx => {
+        const disabledLookup = buildDisabledCategoryLookup(categories);
+        const visibleTransactions = filterTransactionsByDisabledCategories(allTransactions, disabledLookup);
+        const filtered = visibleTransactions.filter(tx => {
             if (tx.category !== categoryName) return false;
             if (tx.type !== currentLimitType) return false;
             const txDate = tx.date
@@ -89,7 +94,7 @@ function LimitsManager({ embedded = false }) {
         setCategoryTransactions(filtered);
         setSelectedCategory(categoryName);
         setShowCategoryModal(true);
-    }, [allTransactions, currentLimitType, startDate, endDate]);
+    }, [allTransactions, currentLimitType, startDate, endDate, categories]);
 
     const handleAddLimitSubmit = useCallback(async (limitData, limitId) => {
         try {

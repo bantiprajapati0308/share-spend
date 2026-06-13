@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getTransactions } from '../../../../hooks/useDailySpends';
+import useCategoryContext from '../../hooks/useCategoryContext';
+import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../../utils/transactionVisibility';
 
 /**
  * Custom hook for Master Report data management
@@ -8,6 +10,9 @@ import { getTransactions } from '../../../../hooks/useDailySpends';
  * @param {Date} endDate - End date for filtering (optional)
  */
 export function useMasterReportData(startDate = null, endDate = null, preloadedTransactions = null) {
+    const { categories } = useCategoryContext();
+    const disabledLookup = useMemo(() => buildDisabledCategoryLookup(categories), [categories]);
+
     const [transactions, setTransactions] = useState([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState({});
     const [monthlyBreakdown, setMonthlyBreakdown] = useState({});
@@ -26,7 +31,8 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
                 });
             }
 
-            const data = filteredData;
+            // Exclude transactions belonging to disabled categories
+            const data = filterTransactionsByDisabledCategories(filteredData, disabledLookup);
             setTransactions(data);
 
             // Process category breakdown
@@ -83,7 +89,7 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
         };
 
         fetchData();
-    }, [startDate, endDate, preloadedTransactions]);
+    }, [startDate, endDate, preloadedTransactions, disabledLookup]);
 
     // Helper calculations
     const getTotalSpent = () => {

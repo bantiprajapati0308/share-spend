@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { useUserCategories } from '../hooks/useUserCategories';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
-import { NON_DELETABLE_CATEGORIES, NON_DELETABLE_CATEGORY_IDS } from '../../../utils/predefinedCategories';
 
 /**
  * Get tooltip message for non-deletable categories
@@ -53,11 +52,11 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
 
     const sortCategoriesByEnabled = (categoryList) => {
         return [...categoryList].sort((firstCategory, secondCategory) => {
-            if (firstCategory.isEnabled === secondCategory.isEnabled) {
+            if (firstCategory.isEnable === secondCategory.isEnable) {
                 return 0;
             }
 
-            return firstCategory.isEnabled ? -1 : 1;
+            return firstCategory.isEnable ? -1 : 1;
         });
     };
 
@@ -95,12 +94,12 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
         }
     };
 
-    const handleToggleCategory = async (categoryId, isEnabled) => {
+    const handleToggleCategory = async (categoryId, isEnable) => {
         try {
-            if (isEnabled) {
+            if (isEnable) {
                 // Category is currently enabled, so disable it
                 await disableCategory(categoryId);
-                updateCategoryInState(categoryId, { isEnabled: false });
+                updateCategoryInState(categoryId, { isEnable: false });
                 if (onCategoriesChanged) {
                     await onCategoriesChanged();
                 }
@@ -108,7 +107,7 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
             } else {
                 // Category is currently disabled, so enable it
                 await enableCategory(categoryId);
-                updateCategoryInState(categoryId, { isEnabled: true });
+                updateCategoryInState(categoryId, { isEnable: true });
                 if (onCategoriesChanged) {
                     await onCategoriesChanged();
                 }
@@ -121,7 +120,7 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
     };
 
     const handleDeleteCategory = async (categoryId, categoryData) => {
-        if (NON_DELETABLE_CATEGORY_IDS.has(categoryId) || NON_DELETABLE_CATEGORIES.includes(categoryData.name)) {
+        if (categoryData.noDeletable === true) {
             toast.error('This category cannot be deleted.');
             return;
         }
@@ -158,24 +157,24 @@ function CategoryManagementModal({ show, onHide, onCategoriesChanged }) {
                     <ListGroup.Item
                         key={category.id}
                         className="d-flex justify-content-between align-items-center px-2"
-                        style={!category.isEnabled ? { opacity: 0.6 } : {}}
+                        style={!category.isEnable ? { opacity: 0.6 } : {}}
                     >
                         <div>
 
                             <span style={{ fontSize: '0.825rem', marginRight: '0.05rem' }}>
                                 {category.emoji}
                             </span>
-                            <strong>{category.name}</strong> {!category.isEnabled && <Ban size={14} />}
+                            <strong>{category.name}</strong> {!category.isEnable && <Ban size={14} />}
                         </div>
                         <div>
                             <Form.Check
                                 type="switch"
                                 id={`switch-${category.id}`}
-                                checked={category.isEnabled}
-                                onChange={() => handleToggleCategory(category.id, category.isEnabled)}
+                                checked={category.isEnable ?? true}
+                                onChange={() => handleToggleCategory(category.id, category.isEnable)}
                                 className="d-inline-block"
                             />
-                            {NON_DELETABLE_CATEGORY_IDS.has(category.id) || NON_DELETABLE_CATEGORIES.includes(category.name) ? (
+                            {category.noDeletable === true ? (
                                 <OverlayTrigger
                                     placement="top"
                                     overlay={

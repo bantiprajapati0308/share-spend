@@ -6,7 +6,7 @@ export const categoriesApi = {
     addCategory: (data) => apiClient.post('/api/categories', data),
     updateCategory: (id, data) => apiClient.put(`/api/categories/${id}`, data),
     deleteCategory: (id) => apiClient.delete(`/api/categories/${id}`),
-    initializeCategories: (categories) => apiClient.post('/api/categories/initialize', { categories }),
+    initializeCategories: () => apiClient.post('/api/categories/initialize'),
 };
 
 export const categoryLimitsApi = {

@@ -45,7 +45,7 @@ export const CategoryProvider = ({ children }) => {
     const getCategoriesByType = useCallback((type) => {
         if (!categories.length) return [];
         return categories.filter(
-            cat => cat.isEnabled && cat.type === type
+            cat => cat.isEnable && cat.type === type
         );
     }, [categories]);
 
@@ -53,7 +53,7 @@ export const CategoryProvider = ({ children }) => {
      * Get all enabled categories
      */
     const getEnabledCategories = useCallback(() => {
-        return categories.filter(cat => cat.isEnabled);
+        return categories.filter(cat => cat.isEnable);
     }, [categories]);
 
     /**

@@ -10,13 +10,14 @@ export const useUserCategories = () => {
     const fetchEnabledCategories = async () => {
         const result = await categoriesApi.getCategories();
         if (!result.success) throw new Error(result.error);
-        return result.data.filter(c => c.isEnabled !== false);
+        return result.data.filter(c => c.isEnable !== false);
     };
 
     const addCategory = async (name, emoji = '📝', type = 'spend') => {
-        const result = await categoriesApi.addCategory({ name, emoji, type, isEnabled: true });
+        // id and noDeletable are assigned server-side; isEnable defaults to true in the controller.
+        const result = await categoriesApi.addCategory({ name, emoji, type });
         if (!result.success) throw new Error(result.error);
-        return result.data;
+        return result.data; // { id, name, emoji, type, noDeletable: false, isEnable: true }
     };
 
     const updateCategory = async (categoryId, updateData) => {
@@ -25,12 +26,12 @@ export const useUserCategories = () => {
     };
 
     const disableCategory = async (categoryId) => {
-        const result = await categoriesApi.updateCategory(categoryId, { isEnabled: false });
+        const result = await categoriesApi.updateCategory(categoryId, { isEnable: false });
         if (!result.success) throw new Error(result.error);
     };
 
     const enableCategory = async (categoryId) => {
-        const result = await categoriesApi.updateCategory(categoryId, { isEnabled: true });
+        const result = await categoriesApi.updateCategory(categoryId, { isEnable: true });
         if (!result.success) throw new Error(result.error);
     };
 
