@@ -18,6 +18,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 import { CategoryProvider } from './modules/DailySpends/context/CategoryContext.jsx';
 import FullScreenLoader from './components/common/FullScreenLoader';
+import MaintenancePage from './components/MaintenancePage';
 
 // MasterReport wrapper to handle location state
 function MasterReportWrapper() {
@@ -26,9 +27,15 @@ function MasterReportWrapper() {
   return <MasterReport startDate={startDate} endDate={endDate} />;
 }
 
+const IS_MAINTENANCE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+
 function App() {
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  if (IS_MAINTENANCE) {
+    return <MaintenancePage />;
+  }
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
