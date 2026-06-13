@@ -20,7 +20,7 @@ $card-radius: 20px;
 }
 
 .cardOverspent {
-    background: linear-gradient(150deg, #fff0f3 0%, #ffe4ed 100%);
+    background: linear-gradient(150deg, #fff0f39e 0%, #ffe4ed7a 100%);
     border-color: rgba($expense-color, 0.15);
 }
 
@@ -124,6 +124,13 @@ $card-radius: 20px;
 
 .infoIcon {
     color: $text-tertiary;
+}
+
+.infoIconWrap {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
 }
 
 .subBadge {

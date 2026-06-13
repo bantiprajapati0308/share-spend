@@ -6,6 +6,7 @@ import {
     CheckCircleFill, PiggyBankFill, InfoCircle, ChevronRight,
     CreditCard2Front,
 } from 'react-bootstrap-icons';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/DualSummaryCards.module.scss';
 import { formatCurrencyINR } from '../../../Util';
@@ -187,7 +188,7 @@ function DualSummaryCards({ startDate, endDate }) {
         const txns = filterTransactionsByDisabledCategories(rawTransactions, disabledLookup);
 
         const ci = txns
-            .filter(t => t.type === 'income' && !t.isCreditCardCompanion)
+            .filter(t => t.type === 'income')
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
         const ce = txns
@@ -199,14 +200,12 @@ function DualSummaryCards({ startDate, endDate }) {
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
         const totalSpent = ce + ccExp;
-        // Overspent = (Total Spent + CC debt) - Income: adds CC a second time to
-        // surface the full financial exposure (cash deficit + borrowed money owed).
         return {
             cashIncome: ci,
             cashExpenses: ce,
             creditCardExpenses: ccExp,
             actualSavings: totalSpent <= ci ? ci - totalSpent : 0,
-            totalOverspent: totalSpent > ci ? (totalSpent + ccExp) - ci : 0,
+            totalOverspent: totalSpent > ci ? totalSpent - ci : 0,
             isOverspent: totalSpent > ci,
             spendPercentage: ci > 0 ? (totalSpent / ci) * 100 : 0,
         };
@@ -254,7 +253,20 @@ function DualSummaryCards({ startDate, endDate }) {
                             </p>
                             <p className={styles.mainLabel}>
                                 {isOverspent ? 'Overspent' : 'Saved'}
-                                <InfoCircle size={13} className={styles.infoIcon} />
+                                <OverlayTrigger
+                                    placement="top"
+                                    overlay={
+                                        <Tooltip id="summary-info-tooltip">
+                                            {isOverspent
+                                                ? `Your total overspending is ${formatCurrencyINR(totalOverspent, { decimals: 0 })}${creditCardExpenses > 0 ? `, including ${formatCurrencyINR(creditCardExpenses, { decimals: 0 })} on credit card` : ''}.`
+                                                : `You have ${formatCurrencyINR(actualSavings, { decimals: 0 })} left from your income after all expenses this period. Keep it up!`}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <span className={styles.infoIconWrap}>
+                                        <InfoCircle size={13} className={styles.infoIcon} />
+                                    </span>
+                                </OverlayTrigger>
                             </p>
                             {creditCardExpenses > 0 && (
                                 <button
@@ -264,7 +276,7 @@ function DualSummaryCards({ startDate, endDate }) {
                                     aria-label="View Credit Card breakdown"
                                 >
                                     <CreditCard2Front size={12} color="#2196f3" />
-                                    <span>incl. {formatCurrencyINR(creditCardExpenses, { decimals: 0 })} credit card</span>
+                                    <span>+ {formatCurrencyINR(creditCardExpenses, { decimals: 0 })} credit card</span>
                                 </button>
                             )}
                             <span className={`${styles.subBadge} ${isOverspent ? styles.subBadgeOverspent : styles.subBadgeSaving}`}>
