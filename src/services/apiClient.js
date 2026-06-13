@@ -5,7 +5,11 @@
  */
 import { auth } from '../firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+// In production (Vercel), leave VITE_API_BASE_URL unset so requests go to
+// relative /api/* paths — Vercel proxies them to Railway server-side,
+// bypassing any carrier-level blocking of the Railway IP/domain.
+// In local dev, set VITE_API_BASE_URL=http://localhost:3001 in .env.local
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 /** Retrieve the current user's Firebase ID token (refreshes if needed) */
 async function getAuthToken() {

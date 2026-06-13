@@ -61,6 +61,10 @@
     ],
     "rewrites": [
         {
+            "source": "/api/:path*",
+            "destination": "https://share-spend-production.up.railway.app/api/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
