@@ -37,11 +37,18 @@ app.use('/api/category-limits', require('./src/routes/categoryLimits'));
 app.use('/api/settings', require('./src/routes/settings'));
 app.use('/api/borrow-lend', require('./src/routes/borrowLend'));
 app.use('/api/app-config', require('./src/routes/appConfig'));
+
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
-// ─── Start ────────────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`[server] Running on http://localhost:${PORT}`);
-});
+// ─── Export for Vercel serverless (module.exports = app) ─────────────────────
+// When imported by api/index.js, Vercel handles the HTTP server — no listen() needed.
+// When run directly (Railway / local), start the listener normally.
+module.exports = app;
+
+if (require.main === module) {
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, () => {
+        console.log(`[server] Running on http://localhost:${PORT}`);
+    });
+}

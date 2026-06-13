@@ -1,4 +1,11 @@
 {
+    "functions": {
+        "api/index.js": {
+            "includeFiles": "server/**",
+            "memory": 512,
+            "maxDuration": 30
+        }
+    },
     "headers": [
         {
             "source": "/sw.js",
@@ -62,7 +69,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://share-spend-production.up.railway.app/api/:path*"
+            "destination": "/api/index"
         },
         {
             "source": "/(.*)",
