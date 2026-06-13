@@ -68,7 +68,7 @@ function PaymentBreakdownModal({ type, startDate, endDate, onClose, onViewTransa
                         </p>
                     </div>
                     <div className={styles.bannerIllustration}>
-                        {isIncome ? <WalletFill size={24} color="white" /> : <GraphUpArrow size={24} color="white" />}
+                        {isIncome ? <WalletFill size={24} color="#4caf50" /> : <GraphUpArrow size={24} color="#e91e63" />}
 
                     </div>
                 </div>

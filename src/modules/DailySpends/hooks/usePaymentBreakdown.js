@@ -16,7 +16,7 @@ import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } f
 const PM_META = {
     cash: { label: 'Via Cash', color: '#28a745', icon: 'bi-cash-coin' },
     upi: { label: 'Via UPI', color: '#667eea', icon: 'bi-phone-fill' },
-    credit_card: { label: 'Via Credit Card', color: '#fd7e14', icon: 'bi-credit-card-2-front-fill' },
+    credit_card: { label: 'Via Credit Card', color: '#2196f3', icon: 'bi-credit-card-2-front-fill' },
 };
 
 const SUPPORTED_PM_IDS = new Set(Object.keys(PM_META));
