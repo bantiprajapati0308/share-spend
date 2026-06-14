@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { getCurrencySymbol, DEFAULT_CURRENCY } from '../../../Util';
+import { getCurrencySymbol, DEFAULT_CURRENCY, DISABLED_FLAG } from '../../../Util';
 import styles from '../../../assets/scss/Report.module.scss';
 import { useNavigate, useParams } from 'react-router-dom';
 import FullScreenLoader from '../../../components/common/FullScreenLoader';
@@ -234,7 +234,7 @@ function Report() {
                 })}
 
                 {/* Settlements Accordion */}
-                {renderSettlementsAccordion({
+                {DISABLED_FLAG && renderSettlementsAccordion({
                     accordionStates,
                     handleAccordionSelect,
                     currency,
@@ -252,7 +252,7 @@ function Report() {
                 })}
 
                 {/* Settlement History Accordion */}
-                {renderSettlementHistoryAccordion({
+                {DISABLED_FLAG && renderSettlementHistoryAccordion({
                     accordionStates,
                     handleAccordionSelect,
                     settlements,
