@@ -82,4 +82,5 @@ export const DailySpendTabsList = [
     { id: 'analytics', label: 'Analytics', Icon: FilterLeft },
     { id: 'set_limits', label: 'Set Limits', Icon: GearFill },
     { id: 'category', label: 'Manage Categories', Icon: TagsFill },
-]; 
+];
+export const DISABLED_FLAG = false;

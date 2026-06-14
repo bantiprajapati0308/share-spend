@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button, Container, Row, Col, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
 import { selectCurrency, setTrip } from '../../../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
-import { CURRENCY_ARRAY, DEFAULT_CURRENCY } from '../../../Util';
+import { CURRENCY_ARRAY, DEFAULT_CURRENCY, DISABLED_FLAG } from '../../../Util';
 import { PeopleFill, Globe2, InfoCircle, ArrowRightCircle, Trash } from 'react-bootstrap-icons';
 import styles from '../../../assets/scss/Trip.module.scss';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
@@ -181,7 +181,7 @@ function Trip() {
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="organizer" className="mb-3">
+                                {DISABLED_FLAG && <Form.Group controlId="organizer" className="mb-3">
                                     <Form.Label className={styles.formLabel}>Organizer</Form.Label>
                                     <div className={styles.organizerRow}>
                                         <PeopleFill size={20} className={styles.organizerIcon} />
@@ -192,7 +192,7 @@ function Trip() {
                                             onChange={(e) => setOrganizer(e.target.value)}
                                         />
                                     </div>
-                                </Form.Group>
+                                </Form.Group>}
                                 <Form.Group controlId="date" className="mb-3">
                                     <Form.Label className={styles.formLabel}>Trip Date <span style={{ color: 'red' }}>*</span></Form.Label>
                                     <Form.Control
@@ -203,7 +203,7 @@ function Trip() {
                                         min="1900-01-01"
                                     />
                                 </Form.Group>
-                                <Form.Group controlId="currencyType" className="mb-3">
+                                {DISABLED_FLAG && <Form.Group controlId="currencyType" className="mb-3">
                                     <Form.Label className={styles.formLabel}>Currency</Form.Label>
                                     <Form.Control
                                         as="select"
@@ -218,7 +218,7 @@ function Trip() {
                                             </option>
                                         ))}
                                     </Form.Control>
-                                </Form.Group>
+                                </Form.Group>}
                                 <div className={styles.displaySpaceBetween}>
                                     {/* <Button variant='danger' onClick={handleShowModal} className='mt-2'>Clear Data</Button> */}
                                     <Button variant="success" className='mt-2' type="submit" disabled={!tripName || !date}>
