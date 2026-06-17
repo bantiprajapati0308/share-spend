@@ -8,7 +8,10 @@ const errorHandler = require('./src/middleware/errorHandler');
 const app = express();
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173').split(',');
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 app.use(cors({
     origin: (origin, cb) => {
@@ -16,7 +19,9 @@ app.use(cors({
         if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
             cb(null, true);
         } else {
-            cb(new Error(`CORS: origin ${origin} not allowed`));
+            const err = new Error(`CORS: origin ${origin} not allowed`);
+            err.status = 403;
+            cb(err);
         }
     },
     credentials: true,
