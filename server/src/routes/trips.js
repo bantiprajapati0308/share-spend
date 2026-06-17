@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { getTrips, addTrip, updateTrip, deleteTrip } = require('../controllers/tripsController');
-const { getMembers, addMember, deleteMember } = require('../controllers/membersController');
+const { getMembersBriefDetails, getMembers, addMember, resendInvite, deleteMember } = require('../controllers/membersController');
 const { getExpenses, addExpense, updateExpense, deleteExpense } = require('../controllers/expensesController');
 
 router.use(auth);
@@ -13,9 +13,11 @@ router.post('/', addTrip);
 router.put('/:tripId', updateTrip);
 router.delete('/:tripId', deleteTrip);
 
-// Members (nested)
+// Members (unified — guests, invited, active)
+router.get('/:tripId/members/brief', getMembersBriefDetails);  // must be before /:memberId routes
 router.get('/:tripId/members', getMembers);
 router.post('/:tripId/members', addMember);
+router.post('/:tripId/members/:memberId/resend', resendInvite);
 router.delete('/:tripId/members/:memberId', deleteMember);
 
 // Expenses (nested)

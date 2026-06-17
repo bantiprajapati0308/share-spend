@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, Button, Container, Row, Col, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, OverlayTrigger, Tooltip, Modal, Badge } from 'react-bootstrap';
 import { selectCurrency, setTrip } from '../../../redux/tripSlice';
 import { useNavigate } from 'react-router-dom';
 import { CURRENCY_ARRAY, DEFAULT_CURRENCY, DISABLED_FLAG } from '../../../Util';
 import { PeopleFill, Globe2, InfoCircle, ArrowRightCircle, Trash } from 'react-bootstrap-icons';
 import styles from '../../../assets/scss/Trip.module.scss';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { addTrip, getTrips, deleteTrip } from '../hooks/useTrips'; // <-- Import deleteTrip
+import { addTrip, getTrips, deleteTrip } from '../hooks/useTrips';
 import FullScreenLoader from '../../../components/common/FullScreenLoader';
 
 function Trip() {
@@ -35,7 +35,7 @@ function Trip() {
             // Get the tripId from Firestore
             const tripId = tripRef.id;
             // Dispatch to Redux if needed
-            dispatch(setTrip({ name: tripName, description, organizer, currency, date, id: tripId }));
+            dispatch(setTrip({ name: tripName, description, organizer, currency, date, id: tripId, role: 'owner' }));
             // Navigate to members page with tripId
             navigate(`/members/${tripId}`);
             // Reset form
@@ -109,6 +109,14 @@ function Trip() {
                                                     </span>
                                                     <div>
                                                         <span className={styles.tripName}>{tripItem.name}</span>
+                                                        {tripItem.role && (
+                                                            <Badge
+                                                                bg={tripItem.role === 'owner' ? 'primary' : 'secondary'}
+                                                                style={{ fontSize: '0.7rem', marginLeft: 6, verticalAlign: 'middle' }}
+                                                            >
+                                                                {tripItem.role}
+                                                            </Badge>
+                                                        )}
                                                         <span className={styles.tripDate} style={{ color: '#888', fontSize: '0.95em', marginLeft: 8 }}>
                                                             {tripItem.date ? new Date(tripItem.date).toLocaleDateString() : ''}
                                                         </span>
@@ -127,17 +135,19 @@ function Trip() {
                                                     >
                                                         <ArrowRightCircle size={20} />
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline-danger"
-                                                        title="Delete Trip"
-                                                        onClick={() => {
-                                                            setTripToDelete(tripItem);
-                                                            setShowDeleteModal(true);
-                                                        }}
-                                                    >
-                                                        <Trash size={18} />
-                                                    </Button>
+                                                    {tripItem.role === 'owner' && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline-danger"
+                                                            title="Delete Trip"
+                                                            onClick={() => {
+                                                                setTripToDelete(tripItem);
+                                                                setShowDeleteModal(true);
+                                                            }}
+                                                        >
+                                                            <Trash size={18} />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </li>
                                         ))}
@@ -259,6 +269,8 @@ function Trip() {
                     </Col>
                 </Row>
             </Container>
+
+
         </>
     );
 }

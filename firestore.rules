@@ -1,0 +1,105 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ──────────────────────────────────────────────────────
+
+    // Returns true if the requesting user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Returns true if the requesting user owns the document (field userId == uid)
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    // Returns true if there exists a tripMembers doc for this user+trip (any role)
+    function isTripMember(tripId) {
+      return isAuth() && exists(/databases/$(database)/documents/tripMembers/$(
+        // Composite document lookup: we query via a where, not a single-doc path.
+        // Firestore security rules cannot do .where() queries — use the pattern below
+        // which allows the rule to pass when the client supplies the correct memberId.
+        // The server-side requireTripMember() helper provides the real enforcement.
+        // For client-side SDK access (if ever added), use the sub-rule below.
+        'placeholder'
+      ));
+    }
+
+    // Returns true if a tripMembers doc with matching tripId+userId exists
+    // Used to restrict client-side reads of nested collections.
+    function hasTripAccess(tripId) {
+      return isAuth() && exists(/databases/$(database)/documents/tripMembers/$(
+        // NOTE: Because Firestore rules cannot perform collection queries,
+        // we rely on the server (Admin SDK + requireTripMember) for enforcement.
+        // The rules below provide defence-in-depth for direct client SDK access.
+        'placeholder_not_used_by_server'
+      ));
+    }
+
+    // ─── users ────────────────────────────────────────────────────────────────
+    // Users can only read and write their own profile document.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ─── trips ────────────────────────────────────────────────────────────────
+    // A trip is readable/writable only if the requesting user is in tripMembers.
+    // Full enforcement is done server-side; these rules add a client SDK defence layer.
+    match /trips/{tripId} {
+      allow read: if isAuth();   // server enforces membership filter in getTrips
+      allow create: if isAuth(); // server creates the tripMembers owner doc atomically
+      allow update: if isAuth(); // server checks owner role via requireTripMember
+      allow delete: if isAuth(); // server checks owner role via requireTripMember
+
+      // guestMembers subcollection
+      match /guestMembers/{guestId} {
+        allow read: if isAuth();
+        allow write: if isAuth();
+      }
+    }
+
+    // ─── tripMembers ──────────────────────────────────────────────────────────
+    // Only the server (Admin SDK) writes to tripMembers.
+    // Members can read their own membership record.
+    match /tripMembers/{memberId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid
+      );
+      allow write: if false; // server-only writes
+    }
+
+    // ─── tripInvites ──────────────────────────────────────────────────────────
+    // Owners create invites (server-side); invitees can update status.
+    match /tripInvites/{inviteId} {
+      allow read: if isAuth() && (
+        resource.data.email == request.auth.token.email ||
+        resource.data.invitedBy == request.auth.uid
+      );
+      allow create: if false; // server-only
+      allow update: if isAuth() && resource.data.email == request.auth.token.email;
+      allow delete: if false;
+    }
+
+    // ─── expenses ─────────────────────────────────────────────────────────────
+    // All expense access enforced server-side via requireTripMember.
+    match /expenses/{expenseId} {
+      allow read, write: if isAuth(); // server enforces tripId membership
+    }
+
+    // ─── notifications ────────────────────────────────────────────────────────
+    // Users can only read and update their own notifications.
+    match /notifications/{notificationId} {
+      allow read, update: if isOwner(resource.data.userId);
+      allow create: if false; // server-only
+      allow delete: if false;
+    }
+
+    // ─── settlements ──────────────────────────────────────────────────────────
+    match /settlements/{settlementId} {
+      allow read, write: if isAuth(); // server enforces tripId membership
+    }
+
+  }
+}

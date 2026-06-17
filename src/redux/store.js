@@ -3,12 +3,14 @@ import { combineReducers } from 'redux';
 import tripReducer from './tripSlice';
 import dailySpendsReducer from './dailySpendsSlice';
 import appConfigReducer from './appConfigSlice';
+import notificationReducer from './notificationSlice';
 
 // Combine reducers (in case you have more in the future)
 const rootReducer = combineReducers({
     trip: tripReducer,
     dailySpends: dailySpendsReducer,
     appConfig: appConfigReducer,
+    notifications: notificationReducer,
 });
 
 // Create store with root reducer

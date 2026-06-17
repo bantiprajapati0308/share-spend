@@ -3,6 +3,7 @@ import { tripsApi } from '../../../services/api/tripsApi';
 export const getTrips = async () => {
     const result = await tripsApi.getTrips();
     if (!result.success) throw new Error(result.error);
+    // result.data each has a `role` field ('owner' | 'member') from the new schema
     return result.data;
 };
 
