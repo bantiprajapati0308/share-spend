@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { BoxArrowRight, QuestionCircle } from 'react-bootstrap-icons';
 import styles from '../assets/scss/TopBar.module.scss';
 import { getUserProfile, parseDisplayName } from '../hooks/useUserProfile';
+import NotificationBell from './common/NotificationBell';
 
-function TopBar() {
+function TopBar({ onInviteNotificationClick }) {
     const navigate = useNavigate();
     const user = auth.currentUser;
     const [firstName, setFirstName] = useState("");
@@ -37,6 +38,7 @@ function TopBar() {
                         <div className={styles.userSubtitle}>Good to see you back!</div>
                     </div>
                 </div>
+                <NotificationBell onInviteClick={onInviteNotificationClick} />
                 <button className={styles.helpBtn} onClick={() => navigate('/help')} title="Help Center">
                     <QuestionCircle size={20} />
                 </button>

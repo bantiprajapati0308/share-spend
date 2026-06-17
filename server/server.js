@@ -30,6 +30,8 @@ app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/trips', require('./src/routes/trips'));
+app.use('/api/invites', require('./src/routes/invites'));
+app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/settlements', require('./src/routes/settlements'));
 app.use('/api/daily-spends', require('./src/routes/dailySpends'));
 app.use('/api/categories', require('./src/routes/categories'));

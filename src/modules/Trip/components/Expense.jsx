@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getCurrencySymbol } from '../../../Util';
 import styles from '../../../assets/scss/Expense.module.scss';
 import { PlusCircle, Save2, XCircle, PeopleFill, ListUl, Pencil, Trash3 } from 'react-bootstrap-icons';
-import { getMembers } from '../hooks/useMembers';
+import { getMembersBriefDetails } from '../hooks/useMembers';
 import { addExpense as addExpenseToDB, getExpenses, deleteExpense, updateExpense } from '../hooks/useExpenses';
 import FullScreenLoader from '../../../components/common/FullScreenLoader';
 import { ToastContainer, toast } from 'react-toastify';
@@ -38,7 +38,8 @@ function Expense() {
 
         (async () => {
             setLoading(true);
-            const memberList = await getMembers(tripId);
+            const memberList = await getMembersBriefDetails(tripId);
+
             setMembers(memberList);
             const expenseList = await getExpenses(tripId);
             setExpenses(expenseList);
@@ -389,6 +390,12 @@ function Expense() {
                                                                     {expense.description && <div className={styles.expenseParticipants}>
                                                                         <small>Description: {expense.description}</small>
                                                                     </div>}
+                                                                    <div className={styles.expenseAudit} style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e3e8ee', fontSize: '0.8rem', color: '#6c757d' }}>
+                                                                        <div>Created by: <strong>{expense.createdByName || 'Unknown'}</strong> on {new Date(expense.createdAt).toLocaleDateString()}</div>
+                                                                        {expense.lastUpdatedByName && expense.lastUpdatedByName !== expense.createdByName && (
+                                                                            <div style={{ marginTop: '0.25rem' }}>Last updated by: <strong>{expense.lastUpdatedByName}</strong> on {new Date(expense.lastUpdated).toLocaleDateString()}</div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </Col>
                                                         </Row>

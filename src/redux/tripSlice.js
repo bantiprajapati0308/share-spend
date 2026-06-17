@@ -9,6 +9,8 @@ const initialState = {
         date: '',
         currency: DEFAULT_CURRENCY,
         id: '',
+        role: '',        // 'owner' | 'member'
+        isArchived: false,
     },
     members: [],
     expenses: [],
