@@ -22,6 +22,7 @@
     "firebase": "^12.1.0",
     "firebase-admin": "^12.3.0",
     "jspdf": "^4.2.1",
+    "nodemailer": "^6.9.15",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.10",
     "react-bootstrap-icons": "^1.11.4",

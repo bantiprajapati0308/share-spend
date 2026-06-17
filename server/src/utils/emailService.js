@@ -1,4 +1,15 @@
-const nodemailer = require('nodemailer');
+let nodemailer = null;
+
+function getNodemailer() {
+  if (nodemailer) return nodemailer;
+  try {
+    nodemailer = require('nodemailer');
+    return nodemailer;
+  } catch (error) {
+    console.error('[emailService] nodemailer module not found:', error?.message || error);
+    return null;
+  }
+}
 
 /**
  * Creates a reusable nodemailer transporter using Gmail SMTP.
@@ -8,13 +19,16 @@ const nodemailer = require('nodemailer');
  *                 Generate at: https://myaccount.google.com/apppasswords
  */
 function createTransporter() {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+  const mailer = getNodemailer();
+  if (!mailer) return null;
+
+  return mailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 }
 
 /**
@@ -28,22 +42,26 @@ function createTransporter() {
  * @returns {Promise<void>}
  */
 async function sendTripInviteEmail({ to, tripName, invitedBy, inviteId }) {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('[emailService] EMAIL_USER / EMAIL_PASS not set — skipping invite email');
-        return;
-    }
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn('[emailService] EMAIL_USER / EMAIL_PASS not set — skipping invite email');
+    return;
+  }
 
-    const appUrl = process.env.CLIENT_ORIGIN
-        ? process.env.CLIENT_ORIGIN.split(',')[0].trim()
-        : 'http://localhost:5173';
+  const appUrl = process.env.CLIENT_ORIGIN
+    ? process.env.CLIENT_ORIGIN.split(',')[0].trim()
+    : 'http://localhost:5173';
 
-    const transporter = createTransporter();
+  const transporter = createTransporter();
+  if (!transporter) {
+    console.warn('[emailService] nodemailer unavailable — skipping invite email');
+    return;
+  }
 
-    const mailOptions = {
-        from: `"Share Spend" <${process.env.EMAIL_USER}>`,
-        to,
-        subject: `You've been invited to join "${tripName}" on Share Spend`,
-        html: `
+  const mailOptions = {
+    from: `"Share Spend" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: `You've been invited to join "${tripName}" on Share Spend`,
+    html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -118,10 +136,10 @@ async function sendTripInviteEmail({ to, tripName, invitedBy, inviteId }) {
 </body>
 </html>
         `.trim(),
-    };
+  };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`[emailService] Invite email sent to ${to} for trip "${tripName}"`);
+  await transporter.sendMail(mailOptions);
+  console.log(`[emailService] Invite email sent to ${to} for trip "${tripName}"`);
 }
 
 module.exports = { sendTripInviteEmail };
