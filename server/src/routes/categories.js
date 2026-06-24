@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getCategories, addCategory, updateCategory, deleteCategory, initializeCategories } = require('../controllers/categoriesController');
+const { getCategories, addCategory, updateCategory, deleteCategory, initializeCategories } = require('../controllers/dailySpends/categoriesController');
 
 router.use(auth);
 

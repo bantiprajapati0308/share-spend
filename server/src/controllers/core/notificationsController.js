@@ -1,5 +1,16 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail } = require('../../utils/response');
+const { toIso, toMillis } = require('../../utils/dateTime');
+
+const mapNotification = (doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: toIso(data.createdAt),
+        updatedAt: toIso(data.updatedAt),
+    };
+};
 
 // GET /api/notifications
 // Returns all notifications for the current user, newest first.
@@ -9,8 +20,8 @@ const getNotifications = async (req, res) => {
             .where('userId', '==', req.uid)
             .get();
         const notifications = snap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (b.createdAt?._seconds ?? 0) - (a.createdAt?._seconds ?? 0));
+            .map((d) => mapNotification(d))
+            .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
 
         ok(res, notifications);
     } catch (e) {

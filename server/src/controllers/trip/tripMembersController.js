@@ -1,6 +1,6 @@
-const { db } = require('../config/firebase');
-const { ok, fail, badRequest } = require('../utils/response');
-const { requireTripMember } = require('../utils/tripAccess');
+const { db } = require('../../config/firebase');
+const { ok, fail, badRequest } = require('../../utils/response');
+const { requireTripMember } = require('../../utils/tripAccess');
 
 // GET /api/trips/:tripId/trip-members
 // Returns all registered (user) members for a trip.

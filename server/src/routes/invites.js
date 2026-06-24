@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getPendingInvitesByEmail, acceptInvite, rejectInvite } = require('../controllers/invitesController');
+const { getPendingInvitesByEmail, acceptInvite, rejectInvite } = require('../controllers/trip/invitesController');
 
 router.use(auth);
 

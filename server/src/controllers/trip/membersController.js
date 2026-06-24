@@ -1,7 +1,8 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, badRequest } = require('../utils/response');
-const { requireTripMember } = require('../utils/tripAccess');
-const { sendTripInviteEmail } = require('../utils/emailService');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, badRequest } = require('../../utils/response');
+const { requireTripMember } = require('../../utils/tripAccess');
+const { sendTripInviteEmail } = require('../../utils/emailService');
+const { toIso, toMillis } = require('../../utils/dateTime');
 
 /**
  * Subcollection path: trips/{tripId}/members/{memberId}
@@ -11,6 +12,17 @@ const { sendTripInviteEmail } = require('../utils/emailService');
  */
 const membersCol = (tripId) => db.collection('trips').doc(tripId).collection('members');
 const memberIndexCol = () => db.collection('memberIndex');
+
+const mapMember = (doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        addedAt: toIso(data.addedAt),
+        joinedAt: toIso(data.joinedAt),
+        lastInvitedAt: toIso(data.lastInvitedAt),
+    };
+};
 
 // GET /api/trips/:tripId/members/brief
 // Returns only { id, name, email, tripId, userId } for active members.
@@ -49,8 +61,8 @@ const getMembers = async (req, res) => {
         const snap = await membersCol(tripId).get();
 
         const members = snap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (a.addedAt?._seconds ?? 0) - (b.addedAt?._seconds ?? 0));
+            .map((d) => mapMember(d))
+            .sort((a, b) => toMillis(a.addedAt) - toMillis(b.addedAt));
 
         ok(res, members);
     } catch (e) {
@@ -89,6 +101,7 @@ const addMember = async (req, res) => {
         const tripName = tripSnap.data()?.name || '';
 
         const now = FieldValue.serverTimestamp();
+        const nowIso = new Date().toISOString();
         const isInvited = !!normalizedEmail;
 
         const memberData = {
@@ -119,6 +132,12 @@ const addMember = async (req, res) => {
             status: isInvited ? 'pending' : 'active',
         });
 
+        // Keep denormalized aggregate on trip root to avoid repeated count queries.
+        await db.collection('trips').doc(tripId).update({
+            totalMember: FieldValue.increment(1),
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+
         if (isInvited) {
             const userSnap = await db.collection('users')
                 .where('email', '==', normalizedEmail)
@@ -145,7 +164,13 @@ const addMember = async (req, res) => {
             }).catch((err) => console.error('[membersController] Failed to send invite email:', err.message));
         }
 
-        ok(res, { id: memberRef.id, ...memberData }, 201);
+        ok(res, {
+            id: memberRef.id,
+            ...memberData,
+            addedAt: nowIso,
+            joinedAt: isInvited ? null : nowIso,
+            lastInvitedAt: isInvited ? nowIso : null,
+        }, 201);
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
         if (e.status === 404) return fail(res, e.message, 404);
@@ -208,6 +233,13 @@ const deleteMember = async (req, res) => {
         await memberRef.delete();
         // Remove from flat index
         await memberIndexCol().doc(memberId).delete();
+
+        // Keep denormalized aggregate on trip root to avoid repeated count queries.
+        await db.collection('trips').doc(tripId).update({
+            totalMember: FieldValue.increment(-1),
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+
         ok(res, { deleted: true });
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
@@ -216,4 +248,3 @@ const deleteMember = async (req, res) => {
 };
 
 module.exports = { getMembersBriefDetails, getMembers, addMember, resendInvite, deleteMember };
-

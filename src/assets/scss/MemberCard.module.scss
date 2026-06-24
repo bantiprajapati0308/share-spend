@@ -1,0 +1,119 @@
+@use './variables' as *;
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $primary-400, $primary-600);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.content {
+    flex: 1;
+    min-width: 0;
+}
+
+.name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.email {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0.15rem 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &.owner {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    &.connected {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    &.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    &.local {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+}
+
+.removeBtn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border: none;
+    background: transparent;
+    color: #ef4444;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+        background: #fee2e2;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        gap: 0.5rem;
+    }
+
+    .name {
+        font-size: 0.85rem;
+    }
+}

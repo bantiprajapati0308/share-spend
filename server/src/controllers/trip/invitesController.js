@@ -1,5 +1,17 @@
-﻿const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, badRequest, notFound } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, badRequest, notFound } = require('../../utils/response');
+const { toIso, toMillis } = require('../../utils/dateTime');
+
+const mapMemberInvite = (doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        addedAt: toIso(data.addedAt),
+        joinedAt: toIso(data.joinedAt),
+        lastInvitedAt: toIso(data.lastInvitedAt),
+    };
+};
 
 // GET /api/invites/pending?email=X
 // Returns all pending member docs (across all trips) for this email. Called post-login.
@@ -27,8 +39,8 @@ const getPendingInvitesByEmail = async (req, res) => {
 
         const pending = memberDocs
             .filter((d) => d.exists)
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => (b.addedAt?._seconds ?? 0) - (a.addedAt?._seconds ?? 0));
+            .map((d) => mapMemberInvite(d))
+            .sort((a, b) => toMillis(b.addedAt) - toMillis(a.addedAt));
 
         ok(res, pending);
     } catch (e) {
@@ -136,4 +148,3 @@ const rejectInvite = async (req, res) => {
 };
 
 module.exports = { getPendingInvitesByEmail, acceptInvite, rejectInvite };
-

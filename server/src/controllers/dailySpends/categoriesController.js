@@ -1,5 +1,5 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, badRequest } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, badRequest } = require('../../utils/response');
 
 /**
  * Single source of truth for all predefined categories.

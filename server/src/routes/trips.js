@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getTrips, addTrip, updateTrip, deleteTrip } = require('../controllers/tripsController');
-const { getMembersBriefDetails, getMembers, addMember, resendInvite, deleteMember } = require('../controllers/membersController');
-const { getExpenses, addExpense, updateExpense, deleteExpense } = require('../controllers/expensesController');
+const { getTrips, addTrip, updateTrip, deleteTrip } = require('../controllers/trip/tripsController');
+const { getMembersBriefDetails, getMembers, addMember, resendInvite, deleteMember } = require('../controllers/trip/membersController');
+const { getExpenses, addExpense, updateExpense, deleteExpense } = require('../controllers/trip/expensesController');
 
 router.use(auth);
 
