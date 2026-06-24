@@ -1,5 +1,5 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, notFound, badRequest } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, notFound, badRequest } = require('../../utils/response');
 const { v4: uuidv4 } = require('uuid');
 
 const col = (uid) => db.collection('users').doc(uid).collection('borrowLend');

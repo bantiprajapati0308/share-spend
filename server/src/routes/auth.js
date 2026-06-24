@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const {
     getProfile, createOrUpdateProfile, updateProfile,
     updateLastLogin, register, forgotPassword, sendVerification,
-} = require('../controllers/authController');
+} = require('../controllers/core/authController');
 
 // Public routes — no auth token required
 router.post('/forgot-password', forgotPassword);

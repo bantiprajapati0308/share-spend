@@ -1,5 +1,16 @@
-const { db, admin, FieldValue } = require('../config/firebase');
-const { ok, fail, badRequest } = require('../utils/response');
+const { db, admin, FieldValue } = require('../../config/firebase');
+const { ok, fail, badRequest } = require('../../utils/response');
+const { toIso, toMillis } = require('../../utils/dateTime');
+
+const mapSettlement = (doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: toIso(data.createdAt),
+        updatedAt: toIso(data.updatedAt),
+    };
+};
 
 // GET /api/settlements?tripId=X
 const getTripSettlements = async (req, res) => {
@@ -12,9 +23,9 @@ const getTripSettlements = async (req, res) => {
             .get();
 
         const settlements = snap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
+            .map((d) => mapSettlement(d))
             .filter((d) => d.status === 'completed')
-            .sort((a, b) => (b.createdAt?._seconds ?? 0) - (a.createdAt?._seconds ?? 0));
+            .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
 
         ok(res, settlements);
     } catch (e) {
@@ -29,6 +40,7 @@ const createSettlement = async (req, res) => {
         if (!tripId || !amount || !payer || !receiver) return badRequest(res, 'tripId, amount, payer, receiver required');
 
         const now = FieldValue.serverTimestamp();
+        const nowIso = new Date().toISOString();
         const data = {
             tripId,
             amount,
@@ -43,7 +55,7 @@ const createSettlement = async (req, res) => {
             updatedAt: now,
         };
         const ref = await db.collection('settlements').add(data);
-        ok(res, { id: ref.id, ...data }, 201);
+        ok(res, { id: ref.id, ...data, createdAt: nowIso, updatedAt: nowIso }, 201);
     } catch (e) {
         fail(res, e.message);
     }
@@ -57,6 +69,7 @@ const createBatchSettlements = async (req, res) => {
 
         const batch = db.batch();
         const now = FieldValue.serverTimestamp();
+        const nowIso = new Date().toISOString();
         const ids = [];
 
         settlements.forEach((s) => {
@@ -72,7 +85,7 @@ const createBatchSettlements = async (req, res) => {
         });
 
         await batch.commit();
-        ok(res, { created: ids.length, ids }, 201);
+        ok(res, { created: ids.length, ids, createdAt: nowIso }, 201);
     } catch (e) {
         fail(res, e.message);
     }

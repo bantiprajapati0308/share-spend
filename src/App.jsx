@@ -77,7 +77,7 @@ function AppContent({ user }) {
 
   return (
     <CategoryProvider>
-      <div style={{ paddingBottom: '70px' }}>
+      <div style={{ paddingBottom: '60px' }}>
         <ErrorBoundary>
           <TopBar onInviteNotificationClick={handleInviteNotificationClick} />
           <Routes>

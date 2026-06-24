@@ -1,5 +1,5 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, badRequest } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, badRequest } = require('../../utils/response');
 
 const col = (uid) => db.collection('users').doc(uid).collection('categoryLimits');
 const userDoc = (uid) => db.collection('users').doc(uid);

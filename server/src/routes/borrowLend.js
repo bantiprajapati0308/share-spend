@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const {
     getRecords, addRecord, addRepayment,
     archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry,
-} = require('../controllers/borrowLendController');
+} = require('../controllers/borrowLend/borrowLendController');
 
 router.use(auth);
 

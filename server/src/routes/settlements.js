@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getTripSettlements, createSettlement, createBatchSettlements, updateTripBalances } = require('../controllers/settlementsController');
+const { getTripSettlements, createSettlement, createBatchSettlements, updateTripBalances } = require('../controllers/trip/settlementsController');
 
 router.use(auth);
 

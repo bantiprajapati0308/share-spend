@@ -1,0 +1,147 @@
+@use './variables' as *;
+
+.dashboard {
+    padding: 1rem 0.5rem 0;
+}
+
+.heroCard {
+    background: linear-gradient(135deg, $primary-50 0%, #f3e8ff 100%);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.heroContent {
+    margin-bottom: 1.5rem;
+}
+
+.greeting {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.emoji {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0.5rem 0 0 0;
+}
+
+// ── Stats Grid ─────────────────────────────────────────────────────────────────
+.statsGrid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.stat {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $primary-600;
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.statDivider {
+    width: 1px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+// ── CTA Button ─────────────────────────────────────────────────────────────────
+.ctaButton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, $primary-500 0%, $primary-600 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.875rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.ctaButton:active {
+    transform: translateY(0);
+}
+
+.icon {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (max-width: 480px) {
+    .heroCard {
+        padding: 1.25rem;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .statsGrid {
+        gap: 0.75rem;
+        padding: 0.875rem;
+    }
+
+    .statValue {
+        font-size: 1.25rem;
+    }
+
+    .statLabel {
+        font-size: 0.65rem;
+    }
+
+    .ctaButton {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}

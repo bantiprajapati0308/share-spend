@@ -1,8 +1,8 @@
 const https = require('https');
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, notFound, badRequest } = require('../utils/response');
-const { seedPredefinedCategoriesForUser } = require('./categoriesController');
-const { seedPredefinedLimitsForUser } = require('./categoryLimitsController');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, notFound, badRequest } = require('../../utils/response');
+const { seedPredefinedCategoriesForUser } = require('../dailySpends/categoriesController');
+const { seedPredefinedLimitsForUser } = require('../dailySpends/categoryLimitsController');
 const { seedDefaultDateRangeForUser } = require('./settingsController');
 
 // Firebase Web API key — used for client-facing REST calls (password reset, email verification).

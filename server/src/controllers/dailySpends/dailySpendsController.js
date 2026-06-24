@@ -1,5 +1,5 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail } = require('../utils/response');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail } = require('../../utils/response');
 
 const col = (uid) => db.collection('users').doc(uid).collection('dailySpends');
 const catCol = (uid) => db.collection('users').doc(uid).collection('categories');

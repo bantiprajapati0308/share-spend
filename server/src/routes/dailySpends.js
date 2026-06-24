@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getTransactions, addTransaction, updateTransaction, deleteTransaction } = require('../controllers/dailySpendsController');
+const { getTransactions, addTransaction, updateTransaction, deleteTransaction } = require('../controllers/dailySpends/dailySpendsController');
 
 router.use(auth);
 

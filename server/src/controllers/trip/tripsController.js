@@ -1,6 +1,20 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, notFound, badRequest } = require('../utils/response');
-const { requireTripMember } = require('../utils/tripAccess');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, notFound, badRequest } = require('../../utils/response');
+const { requireTripMember } = require('../../utils/tripAccess');
+const { toIso } = require('../../utils/dateTime');
+
+const mapTripResponse = (tripDoc, memberDoc) => {
+    const trip = tripDoc.data();
+    return {
+        id: tripDoc.id,
+        ...trip,
+        createdAt: toIso(trip.createdAt),
+        updatedAt: toIso(trip.updatedAt),
+        totalMember: Number(trip.totalMember || 0),
+        totalAmount: Number(trip.totalAmount || 0),
+        ...(memberDoc ? { role: memberDoc.role, memberId: memberDoc.id } : {}),
+    };
+};
 
 // GET /api/trips
 // Returns all trips where the current user is a member (any role).
@@ -23,16 +37,9 @@ const getTrips = async (req, res) => {
             }))
         );
         const results = await Promise.all(tripFetches);
-
         const trips = results
             .filter((r) => r.tripDoc.exists)
-            .map((r) => ({
-                id: r.tripDoc.id,
-                ...r.tripDoc.data(),
-                role: r.memberDoc.role,
-                memberId: r.memberDoc.id,
-            }));
-
+            .map((r) => mapTripResponse(r.tripDoc, r.memberDoc));
         ok(res, trips);
     } catch (e) {
         fail(res, e.message);
@@ -57,6 +64,8 @@ const addTrip = async (req, res) => {
             createdAt: now,
             updatedAt: now,
             isArchived: false,
+            totalMember: 1,
+            totalAmount: 0,
         };
 
         // Resolve owner's display name from their Firestore profile
@@ -103,7 +112,16 @@ const addTrip = async (req, res) => {
 
         await batch.commit();
 
-        ok(res, { id: tripRef.id, ...req.body, createdBy: req.uid, isArchived: false, role: 'owner' }, 201);
+        ok(res, {
+            id: tripRef.id,
+            ...tripData,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            role: 'owner',
+            memberId: memberRef.id,
+            totalMember: 1,
+            totalAmount: 0,
+        }, 201);
     } catch (e) {
         fail(res, e.message);
     }
@@ -124,7 +142,7 @@ const updateTrip = async (req, res) => {
         const ref = db.collection('trips').doc(tripId);
         await ref.update(updates);
         const snap = await ref.get();
-        ok(res, { id: snap.id, ...snap.data() });
+        ok(res, mapTripResponse(snap));
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
         if (e.status === 404) return notFound(res, e.message);

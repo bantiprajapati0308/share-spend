@@ -1,8 +1,23 @@
-const { db, FieldValue } = require('../config/firebase');
-const { ok, fail, notFound, badRequest } = require('../utils/response');
-const { requireTripMember } = require('../utils/tripAccess');
+const { db, FieldValue } = require('../../config/firebase');
+const { ok, fail, notFound, badRequest } = require('../../utils/response');
+const { requireTripMember } = require('../../utils/tripAccess');
+const { toIso, toMillis } = require('../../utils/dateTime');
 
 const expensesCol = (tripId) => db.collection('trips').doc(tripId).collection('expenses');
+const toNumber = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
+};
+const mapExpense = (doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: toIso(data.createdAt),
+        updatedAt: toIso(data.updatedAt),
+        lastUpdated: toIso(data.lastUpdated),
+    };
+};
 
 // GET /api/trips/:tripId/expenses
 const getExpenses = async (req, res) => {
@@ -12,12 +27,8 @@ const getExpenses = async (req, res) => {
 
         const snap = await expensesCol(tripId).get();
         const expenses = snap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .sort((a, b) => {
-                const aTime = a.createdAt?._seconds ?? (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
-                const bTime = b.createdAt?._seconds ?? (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
-                return aTime - bTime;
-            });
+            .map((d) => mapExpense(d))
+            .sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt));
         ok(res, expenses);
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
@@ -66,6 +77,13 @@ const addExpense = async (req, res) => {
             lastUpdatedByName: createdByName,
         };
         const ref = await expensesCol(tripId).add(data);
+
+        // Keep denormalized aggregate on trip root to avoid repeated sum queries.
+        await db.collection('trips').doc(tripId).update({
+            totalAmount: FieldValue.increment(toNumber(req.body.amount)),
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+
         ok(res, { id: ref.id, ...data }, 201);
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
@@ -83,6 +101,7 @@ const updateExpense = async (req, res) => {
         const expenseRef = expensesCol(tripId).doc(expenseId);
         const expenseSnap = await expenseRef.get();
         if (!expenseSnap.exists) return notFound(res, 'Expense not found');
+        const previousAmount = toNumber(expenseSnap.data().amount);
 
         const rawParticipants = Array.isArray(req.body.participants) ? req.body.participants : [];
         const participants = rawParticipants.map((p) => ({
@@ -116,6 +135,17 @@ const updateExpense = async (req, res) => {
         delete updates.createdBy;
 
         await expenseRef.update(updates);
+
+        const nextAmount = toNumber(req.body.amount);
+        const delta = nextAmount - previousAmount;
+        if (delta !== 0) {
+            // Delta update avoids full re-scan/sum of expenses collection.
+            await db.collection('trips').doc(tripId).update({
+                totalAmount: FieldValue.increment(delta),
+                updatedAt: FieldValue.serverTimestamp(),
+            });
+        }
+
         ok(res, { id: expenseId, ...updates, tripId });
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
@@ -133,8 +163,16 @@ const deleteExpense = async (req, res) => {
         const expenseRef = expensesCol(tripId).doc(expenseId);
         const expenseSnap = await expenseRef.get();
         if (!expenseSnap.exists) return notFound(res, 'Expense not found');
+        const removedAmount = toNumber(expenseSnap.data().amount);
 
         await expenseRef.delete();
+
+        // Keep denormalized aggregate on trip root to avoid repeated sum queries.
+        await db.collection('trips').doc(tripId).update({
+            totalAmount: FieldValue.increment(-removedAmount),
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+
         ok(res, { deleted: true });
     } catch (e) {
         if (e.status === 403) return fail(res, e.message, 403);
