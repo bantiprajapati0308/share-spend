@@ -19,7 +19,7 @@ const getCreditCardCategory = async (uid) => {
  */
 const buildCreditCardIncome = (spendBody, spendId, category) => ({
     type: 'income',
-    name: 'Credit Spend',
+    name: spendBody.name,
     amount: spendBody.amount,
     categoryId: CREDIT_CARD_ID,
     categoryName: category.name,
