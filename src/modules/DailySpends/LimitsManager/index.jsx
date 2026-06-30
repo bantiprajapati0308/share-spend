@@ -12,8 +12,9 @@ import TransactionTypeSelector from '../components/common/TransactionTypeSelecto
 import styles from './styles/LimitsManager.module.scss';
 import useCategoryContext from '../hooks/useCategoryContext';
 import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../utils/transactionVisibility';
+import { formatLocalDate, parseLocalDate } from '../utils/dateUtils';
 
-const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
+const toDateStr = (d) => formatLocalDate(d) || (d ?? '');
 
 function LimitsManager({ embedded = false }) {
     const navigate = useNavigate();
@@ -53,8 +54,8 @@ function LimitsManager({ embedded = false }) {
                 const savedRange = await loadDateRange();
                 let start, end;
                 if (savedRange?.startDate && savedRange?.endDate) {
-                    start = new Date(savedRange.startDate);
-                    end = new Date(savedRange.endDate);
+                    start = parseLocalDate(savedRange.startDate);
+                    end = parseLocalDate(savedRange.endDate);
                 } else {
                     const now = new Date();
                     start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -88,7 +89,7 @@ function LimitsManager({ embedded = false }) {
             if (tx.category !== categoryName) return false;
             if (tx.type !== currentLimitType) return false;
             const txDate = tx.date
-                ?? (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
+                ?? formatLocalDate(tx.createdAt);
             return txDate && txDate >= startStr && txDate <= endStr;
         });
         setCategoryTransactions(filtered);

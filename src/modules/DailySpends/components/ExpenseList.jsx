@@ -5,13 +5,11 @@ import ExpenseItem from './ExpenseItem';
 import SortingComponent from '../../../components/common/SortingComponent';
 import { sortExpenses, SORT_TYPES } from '../../../utils/sortingUtils';
 import { formatCurrencyINR } from '../../../Util';
+import { formatLocalDate } from '../utils/dateUtils';
 
 // Extract 'YYYY-MM-DD' from an expense's date field (handles both date-only and datetime strings)
 function getDateStr(expense) {
-    const raw = expense.date || expense.createdAt;
-    if (!raw) return 'unknown';
-    const str = typeof raw === 'string' ? raw : new Date(raw).toISOString();
-    return str.slice(0, 10);
+    return formatLocalDate(expense.date || expense.createdAt) || 'unknown';
 }
 
 // Format "Jun 4, 2024 • Tuesday" — same logic as CalendarHeatmap's getDayData date range
@@ -22,7 +20,7 @@ function formatDateHeader(dateStr) {
     return `${formatted} • ${dayName}`;
 }
 
-function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses', dateHide = false }) {
+function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses', dateHide = false, disableActions = false }) {
     const [currentSort, setCurrentSort] = useState(SORT_TYPES.DATE_NEWEST);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -45,10 +43,11 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses', date
             let dateText = '';
             let isoDateText = '';
             if (dateValue) {
-                const parsedDate = new Date(dateValue);
-                if (!Number.isNaN(parsedDate.getTime())) {
+                const dateString = formatLocalDate(dateValue);
+                if (dateString) {
+                    const parsedDate = new Date(`${dateString}T00:00:00`);
                     dateText = parsedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).toLowerCase();
-                    isoDateText = parsedDate.toISOString().split('T')[0].toLowerCase();
+                    isoDateText = dateString.toLowerCase();
                 }
             }
             return nameText.includes(normalizedSearch) || categoryText.includes(normalizedSearch) || amountText.includes(normalizedSearch) || notesText.includes(normalizedSearch) || dateText.includes(normalizedSearch) || isoDateText.includes(normalizedSearch);
@@ -116,6 +115,7 @@ function ExpenseList({ expenses, onDelete, onEdit, title = 'Your Expenses', date
                                         onDelete={onDelete}
                                         onEdit={onEdit}
                                         dateHide={true}
+                                        disableActions={disableActions}
                                     />
                                 ))}
                             </div>

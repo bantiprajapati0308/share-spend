@@ -13,6 +13,7 @@ import AmountInput from '../../../utils/AmountInput';
 import { evaluateAmountExpression } from '../../../utils/amountExpression';
 import useCategoryContext from '../hooks/useCategoryContext';
 import PaymentMethodSelector from './common/PaymentMethodSelector';
+import { formatLocalDate } from '../utils/dateUtils';
 
 function AddExpenseForm({
     onAddExpense,
@@ -251,7 +252,7 @@ function AddExpenseForm({
                             label="Date *"
                             value={date}
                             onChange={(val) => val && setDate(val)}
-                            maxDate={new Date().toISOString().split('T')[0]}
+                            maxDate={formatLocalDate(new Date())}
                             required
                             placeholder="Select date & time"
                             showTimeSelect

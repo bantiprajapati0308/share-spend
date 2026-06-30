@@ -19,8 +19,7 @@ function TimeSummaryDetailModal({ show, onHide, title, transactions, isIncome, d
                     title={title}
                     // Hide edit/delete by passing no-op handlers
                     dateHide={dateHide}
-                    onDelete={undefined}
-                    onEdit={undefined}
+                    disableActions={true}
                 />
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-between align-items-center">

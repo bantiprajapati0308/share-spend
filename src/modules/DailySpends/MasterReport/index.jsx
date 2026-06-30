@@ -19,6 +19,7 @@ import { Chart } from 'chart.js';
 // Hooks and Utils
 import { useMasterReportData } from './hooks/useMasterReportData';
 import { getCurrencySymbol } from '../../../Util';
+import { formatLocalDate, getTransactionDateKey } from '../utils/dateUtils';
 import { generateMasterReportCSV, downloadCSV } from './utils/masterReportUtils';
 
 /**
@@ -195,12 +196,11 @@ function MasterReport({ currency = 'INR', startDate = null, endDate = null }) {
         let title = '';
         let isIncome = type === 'income';
         if (period === 'today') {
-            // Normalize both dates to UTC YYYY-MM-DD string
+            // Compare using local calendar-date keys to avoid timezone day-shift
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = formatLocalDate(today);
             txs = transactions.filter(tx => {
-                const txDate = new Date(tx.date || tx.createdAt);
-                const txDateStr = txDate.toISOString().split('T')[0];
+                const txDateStr = getTransactionDateKey(tx);
                 return tx.type === type && txDateStr === todayStr;
             });
             title = type === 'income' ? 'Today Income' : 'Today Spend';

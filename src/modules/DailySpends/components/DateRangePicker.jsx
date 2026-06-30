@@ -3,32 +3,41 @@ import { Row, Col, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../styles/DateRangePicker.module.scss';
+import { parseLocalDate } from '../utils/dateUtils';
 
 function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }) {
-    // Accepts: Date object, 'yyyy-MM-dd' string, or null
-    const toDate = (val) => {
-        if (!val) return null;
-        if (val instanceof Date) return val;
-        // String from API (e.g. "2024-01-15") — append local time to avoid UTC shift
-        return new Date(val + 'T00:00:00');
+    const normalizeStartOfDay = (val) => {
+        const d = parseLocalDate(val);
+        if (!d) return null;
+        d.setHours(0, 0, 0, 0);
+        return d;
     };
 
-    const [startDate, setStartDate] = useState(toDate(defaultStartDate));
-    const [endDate, setEndDate] = useState(toDate(defaultEndDate));
+    const normalizeEndOfDay = (val) => {
+        const d = parseLocalDate(val);
+        if (!d) return null;
+        d.setHours(23, 59, 59, 999);
+        return d;
+    };
 
-    // Sync internal state when parent updates props (e.g. after API load)
+    const [startDate, setStartDate] = useState(normalizeStartOfDay(defaultStartDate));
+    const [endDate, setEndDate] = useState(normalizeEndOfDay(defaultEndDate));
+
+    // Sync internal state when pareFvnt updates props (e.g. after API load)
     useEffect(() => {
-        setStartDate(toDate(defaultStartDate));
+        setStartDate(normalizeStartOfDay(defaultStartDate));
     }, [defaultStartDate]);
 
     useEffect(() => {
-        setEndDate(toDate(defaultEndDate));
+        setEndDate(normalizeEndOfDay(defaultEndDate));
     }, [defaultEndDate]);
 
     const handleApply = () => {
         if (startDate && endDate) {
-            if (startDate <= endDate) {
-                onDateRangeChange({ startDate, endDate });
+            const start = normalizeStartOfDay(startDate);
+            const end = normalizeEndOfDay(endDate);
+            if (start <= end) {
+                onDateRangeChange({ startDate: start, endDate: end });
             } else {
                 alert('Start date must be before end date');
             }
@@ -39,16 +48,17 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
 
     const handleToday = () => {
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        setStartDate(today);
-        setEndDate(today);
-        onDateRangeChange({ startDate: today, endDate: today });
+        const start = normalizeStartOfDay(today);
+        const end = normalizeEndOfDay(today);
+        setStartDate(start);
+        setEndDate(end);
+        onDateRangeChange({ startDate: start, endDate: end });
     };
 
     const handleThisMonth = () => {
         const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const firstDay = normalizeStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+        const lastDay = normalizeEndOfDay(new Date(now.getFullYear(), now.getMonth() + 1, 0));
         setStartDate(firstDay);
         setEndDate(lastDay);
         onDateRangeChange({ startDate: firstDay, endDate: lastDay });
@@ -56,8 +66,8 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
 
     const handleLastMonth = () => {
         const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+        const firstDay = normalizeStartOfDay(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+        const lastDay = normalizeEndOfDay(new Date(now.getFullYear(), now.getMonth(), 0));
         setStartDate(firstDay);
         setEndDate(lastDay);
         onDateRangeChange({ startDate: firstDay, endDate: lastDay });
@@ -72,7 +82,7 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
                             <label className={styles.label}>Start Date</label>
                             <DatePicker
                                 selected={startDate}
-                                onChange={(d) => setStartDate(d)}
+                                onChange={(d) => setStartDate(normalizeStartOfDay(d))}
                                 selectsStart
                                 startDate={startDate}
                                 endDate={endDate}
@@ -92,7 +102,7 @@ function DateRangePicker({ onDateRangeChange, defaultStartDate, defaultEndDate }
                             <label className={styles.label}>End Date</label>
                             <DatePicker
                                 selected={endDate}
-                                onChange={(d) => setEndDate(d)}
+                                onChange={(d) => setEndDate(normalizeEndOfDay(d))}
                                 selectsEnd
                                 startDate={startDate}
                                 endDate={endDate}

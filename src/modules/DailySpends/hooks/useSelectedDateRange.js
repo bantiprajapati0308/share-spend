@@ -1,9 +1,10 @@
 import { settingsApi } from '../../../services/api/categoriesApi';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export const useSelectedDateRange = () => {
     const saveDateRange = async (startDate, endDate) => {
-        const startDateStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-        const endDateStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+        const startDateStr = formatLocalDate(startDate) || startDate;
+        const endDateStr = formatLocalDate(endDate) || endDate;
         const result = await settingsApi.saveDateRange(startDateStr, endDateStr);
         if (!result.success) throw new Error(result.error);
     };
