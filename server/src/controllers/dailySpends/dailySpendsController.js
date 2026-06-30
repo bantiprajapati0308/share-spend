@@ -41,9 +41,11 @@ const getTransactions = async (req, res) => {
         let docs;
 
         if (startDate && endDate) {
+            const startBound = startDate;
+            const endBound = `${endDate}T23:59:59.999`;
             const snap = await query
-                .where('date', '>=', startDate)
-                .where('date', '<=', endDate)
+                .where('date', '>=', startBound)
+                .where('date', '<=', endBound)
                 .get();
             docs = snap.docs
                 .map((d) => ({ id: d.id, ...d.data() }))

@@ -4,8 +4,9 @@ import { getCategoryLimits, addCategoryLimit, updateCategoryLimit, deleteCategor
 import { toast } from 'react-toastify';
 import useCategoryContext from '../../hooks/useCategoryContext';
 import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../../utils/transactionVisibility';
+import { formatLocalDate } from '../../utils/dateUtils';
 
-const toDateStr = (d) => (d instanceof Date ? d.toISOString().split('T')[0] : d ?? '');
+const toDateStr = (d) => formatLocalDate(d) || (d ?? '');
 
 /**
  * Custom hook to manage category limits.
@@ -42,7 +43,7 @@ export const useLimitsManager = (startDate, endDate, transactionType = 'spend') 
         visibleTransactions.forEach(tx => {
             if (tx.type !== transactionType) return;
             const txDate = tx.date
-                ?? (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
+                ?? formatLocalDate(tx.createdAt);
             if (!txDate || txDate < startStr || txDate > endStr) return;
             const cat = tx.category || 'Other';
             totals[cat] = (totals[cat] || 0) + (parseFloat(tx.amount) || 0);

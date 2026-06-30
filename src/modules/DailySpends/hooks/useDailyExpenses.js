@@ -19,6 +19,7 @@ import {
     buildDisabledCategoryLookup,
     filterTransactionsByDisabledCategories
 } from '../utils/transactionVisibility';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export const useDailyExpenses = (startDate = null, endDate = null) => {
     const dispatch = useDispatch();
@@ -50,8 +51,8 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
         const fetchTransactions = async () => {
             try {
                 setError(null);
-                const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-                const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+                const startStr = formatLocalDate(startDate) || startDate;
+                const endStr = formatLocalDate(endDate) || endDate;
                 const data = await getTransactions({ startDate: startStr, endDate: endStr });
                 const sortedData = data.sort((a, b) => {
                     const dateA = a.createdAt || new Date(0);
@@ -89,7 +90,7 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
             const normalizedCategory = (newTransaction.category || '').toLowerCase();
             const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
             const dueDate = newTransaction.dueDate || null;
-            const transactionDate = newTransaction.date || new Date().toISOString().split('T')[0];
+            const transactionDate = newTransaction.date || formatLocalDate(new Date());
 
             if (normalizedCategory === 'lent') {
                 await addBorrowLendRecord({
@@ -229,8 +230,8 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
         if (!startDate || !endDate) return;
         try {
             setLoading(true);
-            const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-            const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+            const startStr = formatLocalDate(startDate) || startDate;
+            const endStr = formatLocalDate(endDate) || endDate;
             const data = await getTransactions({ startDate: startStr, endDate: endStr });
             const sortedData = data.sort((a, b) => {
                 const dateA = a.createdAt || new Date(0);

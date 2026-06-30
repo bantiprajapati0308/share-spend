@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatLocalDate } from '../utils/dateUtils';
 
 /**
  * Derives Today and Last-7-Days spend/income summaries — plus
@@ -10,11 +11,11 @@ import { useMemo } from 'react';
  */
 export function useTimeSummary(transactions = []) {
     return useMemo(() => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = formatLocalDate(new Date());
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = formatLocalDate(yesterday);
 
         const weekStart = new Date();
         weekStart.setDate(weekStart.getDate() - 6);
@@ -42,9 +43,10 @@ export function useTimeSummary(transactions = []) {
         };
 
         const txDate = (t) => new Date(t.date || t.createdAt);
+        const txDateStr = (t) => formatLocalDate(t.date || t.createdAt);
 
-        const todayData = summarise(transactions.filter(t => t.date === todayStr || txDate(t).toISOString().split('T')[0] === todayStr));
-        const yesterdayData = summarise(transactions.filter(t => t.date === yesterdayStr || txDate(t).toISOString().split('T')[0] === yesterdayStr));
+        const todayData = summarise(transactions.filter(t => txDateStr(t) === todayStr));
+        const yesterdayData = summarise(transactions.filter(t => txDateStr(t) === yesterdayStr));
         const thisWeekData = summarise(transactions.filter(t => { const d = txDate(t); return d >= weekStart; }));
         const lastWeekData = summarise(transactions.filter(t => { const d = txDate(t); return d >= lastWeekStart && d <= lastWeekEnd; }));
 

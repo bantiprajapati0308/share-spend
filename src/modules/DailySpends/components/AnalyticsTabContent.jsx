@@ -5,6 +5,7 @@ import { formatCurrencyINR } from '../../../Util';
 import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import styles from '../styles/AnalyticsTab.module.scss';
+import { formatLocalDate } from '../utils/dateUtils';
 
 const LONG_PRESS_MS = 500;
 
@@ -153,7 +154,7 @@ export default function AnalyticsTabContent({ transactions, categories }) {
             if (!byCategory[cat]) byCategory[cat] = { amount: 0, count: 0, lastDate: null };
             byCategory[cat].amount += parseFloat(tx.amount) || 0;
             byCategory[cat].count += 1;
-            const d = tx.date || (tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : null);
+            const d = tx.date || formatLocalDate(tx.createdAt);
             if (d && (!byCategory[cat].lastDate || d > byCategory[cat].lastDate)) byCategory[cat].lastDate = d;
         });
         return Object.entries(byCategory)

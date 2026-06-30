@@ -2,6 +2,22 @@ const { db, FieldValue } = require('../../config/firebase');
 const { ok, fail } = require('../../utils/response');
 
 const settingsDoc = (uid, key) => db.collection('users').doc(uid).collection('settings').doc(key);
+const DATE_ONLY_REGEX = /^(\d{4}-\d{2}-\d{2})/;
+
+const toLocalDateString = (value) => {
+    if (!value) return null;
+    if (typeof value === 'string') {
+        const match = value.trim().match(DATE_ONLY_REGEX);
+        if (match) return match[1];
+    }
+
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
 
 // GET /api/settings/date-range
 const getDateRange = async (req, res) => {
@@ -17,8 +33,10 @@ const getDateRange = async (req, res) => {
 const saveDateRange = async (req, res) => {
     try {
         const { startDate, endDate } = req.body;
+        const normalizedStart = toLocalDateString(startDate);
+        const normalizedEnd = toLocalDateString(endDate);
         await settingsDoc(req.uid, 'dateRange').set(
-            { startDate: startDate || null, endDate: endDate || null, updatedAt: FieldValue.serverTimestamp() },
+            { startDate: normalizedStart, endDate: normalizedEnd, updatedAt: FieldValue.serverTimestamp() },
             { merge: true }
         );
         ok(res, { saved: true });
@@ -42,9 +60,9 @@ const seedDefaultDateRangeForUser = async (uid) => {
     const year = now.getFullYear();
     const month = now.getMonth(); // 0-indexed
     // First day of the month
-    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+    const startDate = toLocalDateString(new Date(year, month, 1));
     // Last day of the month (day 0 of next month)
-    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    const endDate = toLocalDateString(new Date(year, month + 1, 0));
 
     await ref.set({ startDate, endDate, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
 };

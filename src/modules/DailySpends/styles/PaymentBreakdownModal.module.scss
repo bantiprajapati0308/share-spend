@@ -205,6 +205,20 @@ $expense-color: #e91e63;
     }
 }
 
+.paymentRowButton {
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.paymentRowButton:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
 .rowIcon {
     width: 44px;
     height: 44px;
@@ -297,7 +311,7 @@ $expense-color: #e91e63;
 // ── CTA Button ────────────────────────────────────────────
 .viewBtn {
     margin: 0.75rem 1.25rem 1.25rem;
-    padding: 0.85rem 1rem;
+    padding: 0.55rem 0.4rem;
     border: none;
     border-radius: 0.85rem;
     font-size: 0.92rem;

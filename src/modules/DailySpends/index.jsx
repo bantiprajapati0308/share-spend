@@ -21,6 +21,7 @@ import CategoryManager from './components/CategoryManager';
 import LimitsManager from './LimitsManager';
 import ReportsTabContent from './components/ReportsTabContent';
 import AnalyticsTabContent from './components/AnalyticsTabContent';
+import { formatLocalDate, getTransactionDateKey, parseLocalDate } from './utils/dateUtils';
 
 function DailySpends() {
     const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
@@ -63,8 +64,8 @@ function DailySpends() {
             const savedRange = await loadDateRange();
             if (savedRange && savedRange.startDate && savedRange.endDate) {
                 // Convert string dates back to Date objects
-                setStartDate(new Date(savedRange.startDate));
-                setEndDate(new Date(savedRange.endDate));
+                setStartDate(parseLocalDate(savedRange.startDate));
+                setEndDate(parseLocalDate(savedRange.endDate));
             }
             setDateRangeLoaded(true);
         } catch (err) {
@@ -75,12 +76,12 @@ function DailySpends() {
 
     const getDateRangeSummary = () => {
         if (!startDate || !endDate) return 0;
-        const rangeStartStr = startDate.toISOString().split('T')[0];
-        const rangeEndStr = endDate.toISOString().split('T')[0];
+        const rangeStartStr = formatLocalDate(startDate);
+        const rangeEndStr = formatLocalDate(endDate);
 
         return transactions
             .filter(tx => {
-                const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+                const txDateStr = getTransactionDateKey(tx);
                 return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr && tx.type === 'spend';
             })
             .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
@@ -88,12 +89,12 @@ function DailySpends() {
 
     const getDateRangeIncome = () => {
         if (!startDate || !endDate) return 0;
-        const rangeStartStr = startDate.toISOString().split('T')[0];
-        const rangeEndStr = endDate.toISOString().split('T')[0];
+        const rangeStartStr = formatLocalDate(startDate);
+        const rangeEndStr = formatLocalDate(endDate);
 
         return transactions
             .filter(tx => {
-                const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+                const txDateStr = getTransactionDateKey(tx);
                 return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr && tx.type === 'income';
             })
             .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
@@ -256,9 +257,9 @@ function DailySpends() {
     const displayedTransactions = getTransactionsByType(selectedType)
         .filter(tx => {
             if (!startDate || !endDate) return false;
-            const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
-            const rangeStartStr = startDate.toISOString().split('T')[0];
-            const rangeEndStr = endDate.toISOString().split('T')[0];
+            const txDateStr = getTransactionDateKey(tx);
+            const rangeStartStr = formatLocalDate(startDate);
+            const rangeEndStr = formatLocalDate(endDate);
             return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr;
         });
     const sectionTitle = selectedType === 'spend' ? "Expenses" : "Income";

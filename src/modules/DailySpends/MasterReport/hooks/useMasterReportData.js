@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getTransactions } from '../../../../hooks/useDailySpends';
 import useCategoryContext from '../../hooks/useCategoryContext';
 import { buildDisabledCategoryLookup, filterTransactionsByDisabledCategories } from '../../utils/transactionVisibility';
+import { formatLocalDate, getTransactionDateKey } from '../../utils/dateUtils';
 
 /**
  * Custom hook for Master Report data management
@@ -23,10 +24,10 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
         const applyData = (allData) => {
             let filteredData = allData;
             if (startDate && endDate) {
-                const startDateStr = startDate.toISOString().split('T')[0];
-                const endDateStr = endDate.toISOString().split('T')[0];
+                const startDateStr = formatLocalDate(startDate);
+                const endDateStr = formatLocalDate(endDate);
                 filteredData = allData.filter(tx => {
-                    const txDateStr = tx.date || tx.createdAt?.toISOString?.().split('T')[0];
+                    const txDateStr = getTransactionDateKey(tx);
                     return txDateStr >= startDateStr && txDateStr <= endDateStr;
                 });
             }
@@ -76,8 +77,8 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
             try {
                 setLoading(true);
                 // Pass the date range so the server only reads the matching documents.
-                const startStr = startDate instanceof Date ? startDate.toISOString().split('T')[0] : startDate;
-                const endStr = endDate instanceof Date ? endDate.toISOString().split('T')[0] : endDate;
+                const startStr = formatLocalDate(startDate) || startDate;
+                const endStr = formatLocalDate(endDate) || endDate;
                 const allData = await getTransactions({ startDate: startStr, endDate: endStr });
                 applyData(allData);
             } catch (err) {
@@ -130,11 +131,10 @@ export function useMasterReportData(startDate = null, endDate = null, preloadedT
     // Time-based calculations
     const getTodayData = () => {
         const today = new Date();
-        const todayString = today.toISOString().split('T')[0];
+        const todayString = formatLocalDate(today);
 
         const todayTransactions = transactions.filter(tx => {
-            const txDate = new Date(tx.date || tx.createdAt);
-            return txDate.toISOString().split('T')[0] === todayString;
+            return getTransactionDateKey(tx) === todayString;
         });
 
         const spent = todayTransactions
