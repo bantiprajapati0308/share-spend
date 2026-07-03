@@ -14,6 +14,7 @@ import { evaluateAmountExpression } from '../../../utils/amountExpression';
 import useCategoryContext from '../hooks/useCategoryContext';
 import PaymentMethodSelector from './common/PaymentMethodSelector';
 import { formatLocalDate } from '../utils/dateUtils';
+import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
 
 function AddExpenseForm({
     onAddExpense,
@@ -21,7 +22,6 @@ function AddExpenseForm({
     editingTransaction,
     isEditMode,
     onCancelEdit,
-    onCategoriesChanged,
     onGoToCategories,
 }) {
     const nowDatetime = () => {
@@ -157,6 +157,11 @@ function AddExpenseForm({
     const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
     const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
     const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
+    const personNameType = (isLent || isRepayment)
+        ? TRANSACTION_TYPES.GAVE
+        : (isBorrowed || isBorrowedPay)
+            ? TRANSACTION_TYPES.TOOK
+            : undefined;
 
     return (
         <form onSubmit={handleSubmit} className={styles.formSection}>
@@ -228,6 +233,7 @@ function AddExpenseForm({
                                 value={personName}
                                 onChange={setPersonName}
                                 placeholder="Person name..."
+                                type={personNameType}
                             />
                         </div>
                     ) : (
@@ -325,7 +331,6 @@ AddExpenseForm.propTypes = {
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
-    onCategoriesChanged: PropTypes.func,
     onGoToCategories: PropTypes.func,
 };
 

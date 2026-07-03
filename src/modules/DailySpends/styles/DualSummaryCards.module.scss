@@ -1,6 +1,5 @@
 @use '../../../assets/scss/variables' as *;
 @use '../../../assets/scss/mixins' as *;
-
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 $income-color: #4caf50;
 $expense-color: #e91e63;
@@ -67,7 +66,7 @@ $card-radius: 20px;
 
 .badgeSaving {
     background: rgba($income-color, 0.1);
-    color: darken($income-color, 8%);
+    color: $income-color;
     border: 1px solid rgba($income-color, 0.2);
 }
 
@@ -149,7 +148,7 @@ $card-radius: 20px;
 
 .subBadgeSaving {
     background: rgba($income-color, 0.1);
-    color: darken($income-color, 10%);
+    color: $income-color;
     border: 1px solid rgba($income-color, 0.18);
 }
 
