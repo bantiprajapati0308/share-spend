@@ -426,7 +426,7 @@
 
             // Handle both gradients and solid colors
             @if type-of($thumb-color)==color {
-                background: darken($thumb-color, 10%);
+                background: $thumb-color;
             }
 
             @else {
