@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const {
-    getRecords, addRecord, addRepayment,
+    getRecords, getPersonNames, addRecord, addRepayment,
     archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry,
 } = require('../controllers/borrowLend/borrowLendController');
 
 router.use(auth);
 
+router.get('/person-names', getPersonNames);
 router.get('/', getRecords);
 router.post('/', addRecord);
 router.post('/repayment', addRepayment);

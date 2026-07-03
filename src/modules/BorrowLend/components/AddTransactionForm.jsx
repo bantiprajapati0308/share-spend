@@ -7,6 +7,8 @@ import styles from '../styles/BorrowLend.module.scss';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import { TRANSACTION_TYPES, getTransactionTypeLabel } from '../constants/transactionTypes';
+import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
+import { primeBorrowLendPersonName } from '../hooks/useBorrowLendPersonNames';
 
 function AddTransactionForm({ onAddTransaction }) {
     const [personName, setPersonName] = useState('');
@@ -16,7 +18,7 @@ function AddTransactionForm({ onAddTransaction }) {
     const [dueDate, setDueDate] = useState('');
     const [description, setDescription] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!personName.trim() || !amount) {
@@ -29,8 +31,9 @@ function AddTransactionForm({ onAddTransaction }) {
             return;
         }
 
+        const trimmedPersonName = personName.trim();
         const newTransaction = {
-            personName,
+            personName: trimmedPersonName,
             amount: parseFloat(amount),
             type: type,
             date: date,
@@ -39,7 +42,8 @@ function AddTransactionForm({ onAddTransaction }) {
             createdAt: new Date().toISOString(),
         };
 
-        onAddTransaction(newTransaction);
+        await onAddTransaction(newTransaction);
+        primeBorrowLendPersonName(type, trimmedPersonName);
 
         setPersonName('');
         setAmount('');
@@ -64,11 +68,11 @@ function AddTransactionForm({ onAddTransaction }) {
                 <Col xs={7} md={6}>
                     <div className={styles.formGroup} >
                         <label>{'Person\'s Name *'}</label>
-                        <input
-                            type="text"
-                            placeholder="e.g., John Doe"
+                        <PersonNameDropdown
                             value={personName}
-                            onChange={(e) => setPersonName(e.target.value)}
+                            onChange={setPersonName}
+                            placeholder="Person name..."
+                            type={type}
                         />
                     </div>
                 </Col>

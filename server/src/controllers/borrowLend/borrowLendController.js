@@ -34,6 +34,30 @@ const getRecords = async (req, res) => {
     }
 };
 
+// GET /api/borrow-lend/person-names?type=gave|took
+const getPersonNames = async (req, res) => {
+    try {
+        const { type } = req.query;
+        const validTypes = new Set(['gave', 'took']);
+
+        let query = col(req.uid);
+        if (type && validTypes.has(type)) {
+            query = query.where('type', '==', type);
+        }
+
+        const snap = await query.select('personName').get();
+        const names = Array.from(new Set(
+            snap.docs
+                .map((doc) => String(doc.data().personName || '').trim())
+                .filter(Boolean)
+        )).sort((a, b) => a.localeCompare(b));
+
+        ok(res, names);
+    } catch (e) {
+        fail(res, e.message);
+    }
+};
+
 // POST /api/borrow-lend  (gave / took)
 const addRecord = async (req, res) => {
     try {
@@ -191,4 +215,4 @@ const deleteEntry = async (req, res) => {
     }
 };
 
-module.exports = { getRecords, addRecord, addRepayment, archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry };
+module.exports = { getRecords, getPersonNames, addRecord, addRepayment, archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry };

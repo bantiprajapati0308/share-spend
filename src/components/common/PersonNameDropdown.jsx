@@ -1,18 +1,27 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import CreatableSelect from 'react-select/creatable';
-import { useLendingTransactions } from '../../modules/BorrowLend/hooks/useLendingTransactions';
+import {
+    primeBorrowLendPersonName,
+    useBorrowLendPersonNames
+} from '../../modules/BorrowLend/hooks/useBorrowLendPersonNames';
 
-function PersonNameDropdown({ value, onChange, placeholder = "Select or type person name...", isDisabled = false, className = "" }) {
-    const { getUniquePersonNames, loading: lendingLoading } = useLendingTransactions();
+function PersonNameDropdown({
+    value,
+    onChange,
+    placeholder = "Select or type person name...",
+    isDisabled = false,
+    className = "",
+    type,
+}) {
+    const { names, loading: namesLoading } = useBorrowLendPersonNames(type);
 
     const options = useMemo(() => {
-        const personNames = getUniquePersonNames();
-        return personNames.map(name => ({
+        return names.map(name => ({
             value: name,
             label: name
         }));
-    }, [getUniquePersonNames]);
+    }, [names]);
 
     const handleChange = (selectedOption) => {
         const personName = selectedOption ? selectedOption.value : '';
@@ -20,6 +29,7 @@ function PersonNameDropdown({ value, onChange, placeholder = "Select or type per
     };
 
     const handleCreate = (inputValue) => {
+        primeBorrowLendPersonName(type, inputValue);
         const newOption = {
             value: inputValue,
             label: inputValue
@@ -32,8 +42,8 @@ function PersonNameDropdown({ value, onChange, placeholder = "Select or type per
     return (
         <CreatableSelect
             isClearable
-            isDisabled={isDisabled || lendingLoading}
-            isLoading={lendingLoading}
+            isDisabled={isDisabled || namesLoading}
+            isLoading={namesLoading}
             onChange={handleChange}
             onCreateOption={handleCreate}
             options={options}
@@ -93,7 +103,8 @@ PersonNameDropdown.propTypes = {
     onChange: PropTypes.func.isRequired,
     placeholder: PropTypes.string,
     isDisabled: PropTypes.bool,
-    className: PropTypes.string
+    className: PropTypes.string,
+    type: PropTypes.string,
 };
 
 export default PersonNameDropdown;
