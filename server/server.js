@@ -44,7 +44,7 @@ app.use('/api/category-limits', require('./src/routes/categoryLimits'));
 app.use('/api/settings', require('./src/routes/settings'));
 app.use('/api/borrow-lend', require('./src/routes/borrowLend'));
 app.use('/api/app-config', require('./src/routes/appConfig'));
-
+app.use('/api/cron', require('./src/routes/cron'));
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
