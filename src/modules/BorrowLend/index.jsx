@@ -97,12 +97,6 @@ function BorrowLend() {
                         </div>
                     )}
 
-                    {/* Due Tracking Section */}
-                    <DueTrackingSection
-                        dueTrackingHook={dueTrackingHook}
-                        currency={currency}
-                    />
-
                     {/* BorrowLend Table - Aggregated View */}
                     <div style={{ marginBottom: '2rem' }}>
                         <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 600, color: '#1565c0' }}>
@@ -113,7 +107,11 @@ function BorrowLend() {
                             currency={currency}
                         />
                     </div>
-
+                    {/* Due Tracking Section */}
+                    <DueTrackingSection
+                        dueTrackingHook={dueTrackingHook}
+                        currency={currency}
+                    />
                     {/* Add Transaction Form - Conditional */}
 
 

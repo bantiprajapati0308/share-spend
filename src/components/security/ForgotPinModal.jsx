@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Eye, EyeSlash, Key } from 'react-bootstrap-icons';
 import { useAppLock } from '../../hooks/useAppLock';
