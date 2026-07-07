@@ -10,13 +10,16 @@ function verifyCronToken(req, res, next) {
     return next();
 }
 
-router.post('/daily-spend-reminder', verifyCronToken, async (req, res, next) => {
+router.post('/daily-spend-reminder', verifyCronToken, async (req, res) => {
     try {
-        console.log('[cron] daily-spend-reminder invoked');
-        const result = await ReminderService.runDailySpendReminders();
-        return res.json({ success: true, data: result });
+        const result = await ReminderService.runDailySpendReminder();
+        return res.json(result);
     } catch (error) {
-        console.error('[cron] daily-spend-reminder failed:', error?.message || error);
+        console.error('[cron] daily-spend-reminder failed:', {
+            step: 'routeHandler',
+            message: error?.message,
+            stack: error?.stack,
+        });
         return res.status(500).json({ success: false, error: 'Reminder execution failed', details: error?.message || 'unknown' });
     }
 });

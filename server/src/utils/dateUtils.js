@@ -31,8 +31,13 @@ function isSameDateString(lhs, rhs) {
     return normalizeDateString(lhs) === normalizeDateString(rhs);
 }
 
+function yesterdayDateString() {
+    return normalizeDateString(new Date(Date.now() - 86400000));
+}
+
 module.exports = {
     normalizeDateString,
     compareDateStrings,
     isSameDateString,
+    yesterdayDateString,
 };

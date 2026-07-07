@@ -1,6 +1,7 @@
 const https = require('https');
 const { db, FieldValue } = require('../../config/firebase');
 const { ok, fail, notFound, badRequest } = require('../../utils/response');
+const { normalizeDateString, yesterdayDateString } = require('../../utils/dateUtils');
 const { seedPredefinedCategoriesForUser } = require('../dailySpends/categoriesController');
 const { seedPredefinedLimitsForUser } = require('../dailySpends/categoryLimitsController');
 const { seedDefaultDateRangeForUser } = require('./settingsController');
@@ -43,13 +44,11 @@ function firebaseOob(payload) {
 // Runs all three in parallel, then marks categoriesSeeded=true and dateRangeSeeded=true.
 // Throws on failure so the caller can surface the error properly.
 const seedNewUser = async (uid) => {
-    console.log(`[auth] Seeding categories + limits + date range for uid=${uid}`);
     const [catAdded, limAdded] = await Promise.all([
         seedPredefinedCategoriesForUser(uid),
         seedPredefinedLimitsForUser(uid),
         seedDefaultDateRangeForUser(uid),
     ]);
-    console.log(`[auth] Seeded ${catAdded} categories, ${limAdded} limits for uid=${uid}`);
     await db.collection('users').doc(uid).update({ categoriesSeeded: true, dateRangeSeeded: true });
 };
 
@@ -75,6 +74,7 @@ const createOrUpdateProfile = async (req, res) => {
 
         if (!snap.exists) {
             const { email, firstName, lastName, displayName, photoURL, authProvider, dateOfBirth, mobile } = req.body;
+            const yesterday = yesterdayDateString();
             const profile = {
                 uid: req.uid,
                 email: email || req.email || '',
@@ -85,6 +85,8 @@ const createOrUpdateProfile = async (req, res) => {
                 authProvider: authProvider || 'google',
                 dateOfBirth: dateOfBirth || null,
                 mobile: mobile || '',
+                reminderEnabled: true,
+                lastSpendEntry: yesterday,
                 createdAt: now,
                 updatedAt: now,
                 lastLoginAt: now,
@@ -101,6 +103,7 @@ const createOrUpdateProfile = async (req, res) => {
         const needsDateRange = !snap.data().dateRangeSeeded;
         const { firstName: fName, lastName: lName, photoURL: pURL, dateOfBirth: dob, mobile: mob } = req.body;
         const data = snap.data();
+        const yesterday = yesterdayDateString();
         const updates = { lastLoginAt: now, updatedAt: now };
         // Always refresh photo URL (Google accounts may rotate it)
         if (pURL) updates.photoURL = pURL;
@@ -109,6 +112,8 @@ const createOrUpdateProfile = async (req, res) => {
         if (!data.mobile && mob) updates.mobile = mob;
         if (!data.firstName && fName) updates.firstName = fName;
         if (!data.lastName && lName) updates.lastName = lName;
+        if (data.reminderEnabled === undefined || data.reminderEnabled === null) updates.reminderEnabled = true;
+        if (!data.lastSpendEntry) updates.lastSpendEntry = yesterday;
         await ref.update(updates);
         if (needsSeed) await seedNewUser(req.uid);
         else if (needsDateRange) {
@@ -164,15 +169,19 @@ const register = async (req, res) => {
             if (!snap.data().categoriesSeeded) await seedNewUser(req.uid);
             // Patch any fields missing due to createOrUpdateProfile race condition
             const data = snap.data();
+            const yesterday = normalizeDateString(new Date(Date.now() - 86400000));
             const patch = { lastLoginAt: now, updatedAt: now };
             if (!data.firstName && firstName) patch.firstName = firstName;
             if (!data.lastName && lastName) patch.lastName = lastName;
             if (!data.dateOfBirth && dateOfBirth) patch.dateOfBirth = dateOfBirth;
             if (!data.mobile && mobile) patch.mobile = mobile;
+            if (data.reminderEnabled === undefined || data.reminderEnabled === null) patch.reminderEnabled = true;
+            if (!data.lastSpendEntry) patch.lastSpendEntry = yesterday;
             await ref.update(patch);
             const updated = await ref.get();
             return ok(res, { id: updated.id, ...updated.data() });
         }
+        const yesterday = normalizeDateString(new Date(Date.now() - 86400000));
         const profile = {
             firstName: firstName || '',
             lastName: lastName || '',
@@ -181,6 +190,8 @@ const register = async (req, res) => {
             mobile: mobile || '',
             email: email || req.email || '',
             authProvider: 'email',
+            reminderEnabled: true,
+            lastSpendEntry: yesterday,
             createdAt: now,
             updatedAt: now,
             lastLoginAt: now,

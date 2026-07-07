@@ -22,9 +22,19 @@ class UserRepository {
     async getUsersWithRemindersEnabled() {
         const snapshot = await usersCollection
             .where('reminderEnabled', '==', true)
-            .select('email', 'name', 'lastSpendEntry')
+            .select('email', 'name', 'displayName', 'lastSpendEntry')
             .get();
 
+        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    }
+
+    async getUserById(uid) {
+        const doc = await usersCollection.doc(uid).get();
+        return doc.exists ? { id: doc.id, ...doc.data() } : null;
+    }
+
+    async getUserCollectionSample(limit = 20) {
+        const snapshot = await usersCollection.limit(limit).get();
         return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     }
 }
