@@ -79,7 +79,7 @@
     "crons": [
         {
             "path": "/api/cron/daily-spend-reminder",
-            "schedule": "0 20 * * *"
+            "schedule": "0 22 * * *"
         }
     ]
 }
