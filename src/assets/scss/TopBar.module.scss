@@ -115,3 +115,151 @@
         transform: scale(0.95);
     }
 }
+
+.rightSection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bellBtn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.avatarWrapper {
+    position: relative;
+}
+
+.avatarBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.avatarPlaceholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary-color;
+    color: white;
+    font-weight: 600;
+}
+
+.chevron {
+    font-size: 0.7rem;
+    color: $text-secondary;
+}
+
+.userMenu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 220px;
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: 10px;
+    box-shadow: $shadow-sm;
+    padding: 0.5rem;
+    z-index: 1200;
+}
+
+.menuHeader {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.menuAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.menuUserInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.menuUserName {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.menuUserEmail {
+    font-size: 0.8rem;
+    color: $text-secondary;
+}
+
+.menuList {
+    display: flex;
+    flex-direction: column;
+}
+
+.menuItem {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.5rem;
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: $text-primary;
+    font-weight: 500;
+}
+
+.menuItem:hover {
+    background: rgba($primary-color, 0.04);
+}
+
+.itemChevron {
+    margin-left: auto;
+    color: $text-secondary;
+    margin-top: 4px;
+}
+
+.itemIcon {
+    margin-top: 2px;
+}
+
+.whatsNewDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $danger-color;
+    margin-left: 8px;
+}
+
+/* Enhanced icon styles to match modern UI */
+
+
+.menuDivider {
+    height: 1px;
+    background: $border-color;
+    margin: 0.4rem 0;
+    border-radius: 1px;
+}
+
+.menuFooter {
+
+    .menuItem {
+        color: $danger-color;
+        font-weight: 500;
+    }
+}

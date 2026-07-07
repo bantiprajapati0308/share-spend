@@ -1,0 +1,179 @@
+@use '../../assets/scss/variables' as *;
+
+.pageShell {
+  min-height: calc(100vh - 120px);
+  background: $gradient-background;
+  padding: 1rem;
+}
+
+.settingsWrap {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.card {
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+}
+
+.heroCard {
+  @extend .card;
+  padding: 1.25rem;
+  overflow: hidden;
+}
+
+.iconTile {
+  width: 58px;
+  height: 58px;
+  border-radius: $radius-xl;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary-color;
+  background: $primary-50;
+  box-shadow: $shadow-sm;
+}
+
+.successTile {
+  color: $success-700;
+  background: $success-50;
+}
+
+.lockScreen {
+  min-height: 100vh;
+  background: $gradient-background;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.lockPanel {
+  width: min(100%, 420px);
+  background: white;
+  border: 1px solid $border-light;
+  border-radius: $radius-2xl;
+  padding: 1.5rem;
+  box-shadow: $shadow-xl;
+}
+
+.logoMark {
+  width: 54px;
+  height: 54px;
+  border-radius: $radius-xl;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: $gradient-primary;
+  color: white;
+  box-shadow: $shadow-primary;
+}
+
+.pinDots {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  min-height: 18px;
+}
+
+.dot {
+  width: 13px;
+  height: 13px;
+  border: 2px solid $primary-300;
+  border-radius: $radius-full;
+  transition: $transition-normal;
+}
+
+.dotFilled {
+  background: $primary-color;
+  border-color: $primary-color;
+  transform: scale(1.08);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 0.85rem;
+  justify-content: center;
+}
+
+.key {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-full;
+  border: 1px solid $border-light;
+  background: $neutral-100;
+  color: $text-primary;
+  font-size: 1.2rem;
+  font-weight: $font-weight-bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: $transition-fast;
+
+  &:hover {
+    background: $primary-50;
+    border-color: $primary-200;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.pinStage {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.optionRow {
+  border: 1px solid $border-light;
+  border-radius: $radius-lg;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+}
+
+.dangerLink {
+  border: 0;
+  background: transparent;
+  color: $danger-color;
+  font-weight: $font-weight-bold;
+}
+
+.bottomSheetBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  background: rgba(15, 23, 42, 0.38);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.bottomSheet {
+  width: min(100%, 460px);
+  background: white;
+  border-radius: $radius-2xl $radius-2xl $radius-lg $radius-lg;
+  box-shadow: $shadow-2xl;
+  padding: 1rem;
+}
+
+.statusBadge {
+  border-radius: $radius-full;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: $font-weight-bold;
+  background: $neutral-100;
+  color: $text-secondary;
+}
+
+.statusEnabled {
+  background: $success-100;
+  color: $success-700;
+}

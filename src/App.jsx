@@ -14,6 +14,7 @@ import BorrowLend from './modules/BorrowLend';
 import HelpCenter from './modules/HelpCenter';
 import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
 import MasterReport from './modules/DailySpends/MasterReport';
+import SecuritySettings from './pages/settings/security/SecuritySettings';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 import { CategoryProvider } from './modules/DailySpends/context/CategoryContext.jsx';
@@ -21,6 +22,8 @@ import FullScreenLoader from './components/common/FullScreenLoader';
 import MaintenancePage from './components/MaintenancePage';
 import JoinTripDialog from './modules/Trip/components/JoinTripDialog';
 import useInviteCheck from './modules/Trip/hooks/useInviteCheck';
+import { SecurityProvider } from './context/SecurityContext.jsx';
+import ProtectedRoute from './routes/ProtectedRoute';
 
 // MasterReport wrapper to handle location state
 function MasterReportWrapper() {
@@ -91,6 +94,7 @@ function AppContent({ user }) {
             <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />
             <Route path="/lending" element={<BorrowLend />} />
             <Route path="/help" element={<HelpCenter />} />
+            <Route path="/settings/security" element={<SecuritySettings />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </ErrorBoundary>
@@ -143,7 +147,13 @@ function App() {
     return <AuthModule />;
   }
 
-  return <AppContent user={user} />;
+  return (
+    <SecurityProvider user={user}>
+      <ProtectedRoute>
+        <AppContent user={user} />
+      </ProtectedRoute>
+    </SecurityProvider>
+  );
 }
 
 export default App;
