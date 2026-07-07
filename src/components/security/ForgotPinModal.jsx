@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Eye, EyeSlash, Key } from 'react-bootstrap-icons';
 import { useAppLock } from '../../hooks/useAppLock';
@@ -25,7 +25,7 @@ function ForgotPinModal({ show, onHide }) {
     onHide();
   };
 
-  const handleReset = async (confirmedPin) => {
+  const handleReset = useCallback(async (confirmedPin) => {
     setIsSaving(true);
     setError('');
     try {
@@ -37,7 +37,7 @@ function ForgotPinModal({ show, onHide }) {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [password, resetPin]);
 
   return (
     <Modal show={show} onHide={close} centered>

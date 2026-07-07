@@ -82,13 +82,13 @@ export function SecurityProvider({ user, children }) {
             const result = await securityService.verifyPin(user.uid, pin);
             if (result.success) {
                 unlock();
-                await refreshSettings();
-            } else {
-                await refreshSettings();
+                if (result.settings) {
+                    setSettings(result.settings);
+                }
             }
             return result;
         },
-        [refreshSettings, unlock, user?.uid]
+        [unlock, user?.uid]
     );
 
     const enableLock = useCallback(
@@ -114,20 +114,22 @@ export function SecurityProvider({ user, children }) {
     const changePin = useCallback(
         async (currentPin, nextPin) => {
             const result = await securityService.changePin(user.uid, currentPin, nextPin);
-            await refreshSettings();
+            if (result.success && result.settings) {
+                setSettings(result.settings);
+            }
             return result;
         },
-        [refreshSettings, user?.uid]
+        [user?.uid]
     );
 
     const resetPin = useCallback(
         async (password, nextPin) => {
-            const nextSettings = await securityService.resetPin(auth.currentUser, password, nextPin);
+            const nextSettings = await securityService.resetPin(auth.currentUser, password, nextPin, settings);
             setSettings(nextSettings);
             unlock();
             return nextSettings;
         },
-        [unlock]
+        [unlock, settings]
     );
 
     const updateAutoLock = useCallback(
