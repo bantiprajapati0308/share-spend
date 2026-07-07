@@ -1,45 +1,107 @@
 const UserRepository = require('../repositories/UserRepository');
+const CronLogRepository = require('../repositories/CronLogRepository');
 const EmailService = require('../utils/emailService');
 const { normalizeDateString, isSameDateString } = require('../utils/dateUtils');
 
+function formatDuration(ms) {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(2)}s`;
+}
+
 class ReminderService {
-    async findUsersNeedingReminder() {
-        const users = await UserRepository.getUsersWithRemindersEnabled();
-        const today = normalizeDateString(new Date());
-
-        return users.filter((user) => {
-            if (!user.reminderEnabled) return false;
-            if (!user.lastSpendEntry) return true;
-            return !isSameDateString(user.lastSpendEntry, today);
-        });
+    isUserEligible(user, today) {
+        if (!user.lastSpendEntry) return true;
+        return !isSameDateString(user.lastSpendEntry, today);
     }
 
-    async sendDailyReminder(user) {
-        await EmailService.sendDailyReminderEmail({
-            email: user.email,
-            name: user.name || user.displayName || '',
-        });
-    }
+    async runDailySpendReminder() {
+        const startTime = Date.now();
+        const logId = 'daily-spend-reminder';
+        let users = [];
+        let eligibleUsers = [];
+        let emailsSent = 0;
+        let skippedUsers = 0;
+        let status = 'success';
+        let errorMessage = null;
 
-    async runDailySpendReminders() {
-        const users = await this.findUsersNeedingReminder();
-        const results = [];
+        try {
+            users = await UserRepository.getUsersWithRemindersEnabled();
+            const today = normalizeDateString(new Date());
+            eligibleUsers = users.filter((user) => this.isUserEligible(user, today));
+            skippedUsers = users.length - eligibleUsers.length;
 
-        for (const user of users) {
-            try {
-                await this.sendDailyReminder(user);
-                results.push({ id: user.id, email: user.email, status: 'sent' });
-            } catch (error) {
-                console.error(`[ReminderService] failed sending reminder to ${user.id}`, error?.message || error);
-                results.push({ id: user.id, email: user.email, status: 'failed', error: error?.message || 'unknown' });
+            const results = [];
+
+            for (const user of eligibleUsers) {
+                try {
+                    await EmailService.sendDailyReminderEmail({
+                        email: user.email,
+                        name: user.name || user.displayName || '',
+                    });
+                    emailsSent += 1;
+                    results.push({ id: user.id, email: user.email, status: 'sent' });
+                } catch (sendError) {
+                    console.error('[ReminderService] Email send failed', {
+                        step: 'sendEmail',
+                        userId: user.id,
+                        email: user.email,
+                        message: sendError?.message,
+                        stack: sendError?.stack,
+                    });
+                    results.push({ id: user.id, email: user.email, status: 'failed', error: sendError?.message || 'unknown' });
+                    status = 'partial_failure';
+                }
             }
-        }
 
-        return {
-            totalUsers: users.length,
-            results,
-        };
+            const executionTime = formatDuration(Date.now() - startTime);
+            await CronLogRepository.updateCronLog(logId, {
+                status,
+                usersChecked: users.length,
+                eligibleUsers: eligibleUsers.length,
+                emailsSent,
+                executionTime,
+                error: null,
+            });
+
+            return {
+                success: true,
+                usersChecked: users.length,
+                eligibleUsers: eligibleUsers.length,
+                emailsSent,
+                skippedUsers,
+                executionTime,
+                results,
+            };
+        } catch (error) {
+            const executionTime = formatDuration(Date.now() - startTime);
+            errorMessage = error?.message || 'unknown error';
+            console.error('[ReminderService] runDailySpendReminder failed', {
+                step: 'runDailySpendReminder',
+                message: errorMessage,
+                stack: error?.stack,
+            });
+
+            await CronLogRepository.updateCronLog(logId, {
+                status: 'failed',
+                usersChecked: users.length,
+                eligibleUsers: eligibleUsers.length,
+                emailsSent,
+                executionTime,
+                error: errorMessage,
+            });
+
+            return {
+                success: false,
+                usersChecked: users.length,
+                eligibleUsers: eligibleUsers.length,
+                emailsSent,
+                skippedUsers,
+                executionTime,
+                error: errorMessage,
+            };
+        }
     }
+
 }
 
 module.exports = new ReminderService();
