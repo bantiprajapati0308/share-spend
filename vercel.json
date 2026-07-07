@@ -75,5 +75,12 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
+    ],
+    "crons": [
+        {
+            "path": "/api/cron/daily-spend-reminder",
+            "schedule": "*/5 * * * *",
+            "timezone": "Etc/UTC"
+        }
     ]
 }

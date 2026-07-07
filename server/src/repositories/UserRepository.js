@@ -20,7 +20,11 @@ class UserRepository {
     }
 
     async getUsersWithRemindersEnabled() {
-        const snapshot = await usersCollection.where('reminderEnabled', '==', true).get();
+        const snapshot = await usersCollection
+            .where('reminderEnabled', '==', true)
+            .select('email', 'name', 'lastSpendEntry')
+            .get();
+
         return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     }
 }

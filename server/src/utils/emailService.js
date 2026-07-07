@@ -142,4 +142,32 @@ async function sendTripInviteEmail({ to, tripName, invitedBy, inviteId }) {
   console.log(`[emailService] Invite email sent to ${to} for trip "${tripName}"`);
 }
 
-module.exports = { sendTripInviteEmail };
+async function sendDailyReminderEmail({ email, name }) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn('[emailService] EMAIL_USER / EMAIL_PASS not set — skipping daily reminder email');
+    return;
+  }
+
+  const transporter = createTransporter();
+  if (!transporter) {
+    console.warn('[emailService] nodemailer unavailable — skipping daily reminder email');
+    return;
+  }
+
+  const mailOptions = {
+    from: `"Share Spend" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Daily Spend Reminder',
+    text: `Hi ${name || 'there'},\n\nYou haven’t added any daily spend entry today. Open Share Spend and log your expenses to keep your tracker up to date.\n\nBest,\nShare Spend Team`,
+    html: `
+      <p>Hi ${name || 'there'},</p>
+      <p>You haven’t added any daily spend entry today. Open Share Spend and log your expenses to keep your tracker up to date.</p>
+      <p>Best,<br/>Share Spend Team</p>
+    `.trim(),
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`[emailService] Daily reminder email sent to ${email}`);
+}
+
+module.exports = { sendTripInviteEmail, sendDailyReminderEmail };
