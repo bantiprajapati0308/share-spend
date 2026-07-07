@@ -1,5 +1,9 @@
 const { db, FieldValue } = require('../../config/firebase');
-const { ok, fail } = require('../../utils/response');
+const { ok, fail, notFound } = require('../../utils/response');
+const DailySpendRepository = require('../../repositories/DailySpendRepository');
+const UserRepository = require('../../repositories/UserRepository');
+const DailySpendService = require('../../services/DailySpendService');
+const { normalizeDateString } = require('../../utils/dateUtils');
 
 const col = (uid) => db.collection('users').doc(uid).collection('dailySpends');
 const catCol = (uid) => db.collection('users').doc(uid).collection('categories');
@@ -76,8 +80,6 @@ const addTransaction = async (req, res) => {
         const data = { ...req.body, userId: req.uid, createdAt: now, updatedAt: now };
         const ref = await col(req.uid).add(data);
 
-        // When a credit-card spend is added, auto-create a companion income entry
-        // so the credit card liability is reflected in the current month's income.
         let companion = null;
         if (req.body.type === 'spend' && req.body.paymentMethodId === CREDIT_CARD_ID) {
             const ccCategory = await getCreditCardCategory(req.uid);
@@ -90,6 +92,18 @@ const addTransaction = async (req, res) => {
                 };
                 const companionRef = await col(req.uid).add(companionData);
                 companion = { id: companionRef.id, ...buildCreditCardIncome(req.body, ref.id, ccCategory) };
+            }
+        }
+
+        if (req.body.type === 'spend') {
+            const latestDate = normalizeDateString(req.body.date);
+            if (latestDate) {
+                const user = await UserRepository.getUser(req.uid);
+                const currentLastEntry = user ? normalizeDateString(user.lastSpendEntry) : null;
+                const updatedLastEntry = DailySpendService.computeLastSpendEntryOnAdd(latestDate, currentLastEntry);
+                if (updatedLastEntry && updatedLastEntry !== currentLastEntry) {
+                    await UserRepository.updateLastSpendEntry(req.uid, updatedLastEntry);
+                }
             }
         }
 
@@ -108,12 +122,15 @@ const updateTransaction = async (req, res) => {
     try {
         const now = FieldValue.serverTimestamp();
         const ref = col(req.uid).doc(req.params.id);
+        const existing = await ref.get();
+        if (!existing.exists) return notFound(res, 'Transaction not found');
+
+        const previous = { id: existing.id, ...existing.data() };
         await ref.update({ ...req.body, updatedAt: now });
 
         const isNowCreditCard =
             req.body.type === 'spend' && req.body.paymentMethodId === CREDIT_CARD_ID;
 
-        // Look up any existing companion linked to this spend
         const companionSnap = await col(req.uid)
             .where('creditCardSpendId', '==', req.params.id)
             .limit(1)
@@ -124,14 +141,11 @@ const updateTransaction = async (req, res) => {
         let _deletedCompanionId = null;
 
         if (isNowCreditCard && hasCompanion) {
-            // Patch companion — keep amount and date in sync with the spend
             const companionRef = companionSnap.docs[0].ref;
             const patch = { amount: req.body.amount, date: req.body.date, updatedAt: now };
             await companionRef.update(patch);
             _companion = { id: companionSnap.docs[0].id, ...companionSnap.docs[0].data(), ...patch };
-
         } else if (isNowCreditCard && !hasCompanion) {
-            // Payment method switched to credit card — create companion
             const ccCategory = await getCreditCardCategory(req.uid);
             if (ccCategory) {
                 const companionData = {
@@ -143,11 +157,28 @@ const updateTransaction = async (req, res) => {
                 const companionRef = await col(req.uid).add(companionData);
                 _companion = { id: companionRef.id, ...buildCreditCardIncome(req.body, req.params.id, ccCategory) };
             }
-
         } else if (!isNowCreditCard && hasCompanion) {
-            // Payment method switched away from credit card — delete companion
             _deletedCompanionId = companionSnap.docs[0].id;
             await companionSnap.docs[0].ref.delete();
+        }
+
+        const currentUser = await UserRepository.getUser(req.uid);
+        const currentLastEntry = currentUser ? normalizeDateString(currentUser.lastSpendEntry) : null;
+        const updatedLastEntry = await DailySpendService.computeLastSpendEntryOnUpdate(
+            previous.date,
+            previous.type,
+            req.body.date,
+            req.body.type,
+            currentLastEntry
+        );
+
+        if (updatedLastEntry !== currentLastEntry) {
+            if (updatedLastEntry) {
+                await UserRepository.updateLastSpendEntry(req.uid, updatedLastEntry);
+            } else {
+                const fallbackDate = await DailySpendRepository.getLatestSpendDate(req.uid);
+                await UserRepository.updateLastSpendEntry(req.uid, fallbackDate);
+            }
         }
 
         ok(res, {
@@ -166,8 +197,11 @@ const updateTransaction = async (req, res) => {
 const deleteTransaction = async (req, res) => {
     try {
         const spendRef = col(req.uid).doc(req.params.id);
+        const existing = await spendRef.get();
+        if (!existing.exists) return notFound(res, 'Transaction not found');
 
-        // Find companion income linked to this spend (at most one)
+        const deletedTransaction = { id: existing.id, ...existing.data() };
+
         const companionSnap = await col(req.uid)
             .where('creditCardSpendId', '==', req.params.id)
             .limit(1)
@@ -182,6 +216,20 @@ const deleteTransaction = async (req, res) => {
         }
 
         await batch.commit();
+
+        const currentUser = await UserRepository.getUser(req.uid);
+        const currentLastEntry = currentUser ? normalizeDateString(currentUser.lastSpendEntry) : null;
+        const updatedLastEntry = await DailySpendService.computeLastSpendEntryOnDelete(
+            req.uid,
+            deletedTransaction.date,
+            deletedTransaction.type,
+            currentLastEntry
+        );
+
+        if (updatedLastEntry !== currentLastEntry) {
+            await UserRepository.updateLastSpendEntry(req.uid, updatedLastEntry);
+        }
+
         ok(res, { deleted: true, deletedCompanionId });
     } catch (e) {
         fail(res, e.message);
