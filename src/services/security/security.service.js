@@ -113,20 +113,22 @@ export async function verifyPin(uid, pin) {
   const success = await comparePin(pin, uid, settings.pinHash);
   if (success) {
     await resetFailedAttempts(uid);
-    return { success: true };
+    return { success: true, settings };
   }
 
   const attempts = (settings.failedAttempts || 0) + 1;
   const lockUntil = attempts >= 5 ? currentTime + 5 * 60 * 1000 : null;
   await updateFailedAttempts(uid, attempts, lockUntil);
 
-  return {
+  const result = {
     success: false,
     attempts,
     locked: Boolean(lockUntil),
     lockUntil,
     message: lockUntil ? 'App locked for 5 minutes.' : 'Incorrect PIN.',
   };
+
+  return result;
 }
 
 export async function changePin(uid, currentPin, nextPin) {
@@ -134,6 +136,17 @@ export async function changePin(uid, currentPin, nextPin) {
   if (!result.success) return result;
 
   const pinHash = await hashPin(nextPin, uid);
+  const nextSettings = {
+    enabled: true,
+    pinHash,
+    pinLength: nextPin.length,
+    failedAttempts: 0,
+    lockUntil: null,
+    autoLockAfter: result.settings?.autoLockAfter ?? DEFAULT_SECURITY.autoLockAfter,
+    lockOnRefresh: result.settings?.lockOnRefresh ?? DEFAULT_SECURITY.lockOnRefresh,
+    lockOnTabHidden: result.settings?.lockOnTabHidden ?? DEFAULT_SECURITY.lockOnTabHidden,
+  };
+
   await updateDoc(securityRef(uid), {
     pinHash,
     pinLength: nextPin.length,
@@ -141,19 +154,28 @@ export async function changePin(uid, currentPin, nextPin) {
     lockUntil: null,
     updatedAt: serverTimestamp(),
   });
-  return { success: true, settings: await getAppLock(uid) };
+
+  return { success: true, settings: normalize({ ...result.settings, ...nextSettings }) };
 }
 
-export async function resetPin(user, password, nextPin) {
+export async function resetPin(user, password, nextPin, currentSettings = DEFAULT_SECURITY) {
   if (!user?.email) throw new Error('Password reset requires an email account.');
   const credential = EmailAuthProvider.credential(user.email, password);
   await reauthenticateWithCredential(user, credential);
 
   const pinHash = await hashPin(nextPin, user.uid);
+  const nextSettings = {
+    ...currentSettings,
+    enabled: true,
+    pinHash,
+    pinLength: nextPin.length,
+    failedAttempts: 0,
+    lockUntil: null,
+  };
+
   await setDoc(
     securityRef(user.uid),
     {
-      enabled: true,
       pinHash,
       pinLength: nextPin.length,
       failedAttempts: 0,
@@ -162,23 +184,32 @@ export async function resetPin(user, password, nextPin) {
     },
     { merge: true }
   );
-  return getAppLock(user.uid);
+
+  return normalize(nextSettings);
 }
 
 export async function updateAutoLock(uid, autoLockAfter) {
+  const settings = await getAppLock(uid);
   await updateDoc(securityRef(uid), {
     autoLockAfter,
     updatedAt: serverTimestamp(),
   });
-  return getAppLock(uid);
+  return normalize({
+    ...settings,
+    autoLockAfter,
+  });
 }
 
 export async function updateAppLockPreferences(uid, updates) {
+  const settings = await getAppLock(uid);
   await updateDoc(securityRef(uid), {
     ...updates,
     updatedAt: serverTimestamp(),
   });
-  return getAppLock(uid);
+  return normalize({
+    ...settings,
+    ...updates,
+  });
 }
 
 export const securityService = {

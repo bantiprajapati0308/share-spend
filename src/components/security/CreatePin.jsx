@@ -9,6 +9,7 @@ import styles from './Security.module.scss';
 function CreatePin({ title = 'Create 4 Digit PIN', subtitle = 'Enter a PIN to secure your app.', onComplete, onCancel }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const addDigit = useCallback((digit) => {
     setError('');
@@ -16,15 +17,21 @@ function CreatePin({ title = 'Create 4 Digit PIN', subtitle = 'Enter a PIN to se
   }, []);
 
   useEffect(() => {
-    if (pin.length !== 4) return;
+    if (pin.length < 4) {
+      if (submitted) setSubmitted(false);
+      return;
+    }
+    if (submitted) return;
     const validation = validatePin(pin, 4);
     if (validation) {
       setError(validation);
       setPin('');
+      setSubmitted(false);
       return;
     }
+    setSubmitted(true);
     onComplete(pin);
-  }, [onComplete, pin]);
+  }, [onComplete, pin, submitted]);
 
   return (
     <div className={styles.pinStage}>

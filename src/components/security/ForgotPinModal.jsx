@@ -25,7 +25,7 @@ function ForgotPinModal({ show, onHide }) {
     onHide();
   };
 
-  const handleReset = async (confirmedPin) => {
+  const handleReset = useCallback(async (confirmedPin) => {
     setIsSaving(true);
     setError('');
     try {
@@ -37,7 +37,7 @@ function ForgotPinModal({ show, onHide }) {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [password, resetPin]);
 
   return (
     <Modal show={show} onHide={close} centered>

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { ArrowLeft, Clock, EyeSlash, Lock, ShieldCheck, ShieldLock, Window } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,7 @@ function PinFlowModal({ show, mode, onHide }) {
     onHide();
   };
 
-  const handleComplete = async (confirmedPin) => {
+  const handleComplete = useCallback(async (confirmedPin) => {
     setIsSaving(true);
     setError('');
     try {
@@ -48,7 +48,7 @@ function PinFlowModal({ show, mode, onHide }) {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [changePin, currentPin, enableLock, mode]);
 
   return (
     <Modal show={show} onHide={close} centered>

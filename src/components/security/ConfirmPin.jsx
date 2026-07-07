@@ -9,6 +9,7 @@ import styles from './Security.module.scss';
 function ConfirmPin({ originalPin, onBack, onComplete, isSaving }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const addDigit = useCallback((digit) => {
     setError('');
@@ -16,14 +17,20 @@ function ConfirmPin({ originalPin, onBack, onComplete, isSaving }) {
   }, []);
 
   useEffect(() => {
-    if (pin.length !== 4) return;
+    if (pin.length < 4) {
+      if (submitted) setSubmitted(false);
+      return;
+    }
+    if (submitted) return;
     if (pin !== originalPin) {
       setError('PINs did not match. Try again.');
       setPin('');
+      setSubmitted(false);
       return;
     }
+    setSubmitted(true);
     onComplete(pin);
-  }, [onComplete, originalPin, pin]);
+  }, [onComplete, originalPin, pin, submitted]);
 
   return (
     <div className={styles.pinStage}>
