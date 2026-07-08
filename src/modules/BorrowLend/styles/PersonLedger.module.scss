@@ -6,8 +6,8 @@
 
 .header {
     height: 48px;
-    display: grid;
-    grid-template-columns: 36px 1fr 36px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 
@@ -31,6 +31,39 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.exportButton {
+    border: 1px solid #cfe0ff;
+    background: linear-gradient(135deg, #eff6ff 0%, #eaf3ff 100%);
+    color: #1d4ed8;
+    min-width: 86px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0;
+    box-shadow: 0 8px 23px rgba(37, 99, 235, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+    svg {
+        flex: 0 0 auto;
+    }
+
+    &:hover {
+        background: linear-gradient(135deg, #e0edff 0%, #dbeafe 100%);
+        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+    }
+
+    &:active {
+        transform: translateY(1px) scale(0.98);
+        box-shadow: 0 5px 12px rgba(37, 99, 235, 0.14);
+    }
 }
 
 .heroCard {

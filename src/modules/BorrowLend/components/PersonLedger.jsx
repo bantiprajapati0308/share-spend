@@ -1,5 +1,12 @@
 import PropTypes from 'prop-types';
-import { ArrowLeft, ArrowUpRight, Bell, Pencil, ShieldCheck, ThreeDotsVertical } from 'react-bootstrap-icons';
+import {
+    ArrowLeft,
+    ArrowUpRight,
+    Bell,
+    FileEarmarkSpreadsheet,
+    Pencil,
+    ShieldCheck,
+} from 'react-bootstrap-icons';
 import StatusBadge from './StatusBadge';
 import TransactionActionsMenu from './TransactionActionsMenu';
 import {
@@ -10,6 +17,7 @@ import {
     isRepaymentPayment,
 } from '../utils/ledgerViewModel';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
+import { exportPersonLedgerExcel } from '../utils/exportPersonLedgerExcel';
 import styles from '../styles/PersonLedger.module.scss';
 
 function PersonLedger({
@@ -25,6 +33,13 @@ function PersonLedger({
 }) {
     const isLending = person.type === TRANSACTION_TYPES.GAVE;
     const totalBase = isLending ? person.totalLent : person.totalBorrowed;
+    const handleExportExcel = () => {
+        try {
+            exportPersonLedgerExcel({ person, transactions, formatAmount });
+        } catch (error) {
+            console.error('Ledger Excel export failed:', error);
+        }
+    };
 
     return (
         <div className={styles.screen}>
@@ -33,8 +48,9 @@ function PersonLedger({
                     <ArrowLeft size={17} />
                 </button>
                 <h1>{person.personName}</h1>
-                <button type="button" aria-label="More options" className={styles.iconButton}>
-                    <ThreeDotsVertical size={17} />
+                <button type="button" className={styles.exportButton} onClick={handleExportExcel}>
+                    <span>Export</span>
+                    <FileEarmarkSpreadsheet size={16} />
                 </button>
             </header>
 
