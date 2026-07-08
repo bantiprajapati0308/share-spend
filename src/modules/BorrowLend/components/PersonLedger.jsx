@@ -1,12 +1,17 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     ArrowLeft,
     ArrowUpRight,
     Bell,
+    ChevronDown,
     ChevronRight,
     FileEarmarkPdf,
     Pencil,
+    PencilSquare,
     ShieldCheck,
+    Envelope,
+    Telephone,
 } from 'react-bootstrap-icons';
 import StatusBadge from './StatusBadge';
 import TransactionActionsMenu from './TransactionActionsMenu';
@@ -28,13 +33,23 @@ function PersonLedger({
     onBack,
     onRecordReturn,
     onWhatsAppReminder,
+    onUpdateContact,
     onEdit,
     onView,
     onDelete,
 }) {
+    const [showContactDetails, setShowContactDetails] = useState(false);
     const isLending = person.type === TRANSACTION_TYPES.GAVE;
     const canSendReminder = isLending && person.remaining > 0;
     const totalBase = isLending ? person.totalLent : person.totalBorrowed;
+    const hasMobileNumber = Boolean(person.mobileNumber);
+    const hasEmail = Boolean(person.email);
+    const formatMobileNumber = (value) => {
+        const digits = String(value || '').replace(/\D/g, '');
+        const localNumber = digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits;
+        if (localNumber.length !== 10) return value;
+        return `+91 ${localNumber.slice(0, 5)} ${localNumber.slice(5)}`;
+    };
     const handleExportPdf = async () => {
         try {
             await exportPersonLedgerPdf({ person, transactions, formatAmount });
@@ -87,6 +102,57 @@ function PersonLedger({
                         </button>
                     )}
                 </div>
+
+                <button
+                    type="button"
+                    className={styles.contactToggle}
+                    onClick={() => setShowContactDetails((current) => !current)}
+                    aria-expanded={showContactDetails}
+                >
+                    <span>
+                        <strong>{showContactDetails ? 'Hide contact details' : 'Show contact details'}</strong>
+                        <small>{hasMobileNumber || hasEmail ? 'Mobile number & email' : 'Add mobile number or email'}</small>
+                    </span>
+                    <ChevronDown className={showContactDetails ? styles.contactToggleIconOpen : ''} size={16} />
+                </button>
+
+                {showContactDetails && (
+                    <div className={styles.contactRows}>
+                        <button type="button" className={styles.contactRow} onClick={onUpdateContact}>
+                            <span className={`${styles.contactRowIcon} ${styles.phoneIcon}`}>
+                                <Telephone size={20} />
+                            </span>
+                            <span className={styles.contactRowCopy}>
+                                <small>Mobile Number</small>
+                                <strong className={!hasMobileNumber ? styles.addText : ''}>
+                                    {hasMobileNumber ? formatMobileNumber(person.mobileNumber) : 'Add contact number'}
+                                </strong>
+                            </span>
+                            <span className={styles.contactRowAction}>
+                                <PencilSquare size={15} />
+                                {hasMobileNumber ? 'Edit' : 'Add'}
+                                <ChevronRight size={16} />
+                            </span>
+                        </button>
+
+                        <button type="button" className={styles.contactRow} onClick={onUpdateContact}>
+                            <span className={`${styles.contactRowIcon} ${styles.emailIcon}`}>
+                                <Envelope size={20} />
+                            </span>
+                            <span className={styles.contactRowCopy}>
+                                <small>Email Address</small>
+                                <strong className={!hasEmail ? styles.addText : ''}>
+                                    {hasEmail ? person.email : 'Add email address'}
+                                </strong>
+                            </span>
+                            <span className={styles.contactRowAction}>
+                                <PencilSquare size={15} />
+                                {hasEmail ? 'Edit' : 'Add'}
+                                <ChevronRight size={16} />
+                            </span>
+                        </button>
+                    </div>
+                )}
             </section>
 
             <section className={styles.summaryChips}>
@@ -189,6 +255,7 @@ PersonLedger.propTypes = {
     onBack: PropTypes.func.isRequired,
     onRecordReturn: PropTypes.func.isRequired,
     onWhatsAppReminder: PropTypes.func.isRequired,
+    onUpdateContact: PropTypes.func.isRequired,
     onEdit: PropTypes.func.isRequired,
     onView: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,

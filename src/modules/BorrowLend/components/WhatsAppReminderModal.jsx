@@ -1,124 +1,216 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Button, Form, Modal } from 'react-bootstrap';
-import { validateWhatsAppMobileNumber } from '../utils/validationHelper';
+import { Modal } from 'react-bootstrap';
+import { Check2Circle, ClipboardCheck, PersonCheck, Search, Whatsapp } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import styles from '../styles/WhatsAppReminderModal.module.scss';
+
+const copyToClipboard = async (text) => {
+    if (!text) throw new Error('Reminder message is empty.');
+
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    if (!copied) throw new Error('Clipboard copy failed.');
+};
 
 function WhatsAppReminderModal({
     show,
+    mode,
     person,
-    isSaving,
+    message,
+    mobileNumber,
+    isOpening,
     error,
     onCancel,
-    onContinue,
+    onOpenWhatsApp,
 }) {
-    const existingNumber = person?.mobileNumber || '';
-    const [mobileNumber, setMobileNumber] = useState(existingNumber);
-    const [isEditing, setIsEditing] = useState(!existingNumber);
+    const [copyState, setCopyState] = useState('idle');
     const [localError, setLocalError] = useState('');
-    const isTransactionMessage = Boolean(person?.whatsAppContext && person.whatsAppContext !== 'reminder');
+
+    const handleCopy = useCallback(async (showToast = true) => {
+        try {
+            setCopyState('copying');
+            setLocalError('');
+            await copyToClipboard(message);
+            setCopyState('success');
+            if (showToast) toast.success('Reminder message copied successfully.');
+        } catch (copyError) {
+            console.error('Reminder copy failed:', copyError);
+            setCopyState('failed');
+            setLocalError('Unable to copy reminder. Please tap Copy Again.');
+            if (showToast) toast.error('Unable to copy reminder. Please tap Copy Again.');
+        }
+    }, [message]);
 
     useEffect(() => {
-        setMobileNumber(existingNumber);
-        setIsEditing(!existingNumber);
-        setLocalError('');
-    }, [existingNumber, show]);
+        if (!show || mode !== 'manual') return;
+        handleCopy(true);
+    }, [show, mode, handleCopy]);
 
-    const validation = useMemo(() => validateWhatsAppMobileNumber(mobileNumber), [mobileNumber]);
-    const numberChanged = validation.normalized !== validateWhatsAppMobileNumber(existingNumber).normalized;
-    const canContinue = validation.isValid && !isSaving;
+    const copied = copyState === 'success';
+    const displayError = localError || error;
 
-    const handleContinue = async () => {
-        if (!validation.isValid) {
-            setLocalError(validation.error);
-            return;
-        }
+    if (mode === 'confirm') {
+        return (
+            <Modal show={show} onHide={onCancel} centered contentClassName={styles.modalContent}>
+                <Modal.Body className={styles.modalBody}>
+                    <div className={styles.header}>
+                        <div className={styles.successIcon}>
+                            <PersonCheck size={27} />
+                        </div>
+                        <div>
+                            <h3>Send WhatsApp Message?</h3>
+                            <p>Transaction saved successfully.</p>
+                        </div>
+                    </div>
 
-        setLocalError('');
-        await onContinue({
-            rawMobileNumber: mobileNumber,
-            normalizedMobileNumber: validation.normalized,
-            shouldUpdate: isEditing || numberChanged,
-        });
-    };
+                    <section className={styles.confirmPanel}>
+                        <strong>Would you like to send this WhatsApp message to {person?.personName || 'this contact'}?</strong>
+                        <span>{mobileNumber || 'Saved mobile number'}</span>
+                    </section>
+
+                    {displayError && <div className={styles.errorBox}>{displayError}</div>}
+
+                    <div className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.primaryButton}
+                            onClick={onOpenWhatsApp}
+                            disabled={isOpening}
+                        >
+                            <Whatsapp size={18} />
+                            {isOpening ? 'Opening...' : 'Send on WhatsApp'}
+                        </button>
+                        <button type="button" className={styles.cancelButton} onClick={onCancel}>
+                            Not now
+                        </button>
+                    </div>
+                </Modal.Body>
+            </Modal>
+        );
+    }
 
     return (
-        <Modal show={show} onHide={onCancel} centered>
-            <Modal.Header closeButton>
-                <Modal.Title>{isTransactionMessage ? 'Send WhatsApp Message?' : 'WhatsApp Reminder'}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <div className={styles.personBlock}>
-                    <span>{person?.personName?.charAt(0)?.toUpperCase() || '?'}</span>
+        <Modal show={show} onHide={onCancel} centered contentClassName={styles.modalContent}>
+            <Modal.Body className={styles.modalBody}>
+                <div className={styles.header}>
+                    <div className={`${styles.successIcon} ${copied ? styles.successIconDone : ''}`}>
+                        <Check2Circle size={28} />
+                    </div>
                     <div>
-                        <strong>{person?.personName || 'Person'}</strong>
-                        <small>
-                            {isTransactionMessage
-                                ? 'Transaction saved. You can notify this contact on WhatsApp.'
-                                : 'Open chat from your own WhatsApp app.'}
-                        </small>
+                        <h3>Send WhatsApp Reminder</h3>
+                        <p>{person?.personName || 'Contact'} does not have a saved mobile number.</p>
                     </div>
                 </div>
 
-                <Form.Group className="mb-2">
-                    <Form.Label>Mobile Number</Form.Label>
-                    <Form.Control
-                        value={mobileNumber}
-                        onChange={(event) => {
-                            setMobileNumber(event.target.value);
-                            setLocalError('');
-                        }}
-                        disabled={!isEditing}
-                        placeholder="+91 9876543210"
-                        inputMode="tel"
-                    />
-                </Form.Group>
+                <section className={styles.successPanel}>
+                    <span className={styles.copyBadge}>
+                        <ClipboardCheck size={17} />
+                    </span>
+                    <div>
+                        <strong>
+                            {copied ? 'Reminder message copied successfully.' : 'Copying reminder message...'}
+                        </strong>
+                        <p>You can paste it into WhatsApp after opening the contact manually.</p>
+                    </div>
+                </section>
 
-                {!isEditing && existingNumber && (
-                    <p className={styles.confirmText}>Do you want to send a WhatsApp message to this contact number?</p>
-                )}
+                <section className={styles.stepsCard}>
+                    <h4>Follow these simple steps</h4>
 
-                {(localError || error) && (
-                    <Alert variant="danger" className="py-2 mb-0">
-                        {localError || error}
-                    </Alert>
-                )}
-            </Modal.Body>
-            <Modal.Footer>
-                {!isEditing && existingNumber ? (
-                    <Button variant="outline-secondary" onClick={() => setIsEditing(true)} disabled={isSaving}>
-                        Change Number
-                    </Button>
-                ) : (
-                    <Button variant="outline-secondary" onClick={onCancel} disabled={isSaving}>
+                    <div className={styles.stepItem}>
+                        <span className={styles.stepNumber}>1</span>
+                        <div>
+                            <strong>Your reminder message has already been copied.</strong>
+                            <small className={copied ? styles.completed : ''}>
+                                {copied ? 'Completed' : 'Waiting for clipboard permission'}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div className={styles.stepItem}>
+                        <span className={styles.stepNumber}>2</span>
+                        <div>
+                            <strong>Tap Open WhatsApp.</strong>
+                            <small>WhatsApp will open without selecting a chat.</small>
+                        </div>
+                    </div>
+
+                    <div className={styles.stepItem}>
+                        <span className={styles.stepNumber}>3</span>
+                        <div>
+                            <strong>Search the contact manually.</strong>
+                            <small>Example: Rahul, Aman, Neha</small>
+                        </div>
+                    </div>
+
+                    <div className={styles.stepItem}>
+                        <span className={styles.stepNumber}>4</span>
+                        <div>
+                            <strong>Open chat, long press, paste, then send.</strong>
+                            <small>Your reminder text is ready.</small>
+                        </div>
+                    </div>
+                </section>
+
+                {displayError && <div className={styles.errorBox}>{displayError}</div>}
+
+                <div className={styles.actions}>
+                    <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={onOpenWhatsApp}
+                        disabled={isOpening}
+                    >
+                        <Whatsapp size={18} />
+                        {isOpening ? 'Opening...' : 'Open WhatsApp'}
+                    </button>
+                    <button type="button" className={styles.secondaryButton} onClick={() => handleCopy(true)}>
+                        <Search size={16} />
+                        Copy Again
+                    </button>
+                    <button type="button" className={styles.cancelButton} onClick={onCancel}>
                         Cancel
-                    </Button>
-                )}
-                <Button variant="primary" onClick={handleContinue} disabled={!canContinue}>
-                    {isSaving ? 'Please wait...' : 'Open WhatsApp'}
-                </Button>
-            </Modal.Footer>
+                    </button>
+                </div>
+            </Modal.Body>
         </Modal>
     );
 }
 
 WhatsAppReminderModal.propTypes = {
     show: PropTypes.bool.isRequired,
+    mode: PropTypes.oneOf(['manual', 'confirm']),
     person: PropTypes.shape({
-        id: PropTypes.string,
         personName: PropTypes.string,
-        mobileNumber: PropTypes.string,
-        whatsAppContext: PropTypes.string,
     }),
-    isSaving: PropTypes.bool,
+    message: PropTypes.string,
+    mobileNumber: PropTypes.string,
+    isOpening: PropTypes.bool,
     error: PropTypes.string,
     onCancel: PropTypes.func.isRequired,
-    onContinue: PropTypes.func.isRequired,
+    onOpenWhatsApp: PropTypes.func.isRequired,
 };
 
 WhatsAppReminderModal.defaultProps = {
+    mode: 'manual',
     person: null,
-    isSaving: false,
+    message: '',
+    mobileNumber: '',
+    isOpening: false,
     error: '',
 };
 
