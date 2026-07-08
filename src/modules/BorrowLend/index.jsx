@@ -1,79 +1,198 @@
-import React, { useState } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import { useLendingTransactions } from './hooks/useLendingTransactions';
-import TopSection from './components/TopSection';
-import AddTransactionForm from './components/AddTransactionForm';
-import DueTrackingSection from './components/DueTracking';
-import TransactionList from './components/TransactionList';
-import BorrowLendTable from './components/BorrowLendTable';
-import FullScreenLoader from '../../components/common/FullScreenLoader';
-import styles from './styles/BorrowLend.module.scss';
+import { useMemo, useState } from 'react';
+import { Col, Container, Modal, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import { useLendingTransactions } from './hooks/useLendingTransactions';
+import AddTransactionForm from './components/AddTransactionForm';
+import BorrowLendDashboard from './components/BorrowLendDashboard';
+import BorrowLendDetailsModal from './components/BorrowLendDetailsModal';
+import DeleteConfirmationModal from './components/DeleteConfirmationModal';
+import FloatingActionMenu from './components/FloatingActionMenu';
+import PersonLedger from './components/PersonLedger';
+import RepaymentForm from './components/RepaymentForm';
+import WhatsAppReminderModal from './components/WhatsAppReminderModal';
+import FullScreenLoader from '../../components/common/FullScreenLoader';
+import { getCurrencySymbol } from '../../Util';
 import { addBorrowLendRecord } from './utils/borrowLendFirestore';
+import { TRANSACTION_TYPES } from './constants/transactionTypes';
+import { buildPeopleLedger, buildPersonTimeline } from './utils/ledgerViewModel';
+import { borrowLendApi } from '../../services/api/borrowLendApi';
+import { buildWhatsAppReminderMessage, openWhatsAppChat } from './utils/whatsappHelper';
+import styles from './styles/BorrowLend.module.scss';
 
 function BorrowLend() {
-    const [filterType, setFilterType] = useState('all');
-    const [showForm, setShowForm] = useState(false);
+    const [selectedPerson, setSelectedPerson] = useState(null);
+    const [formState, setFormState] = useState(null);
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
+    const [transactionDetails, setTransactionDetails] = useState(null);
+    const [whatsAppPerson, setWhatsAppPerson] = useState(null);
+    const [whatsAppError, setWhatsAppError] = useState('');
+    const [isSavingWhatsAppNumber, setIsSavingWhatsAppNumber] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
-    const dueTrackingHook = useLendingTransactions();
+    const currencySymbol = getCurrencySymbol(currency);
+    const lendingHook = useLendingTransactions();
 
     const {
         transactions,
+        expandedTransactions,
         deleteTransaction,
         getTotalGiven,
         getTotalTaken,
-        getNetBalance,
-        getGivenPeopleCount,
-        getTakenPeopleCount,
-        getFilteredTransactions,
         loading,
         error,
         refreshTransactions,
-    } = dueTrackingHook;
+    } = lendingHook;
+
+    const people = useMemo(() => buildPeopleLedger(transactions), [transactions]);
+    const selectedTransactions = useMemo(
+        () => buildPersonTimeline(expandedTransactions, selectedPerson),
+        [expandedTransactions, selectedPerson]
+    );
+
+    const formatAmount = (amount) => `${currencySymbol}${Number(amount || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    })}`;
+
+    const closeForm = () => setFormState(null);
+
+    const openAction = (kind) => {
+        if (kind === 'lend') setFormState({ kind: 'add', type: TRANSACTION_TYPES.GAVE });
+        if (kind === 'borrow') setFormState({ kind: 'add', type: TRANSACTION_TYPES.TOOK });
+        if (kind === 'return') setFormState({
+            kind: 'return',
+            selectedPersonId: selectedPerson?.id || '',
+            selectedPerson: selectedPerson?.personName || '',
+            remainingAmount: selectedPerson?.remaining || 0,
+            mobileNumber: selectedPerson?.mobileNumber || '',
+            email: selectedPerson?.email || '',
+            dueDate: selectedPerson?.dueDate || null,
+        });
+        if (kind === 'repay') setFormState({
+            kind: 'repay',
+            selectedPersonId: selectedPerson?.id || '',
+            selectedPerson: selectedPerson?.personName || '',
+            remainingAmount: selectedPerson?.remaining || 0,
+            mobileNumber: selectedPerson?.mobileNumber || '',
+            email: selectedPerson?.email || '',
+            dueDate: selectedPerson?.dueDate || null,
+        });
+    };
 
     const handleAddTransaction = async (newTransaction) => {
         try {
-            await addBorrowLendRecord(newTransaction);
-            setShowForm(false);
+            const savedRecord = await addBorrowLendRecord(newTransaction);
+            closeForm();
             await refreshTransactions();
             toast.success('Transaction added successfully');
+            setWhatsAppError('');
+            setWhatsAppPerson({
+                id: savedRecord?.id || savedRecord?.entry?.id || '',
+                personName: newTransaction.personName,
+                mobileNumber: newTransaction.mobileNumber || '',
+                email: newTransaction.email || '',
+                remaining: Number(newTransaction.amount || 0),
+                dueDate: newTransaction.dueDate || null,
+                whatsAppContext: newTransaction.type === TRANSACTION_TYPES.TOOK ? 'new-took' : 'new-gave',
+            });
         } catch (err) {
             console.error('Error adding transaction:', err);
             toast.error('Failed to add transaction');
         }
     };
 
-    const handleDeleteTransaction = async (id) => {
+    const handleSavedRepayment = async (savedRepayment = {}) => {
+        const currentFormState = formState || {};
+        closeForm();
+        await refreshTransactions();
+        setWhatsAppError('');
+        setWhatsAppPerson({
+            id: savedRepayment.id || savedRepayment.entry?.id || currentFormState.selectedPersonId || '',
+            personName: savedRepayment.personName || currentFormState.selectedPerson || '',
+            mobileNumber: currentFormState.mobileNumber || '',
+            email: currentFormState.email || '',
+            remaining: Number(savedRepayment.amount || savedRepayment.repaymentAmount || 0),
+            dueDate: currentFormState.dueDate || null,
+            whatsAppContext: currentFormState.kind === 'repay' ? 'repay' : 'return',
+        });
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!transactionToDelete) return;
+
         try {
-            await deleteTransaction(id);
+            setIsDeleting(true);
+            await deleteTransaction(transactionToDelete.uuid || transactionToDelete.id);
+            setTransactionToDelete(null);
+            await refreshTransactions();
             toast.info('Transaction deleted');
         } catch (err) {
             console.error('Error deleting transaction:', err);
             toast.error('Failed to delete transaction');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
-    const handleFilterChange = (type) => {
-        setFilterType(type);
+    const showEditUnavailable = () => {
+        toast.info('Edit needs an update API. Delete and add again for now.');
     };
 
-    if (loading) {
-        return <FullScreenLoader />;
-    }
+    const handleWhatsAppReminder = async ({ normalizedMobileNumber, shouldUpdate }) => {
+        if (!whatsAppPerson?.id) {
+            setWhatsAppError('Unable to update this person. Please refresh and try again.');
+            return;
+        }
+
+        try {
+            setIsSavingWhatsAppNumber(true);
+            setWhatsAppError('');
+
+            if (shouldUpdate) {
+                const result = await borrowLendApi.updateContact(whatsAppPerson.id, {
+                    mobileNumber: normalizedMobileNumber,
+                });
+                if (!result.success) throw new Error(result.error || 'Failed to update mobile number');
+
+                await refreshTransactions();
+                setSelectedPerson((current) =>
+                    current && current.id === whatsAppPerson.id
+                        ? { ...current, mobileNumber: normalizedMobileNumber }
+                        : current
+                );
+            }
+
+            const reminderMessage = buildWhatsAppReminderMessage({
+                personName: whatsAppPerson.personName,
+                amount: whatsAppPerson.remaining,
+                dueDate: whatsAppPerson.dueDate,
+                formatAmount,
+                context: whatsAppPerson.whatsAppContext,
+            });
+            const opened = openWhatsAppChat(normalizedMobileNumber, reminderMessage);
+            if (!opened) {
+                throw new Error('WhatsApp could not be opened on this device.');
+            }
+
+            toast.info('If WhatsApp does not open, please check that it is installed.');
+            setWhatsAppPerson(null);
+        } catch (error) {
+            console.error('WhatsApp reminder error:', error);
+            setWhatsAppError(error.message || 'Unable to open WhatsApp reminder.');
+        } finally {
+            setIsSavingWhatsAppNumber(false);
+        }
+    };
+
+    if (loading) return <FullScreenLoader />;
 
     if (error) {
         return (
             <Container className={styles.container}>
-                <Row>
-                    <Col lg={8} className="mx-auto">
-                        <div className={styles.header}>
-                            <h1>Borrow & Lending</h1>
-                        </div>
-                        <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
-                            <p>Error loading transactions: {error}</p>
-                        </div>
-                    </Col>
-                </Row>
+                <div className={styles.errorState}>
+                    <h1>Borrow/Lend</h1>
+                    <p>Error loading transactions: {error}</p>
+                </div>
             </Container>
         );
     }
@@ -81,49 +200,86 @@ function BorrowLend() {
     return (
         <Container className={styles.container}>
             <Row>
-                <Col lg={8} className="mx-auto">
-                    {/* Top Section with Greeting, Dashboard Cards, Add Button */}
-                    <TopSection
-                        totalGiven={getTotalGiven()}
-                        totalTaken={getTotalTaken()}
-                        netBalance={getNetBalance()}
-                        givenCount={getGivenPeopleCount()}
-                        takenCount={getTakenPeopleCount()}
-                        onAddClick={() => setShowForm(!showForm)}
-                    />
-                    {showForm && (
-                        <div className={styles.formWrapper}>
-                            <AddTransactionForm onAddTransaction={handleAddTransaction} />
-                        </div>
-                    )}
-
-                    {/* BorrowLend Table - Aggregated View */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 600, color: '#1565c0' }}>
-                            Summary
-                        </h3>
-                        <BorrowLendTable
-                            transactions={transactions}
-                            currency={currency}
+                <Col lg={5} md={7} sm={9} className="mx-auto">
+                    {selectedPerson ? (
+                        <PersonLedger
+                            person={selectedPerson}
+                            transactions={selectedTransactions}
+                            formatAmount={formatAmount}
+                            onBack={() => setSelectedPerson(null)}
+                            onRecordReturn={() => openAction(selectedPerson.type === TRANSACTION_TYPES.GAVE ? 'return' : 'repay')}
+                            onWhatsAppReminder={() => {
+                                setWhatsAppError('');
+                                setWhatsAppPerson(selectedPerson);
+                            }}
+                            onEdit={showEditUnavailable}
+                            onView={setTransactionDetails}
+                            onDelete={setTransactionToDelete}
                         />
-                    </div>
-                    {/* Due Tracking Section */}
-                    <DueTrackingSection
-                        dueTrackingHook={dueTrackingHook}
-                        currency={currency}
-                    />
-                    {/* Add Transaction Form - Conditional */}
-
-
-                    {/* Transaction List */}
-                    <TransactionList
-                        transactions={getFilteredTransactions(filterType)}
-                        filterType={filterType}
-                        onFilterChange={handleFilterChange}
-                        onDelete={handleDeleteTransaction}
-                    />
+                    ) : (
+                        <BorrowLendDashboard
+                            people={people}
+                            totalLent={getTotalGiven()}
+                            totalBorrowed={getTotalTaken()}
+                            formatAmount={formatAmount}
+                            onSelectPerson={setSelectedPerson}
+                        />
+                    )}
                 </Col>
             </Row>
+
+            <FloatingActionMenu onAction={openAction} />
+
+            {formState && (
+                <Modal show onHide={closeForm} centered size="sm" className={styles.modalShell}>
+                    <Modal.Body>
+                        {formState.kind === 'add' ? (
+                            <AddTransactionForm
+                                key={formState.type}
+                                initialType={formState.type}
+                                contactPeople={people}
+                                onAddTransaction={handleAddTransaction}
+                                onCancel={closeForm}
+                            />
+                        ) : (
+                            <RepaymentForm
+                                mode={formState.kind}
+                                selectedPerson={formState.selectedPerson}
+                                remainingAmount={formState.remainingAmount}
+                                onSaved={handleSavedRepayment}
+                                onCancel={closeForm}
+                            />
+                        )}
+                    </Modal.Body>
+                </Modal>
+            )}
+
+            <DeleteConfirmationModal
+                show={!!transactionToDelete}
+                transaction={transactionToDelete}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setTransactionToDelete(null)}
+                isDeleting={isDeleting}
+            />
+
+            <BorrowLendDetailsModal
+                show={!!transactionDetails}
+                transaction={transactionDetails}
+                onHide={() => setTransactionDetails(null)}
+                formatAmount={formatAmount}
+            />
+
+            <WhatsAppReminderModal
+                show={!!whatsAppPerson}
+                person={whatsAppPerson}
+                isSaving={isSavingWhatsAppNumber}
+                error={whatsAppError}
+                onCancel={() => {
+                    setWhatsAppPerson(null);
+                    setWhatsAppError('');
+                }}
+                onContinue={handleWhatsAppReminder}
+            />
         </Container>
     );
 }

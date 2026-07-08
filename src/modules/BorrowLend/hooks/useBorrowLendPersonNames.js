@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { borrowLendApi } from '../../../services/api/borrowLendApi';
 
 const namesCache = new Map();
+const peopleCache = new Map();
 const inFlightRequests = new Map();
 const listeners = new Set();
 
@@ -10,6 +11,13 @@ const getCacheKey = (type) => type || 'all';
 const notifyListeners = () => {
     listeners.forEach((listener) => listener());
 };
+
+const buildPeopleFromNames = (names, type) => names.map((name) => ({
+    personName: name,
+    mobileNumber: '',
+    email: '',
+    type: type || '',
+}));
 
 export const primeBorrowLendPersonName = (type, personName) => {
     const normalizedName = String(personName || '').trim();
@@ -29,15 +37,44 @@ export const primeBorrowLendPersonName = (type, personName) => {
     notifyListeners();
 };
 
+export const primeBorrowLendPersonContact = (type, person) => {
+    const normalizedName = String(person?.personName || '').trim();
+    if (!normalizedName) return;
+
+    const nextPerson = {
+        personName: normalizedName,
+        mobileNumber: person.mobileNumber || '',
+        email: person.email || '',
+        type: person.type || type || '',
+    };
+
+    [getCacheKey(type), 'all'].forEach((key) => {
+        const currentPeople = peopleCache.get(key) || [];
+        const existingIndex = currentPeople.findIndex(
+            (item) => item.personName.toLowerCase() === normalizedName.toLowerCase()
+        );
+
+        const nextPeople = existingIndex >= 0
+            ? currentPeople.map((item, index) => index === existingIndex ? { ...item, ...nextPerson } : item)
+            : [...currentPeople, nextPerson];
+
+        peopleCache.set(key, nextPeople.sort((a, b) => a.personName.localeCompare(b.personName)));
+    });
+
+    primeBorrowLendPersonName(type, normalizedName);
+};
+
 export function useBorrowLendPersonNames(type) {
     const key = getCacheKey(type);
     const [names, setNames] = useState(() => namesCache.get(key) || []);
+    const [people, setPeople] = useState(() => peopleCache.get(key) || []);
     const [loading, setLoading] = useState(!namesCache.has(key));
     const [error, setError] = useState(null);
 
     const syncFromCache = useCallback(() => {
         setNames(namesCache.get(key) || []);
-    }, [key]);
+        setPeople(peopleCache.get(key) || buildPeopleFromNames(namesCache.get(key) || [], type));
+    }, [key, type]);
 
     useEffect(() => {
         listeners.add(syncFromCache);
@@ -48,12 +85,15 @@ export function useBorrowLendPersonNames(type) {
         let cancelled = false;
 
         if (namesCache.has(key)) {
-            setNames(namesCache.get(key));
+            const cachedNames = namesCache.get(key);
+            setNames(cachedNames);
+            setPeople(peopleCache.get(key) || buildPeopleFromNames(cachedNames, type));
             setLoading(false);
             return () => { cancelled = true; };
         }
 
         setNames([]);
+        setPeople([]);
 
         const fetchNames = async () => {
             try {
@@ -67,14 +107,33 @@ export function useBorrowLendPersonNames(type) {
                 const result = await inFlightRequests.get(key);
                 if (!result.success) throw new Error(result.error || 'Failed to load person names');
 
-                const nextNames = Array.isArray(result.data) ? result.data : [];
+                const rawPeople = Array.isArray(result.data) ? result.data : [];
+                const nextPeople = rawPeople.map((item) => {
+                    if (typeof item === 'string') {
+                        return { personName: item, mobileNumber: '', email: '', type: type || '' };
+                    }
+
+                    return {
+                        id: item.id,
+                        personName: item.personName || item.name || '',
+                        mobileNumber: item.mobileNumber || '',
+                        email: item.email || '',
+                        type: item.type || type || '',
+                    };
+                }).filter((item) => item.personName);
+                const nextNames = nextPeople.map((item) => item.personName);
+                peopleCache.set(key, nextPeople);
                 namesCache.set(key, nextNames);
-                if (!cancelled) setNames(nextNames);
+                if (!cancelled) {
+                    setNames(nextNames);
+                    setPeople(nextPeople);
+                }
                 notifyListeners();
             } catch (err) {
                 if (!cancelled) {
                     setError(err.message || 'Failed to load person names');
                     setNames([]);
+                    setPeople([]);
                 }
             } finally {
                 inFlightRequests.delete(key);
@@ -87,5 +146,5 @@ export function useBorrowLendPersonNames(type) {
         return () => { cancelled = true; };
     }, [key, type]);
 
-    return { names, loading, error };
+    return { names, people, loading, error };
 }

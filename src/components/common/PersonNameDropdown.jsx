@@ -9,30 +9,39 @@ import {
 function PersonNameDropdown({
     value,
     onChange,
+    onSelectPerson,
     placeholder = "Select or type person name...",
     isDisabled = false,
     className = "",
     type,
 }) {
-    const { names, loading: namesLoading } = useBorrowLendPersonNames(type);
+    const { people, loading: namesLoading } = useBorrowLendPersonNames(type);
 
     const options = useMemo(() => {
-        return names.map(name => ({
-            value: name,
-            label: name
+        return people.map(person => ({
+            value: person.personName,
+            label: person.personName,
+            person,
         }));
-    }, [names]);
+    }, [people]);
 
     const handleChange = (selectedOption) => {
         const personName = selectedOption ? selectedOption.value : '';
         onChange(personName);
+        onSelectPerson?.(selectedOption?.person || null);
     };
 
     const handleCreate = (inputValue) => {
         primeBorrowLendPersonName(type, inputValue);
         const newOption = {
             value: inputValue,
-            label: inputValue
+            label: inputValue,
+            person: {
+                personName: inputValue,
+                mobileNumber: '',
+                email: '',
+                type,
+            },
         };
         handleChange(newOption);
     };
@@ -101,6 +110,7 @@ function PersonNameDropdown({
 PersonNameDropdown.propTypes = {
     value: PropTypes.string,
     onChange: PropTypes.func.isRequired,
+    onSelectPerson: PropTypes.func,
     placeholder: PropTypes.string,
     isDisabled: PropTypes.bool,
     className: PropTypes.string,

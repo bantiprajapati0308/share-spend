@@ -1,0 +1,25 @@
+.detailsList {
+    display: grid;
+    gap: 10px;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        border-bottom: 1px solid #e9eef9;
+        padding-bottom: 9px;
+    }
+
+    span {
+        color: #52607c;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    strong {
+        color: #071336;
+        font-size: 13px;
+        font-weight: 950;
+        text-align: right;
+    }
+}
