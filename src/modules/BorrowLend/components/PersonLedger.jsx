@@ -4,7 +4,7 @@ import {
     ArrowUpRight,
     Bell,
     ChevronRight,
-    FileEarmarkSpreadsheet,
+    FileEarmarkPdf,
     Pencil,
     ShieldCheck,
 } from 'react-bootstrap-icons';
@@ -18,7 +18,7 @@ import {
     isRepaymentPayment,
 } from '../utils/ledgerViewModel';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
-import { exportPersonLedgerExcel } from '../utils/exportPersonLedgerExcel';
+import { exportPersonLedgerPdf } from '../utils/exportPersonLedgerPdf';
 import styles from '../styles/PersonLedger.module.scss';
 
 function PersonLedger({
@@ -33,12 +33,13 @@ function PersonLedger({
     onDelete,
 }) {
     const isLending = person.type === TRANSACTION_TYPES.GAVE;
+    const canSendReminder = isLending && person.remaining > 0;
     const totalBase = isLending ? person.totalLent : person.totalBorrowed;
-    const handleExportExcel = () => {
+    const handleExportPdf = async () => {
         try {
-            exportPersonLedgerExcel({ person, transactions, formatAmount });
+            await exportPersonLedgerPdf({ person, transactions, formatAmount });
         } catch (error) {
-            console.error('Ledger Excel export failed:', error);
+            console.error('Ledger PDF export failed:', error);
         }
     };
 
@@ -49,9 +50,9 @@ function PersonLedger({
                     <ArrowLeft size={17} />
                 </button>
                 <h1>{person.personName}</h1>
-                <button type="button" className={styles.exportButton} onClick={handleExportExcel}>
-                    <span>Export</span>
-                    <FileEarmarkSpreadsheet size={16} />
+                <button type="button" className={styles.exportButton} onClick={handleExportPdf}>
+                    <span>PDF</span>
+                    <FileEarmarkPdf size={16} />
                 </button>
             </header>
 
@@ -73,7 +74,7 @@ function PersonLedger({
                         <p>{person.remaining === 0 ? 'Settled' : `Due on ${formatLedgerDate(person.dueDate)}`}</p>
                     </div>
 
-                    {person.remaining > 0 && (
+                    {canSendReminder && (
                         <button type="button" className={styles.heroReminderButton} onClick={onWhatsAppReminder}>
                             <span className={styles.reminderIcon}>
                                 <Bell size={16} />
