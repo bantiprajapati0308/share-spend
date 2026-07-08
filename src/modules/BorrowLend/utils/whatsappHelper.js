@@ -95,3 +95,10 @@ export const openWhatsAppChat = (phoneNumber, message = '') => {
     window.location.href = buildWhatsAppDeepLink(phoneNumber, message);
     return true;
 };
+
+export const openWhatsAppApp = () => {
+    if (typeof window === 'undefined') return false;
+
+    window.location.href = 'whatsapp://send';
+    return true;
+};
