@@ -102,7 +102,7 @@ export const buildPeopleLedger = (records) => {
 
             if ((paymentType === 'lent' || paymentType === 'borrowed') && entry.due_date) {
                 const dueDate = new Date(entry.due_date);
-                if (!person.dueDate || dueDate < person.dueDate) person.dueDate = dueDate;
+                if (!person.dueDate || dueDate > person.dueDate) person.dueDate = dueDate;
             }
 
             if (entryDate) {
