@@ -1,7 +1,7 @@
 import { borrowLendApi } from '../../../services/api/borrowLendApi';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 
-export const addBorrowLendRecord = async ({ personName, amount, type, date, dueDate = null, description = '', payment_type = '' }) => {
+export const addBorrowLendRecord = async ({ personName, amount, type, date, dueDate = null, description = '', payment_type = '', mobileNumber = '', email = '' }) => {
     const normalizedType = type || TRANSACTION_TYPES.GAVE;
     const normalizedPaymentType = payment_type || (normalizedType === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed');
     const insertDate = date || new Date().toISOString().split('T')[0];
@@ -14,6 +14,8 @@ export const addBorrowLendRecord = async ({ personName, amount, type, date, dueD
         dueDate: dueDate || null,
         description,
         payment_type: normalizedPaymentType,
+        mobileNumber,
+        email,
     });
     if (!result.success) throw new Error(result.error || 'Failed to add record');
     return result.data;

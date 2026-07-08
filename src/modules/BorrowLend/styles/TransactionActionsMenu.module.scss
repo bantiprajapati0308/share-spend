@@ -1,0 +1,35 @@
+.moreButton {
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #071336 !important;
+    background: transparent !important;
+
+    &::after {
+        display: none !important;
+    }
+}
+
+.menu {
+    border: 1px solid #e5ecfb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16) !important;
+    overflow: hidden;
+
+    :global(.dropdown-item) {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+}
+
+.deleteItem {
+    color: #dc2626 !important;
+}
