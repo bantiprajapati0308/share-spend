@@ -15,14 +15,16 @@ export const buildWhatsAppReminderMessage = ({
             year: 'numeric',
         })
             : '';
+    const highlightedAmount = `*${displayAmount}*`;
+    const highlightedDueDate = hasDueDate ? `*${formattedDueDate}*` : '';
 
     if (context === 'new-gave') {
         return [
             `Hi ${displayName}, I hope you are doing well.`,
             '',
-            `I have recorded that I lent you ${displayAmount}.`,
+            `I have recorded that I lent you ${highlightedAmount}.`,
             hasDueDate
-                ? `The due date is ${formattedDueDate}. Please take a look when you get a chance.`
+                ? `The due date is ${highlightedDueDate}. Please take a look when you get a chance.`
                 : 'Please take a look when you get a chance.',
             '',
             'Let me know if anything needs correction.',
@@ -35,9 +37,9 @@ export const buildWhatsAppReminderMessage = ({
         return [
             `Hi ${displayName}, I hope you are doing well.`,
             '',
-            `I have recorded that I borrowed ${displayAmount} from you.`,
+            `I have recorded that I borrowed ${highlightedAmount} from you.`,
             hasDueDate
-                ? `The due date is ${formattedDueDate}. Please take a look when you get a chance.`
+                ? `The due date is ${highlightedDueDate}. Please take a look when you get a chance.`
                 : 'Please take a look when you get a chance.',
             '',
             'Let me know if anything needs correction.',
@@ -50,7 +52,7 @@ export const buildWhatsAppReminderMessage = ({
         return [
             `Hi ${displayName}, I hope you are doing well.`,
             '',
-            `I have recorded your returned payment of ${displayAmount}.`,
+            `I have recorded your returned payment of ${highlightedAmount}.`,
             'Please take a look when you get a chance and let me know if anything needs correction.',
             '',
             'Thank you.',
@@ -61,7 +63,7 @@ export const buildWhatsAppReminderMessage = ({
         return [
             `Hi ${displayName}, I hope you are doing well.`,
             '',
-            `I have recorded my repayment of ${displayAmount}.`,
+            `I have recorded my repayment of ${highlightedAmount}.`,
             'Please take a look when you get a chance and let me know if anything needs correction.',
             '',
             'Thank you.',
@@ -71,9 +73,9 @@ export const buildWhatsAppReminderMessage = ({
     return [
         `Hi ${displayName}, I hope you are doing well.`,
         '',
-        `This is a gentle reminder about the pending amount of ${displayAmount}.`,
+        `This is a gentle reminder about the pending amount of ${highlightedAmount}.`,
         hasDueDate
-            ? `The due date was ${formattedDueDate}, so please take a look when you get a chance.`
+            ? `The due date was ${highlightedDueDate}, so please take a look when you get a chance.`
             : 'Please take a look when you get a chance.',
         '',
         'Kindly let me know when you will be able to return it.',
