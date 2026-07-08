@@ -1,0 +1,269 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(7, 19, 54, 0.62);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.18s ease-out;
+}
+
+.sheet {
+    width: min(100%, 430px);
+    max-height: calc(100vh - 26px);
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    padding: 14px 18px 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 -24px 70px rgba(7, 19, 54, 0.22);
+    animation: sheetUp 0.24s ease-out;
+}
+
+.dragHandle {
+    width: 54px;
+    height: 5px;
+    border-radius: 999px;
+    background: #c8cfdd;
+    display: block;
+    margin: 0 auto 22px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+
+    h3 {
+        margin: 0;
+        color: #071336;
+        font-size: 20px;
+        font-weight: 950;
+        letter-spacing: 0;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: #52607c;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    button {
+        border: 0;
+        background: transparent;
+        color: #071336;
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.infoCard,
+.safeCard {
+    border: 1px solid #cfe0ff;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #0f2a5f;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+}
+
+.infoCard {
+    padding: 12px;
+    margin-bottom: 18px;
+
+    svg {
+        color: #2563eb;
+    }
+
+    p {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.45;
+    }
+}
+
+.formGroup {
+    margin-bottom: 18px;
+
+    label {
+        margin-bottom: 8px;
+        color: #071336;
+        display: block;
+        font-size: 13px;
+        font-weight: 950;
+
+        span {
+            color: #52607c;
+            font-weight: 750;
+        }
+    }
+
+    small {
+        margin-top: 8px;
+        color: #52607c;
+        display: block;
+        font-size: 12px;
+        font-weight: 750;
+        line-height: 1.45;
+    }
+}
+
+.mobileInput,
+.emailInput {
+    border: 1px solid #d8e1ef;
+    border-radius: 10px;
+    background: #ffffff;
+    min-height: 52px;
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+
+    input {
+        border: 0;
+        outline: 0;
+        width: 100%;
+        color: #071336;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 850;
+
+        &::placeholder {
+            color: #9aa7bd;
+        }
+    }
+}
+
+.mobileInput {
+    grid-template-columns: 76px minmax(0, 1fr);
+
+    span {
+        height: 100%;
+        border-right: 1px solid #e5ecfb;
+        color: #071336;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 950;
+    }
+
+    input {
+        padding: 0 14px;
+    }
+}
+
+.emailInput {
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding-right: 12px;
+
+    svg {
+        color: #071336;
+        justify-self: center;
+    }
+}
+
+.inputError {
+    border-color: #fca5a5 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+}
+
+.errorText {
+    color: #dc2626 !important;
+}
+
+.safeCard {
+    padding: 13px;
+    margin: 6px 0 14px;
+    background: linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
+
+    svg {
+        color: #2563eb;
+    }
+
+    span {
+        color: #0f2a5f;
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1.45;
+    }
+}
+
+.previewCard {
+    border: 1px dashed #cfe0ff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    background: #ffffff;
+    color: #52607c;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 850;
+
+    svg {
+        color: #079455;
+    }
+}
+
+.actions {
+    display: grid;
+    gap: 10px;
+}
+
+.saveButton,
+.cancelButton {
+    min-height: 52px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.saveButton {
+    border: 0;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.24);
+
+    &:disabled {
+        opacity: 0.68;
+    }
+}
+
+.cancelButton {
+    border: 1px solid #d8e1ef;
+    background: #ffffff;
+    color: #1d4ed8;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes sheetUp {
+    from {
+        transform: translateY(28px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

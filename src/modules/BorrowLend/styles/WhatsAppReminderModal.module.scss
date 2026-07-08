@@ -1,23 +1,160 @@
-.personBlock {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid #e9eef9;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 14px;
-    background: #f8fbff;
+.modalContent {
+    border: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(7, 19, 54, 0.22);
+    animation: modalIn 0.22s ease-out;
+}
 
-    > span {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        background: #25d366;
+.modalBody {
+    padding: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+
+    h3 {
+        margin: 0;
+        color: #071336;
+        font-size: 18px;
+        font-weight: 950;
+        letter-spacing: 0;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: #52607c;
+        font-size: 12px;
+        font-weight: 750;
+        line-height: 1.35;
+    }
+}
+
+.successIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #dcfae6;
+    color: #079455;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.successIconDone {
+    animation: checkBounce 0.45s ease-out;
+}
+
+.successPanel {
+    border: 1px solid #bbf7d0;
+    border-radius: 14px;
+    padding: 12px;
+    background: linear-gradient(135deg, #ecfdf3 0%, #ffffff 100%);
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+    animation: fadeUp 0.24s ease-out;
+
+    strong {
+        color: #067647;
+        display: block;
+        font-size: 13px;
+        font-weight: 950;
+        line-height: 1.25;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: #52607c;
+        font-size: 11px;
+        font-weight: 750;
+        line-height: 1.35;
+    }
+}
+
+.copyBadge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #d1fadf;
+    color: #079455;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmPanel {
+    border: 1px solid #cfe0ff;
+    border-radius: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.24s ease-out;
+
+    strong {
+        color: #071336;
+        font-size: 14px;
+        font-weight: 950;
+        line-height: 1.35;
+    }
+
+    span {
+        width: fit-content;
+        border: 1px solid #bbf7d0;
+        border-radius: 999px;
+        padding: 5px 10px;
+        background: #ecfdf3;
+        color: #067647;
+        font-size: 12px;
         font-weight: 900;
+    }
+}
+
+.stepsCard {
+    border: 1px solid #e5ecfb;
+    border-radius: 16px;
+    padding: 14px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+
+    h4 {
+        margin: 0 0 12px;
+        color: #071336;
+        font-size: 14px;
+        font-weight: 950;
+    }
+}
+
+.stepItem {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    animation: fadeUp 0.25s ease-out both;
+
+    + .stepItem {
+        border-top: 1px solid #edf2fb;
+    }
+
+    &:nth-of-type(2) {
+        animation-delay: 0.04s;
+    }
+
+    &:nth-of-type(3) {
+        animation-delay: 0.08s;
+    }
+
+    &:nth-of-type(4) {
+        animation-delay: 0.12s;
     }
 
     strong,
@@ -27,21 +164,137 @@
 
     strong {
         color: #071336;
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 900;
+        line-height: 1.35;
     }
 
     small {
-        margin-top: 2px;
+        margin-top: 3px;
         color: #52607c;
-        font-size: 12px;
-        font-weight: 700;
+        font-size: 11px;
+        font-weight: 750;
+        line-height: 1.35;
     }
 }
 
-.confirmText {
-    margin: 8px 0 0;
-    color: #52607c;
+.stepNumber {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #1d4ed8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.completed {
+    color: #079455 !important;
+}
+
+.errorBox {
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #fff7f7;
+    color: #b42318;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.actions {
+    display: grid;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.primaryButton,
+.secondaryButton,
+.cancelButton {
+    border-radius: 12px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 950;
+}
+
+.primaryButton {
+    border: 0;
+    background: #25d366;
+    color: #ffffff;
+    box-shadow: 0 12px 28px rgba(37, 211, 102, 0.28);
+    animation: softPulse 1.8s ease-in-out infinite;
+
+    &:disabled {
+        opacity: 0.7;
+        animation: none;
+    }
+}
+
+.secondaryButton {
+    border: 1px solid #cfe0ff;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.cancelButton {
+    border: 0;
+    background: transparent;
+    color: #52607c;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes checkBounce {
+    0% {
+        transform: scale(0.86);
+    }
+
+    55% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes softPulse {
+    0%,
+    100% {
+        box-shadow: 0 12px 28px rgba(37, 211, 102, 0.24);
+    }
+
+    50% {
+        box-shadow: 0 14px 36px rgba(37, 211, 102, 0.36);
+    }
 }

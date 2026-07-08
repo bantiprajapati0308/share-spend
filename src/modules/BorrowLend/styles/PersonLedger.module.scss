@@ -88,9 +88,9 @@
     strong {
         display: block;
         color: #dc2626;
-        font-size: clamp(25px, 6.8vw, 34px);
+        font-size: clamp(25px, 5.8vw, 34px);
         line-height: 1;
-        font-weight: 900;
+        font-weight: 700;
         letter-spacing: 0;
         white-space: nowrap;
     }
@@ -173,6 +173,155 @@
         font-weight: 650;
         line-height: 1.2;
         max-width: 96px;
+    }
+}
+
+.contactToggle {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid #e5ecfb;
+    background: transparent;
+    margin-top: 15px;
+    padding: 12px 0 0;
+    color: #1d4ed8;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 18px;
+    gap: 10px;
+    align-items: center;
+    text-align: left;
+
+    span,
+    strong,
+    small {
+        display: block;
+        min-width: 0;
+    }
+
+    strong {
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+
+    small {
+        margin-top: 3px;
+        color: #52607c;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    svg {
+        color: #52607c;
+        justify-self: end;
+        transition: transform 0.18s ease;
+    }
+
+    &:active {
+        opacity: 0.78;
+    }
+}
+
+.contactToggleIconOpen {
+    transform: rotate(180deg);
+}
+
+.contactRows {
+    margin-top: 8px;
+    animation: contactReveal 0.18s ease-out;
+}
+
+.contactRow {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid #edf2fb;
+    background: transparent;
+    padding: 14px 0;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 11px;
+    align-items: center;
+    text-align: left;
+
+    &:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+}
+
+.contactRowIcon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phoneIcon {
+    background: #e9fbef;
+    color: #079455;
+}
+
+.emailIcon {
+    background: #f5efff;
+    color: #7c3aed;
+}
+
+.contactRowCopy {
+    min-width: 0;
+
+    small,
+    strong {
+        display: block;
+    }
+
+    small {
+        color: #52607c;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    strong {
+        margin-top: 5px;
+        color: #071336;
+        font-size: 13px;
+        font-weight: 950;
+        letter-spacing: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.addText {
+    color: #1d4ed8 !important;
+}
+
+.contactRowAction {
+    color: #1d4ed8;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 950;
+    white-space: nowrap;
+
+    svg:last-child {
+        color: #52607c;
+    }
+}
+
+@keyframes contactReveal {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
