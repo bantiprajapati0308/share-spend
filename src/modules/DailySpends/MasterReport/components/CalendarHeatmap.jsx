@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useCalendarData } from '../hooks/useCalendarData';
 import TimeSummaryDetailModal from './TimeSummaryDetailModal';
 import { formatCurrencyINR, formatCurrencyCompact } from '../../../../Util';
@@ -19,6 +20,30 @@ function toDateStr(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+const formatRangeAmount = (amount) => formatCurrencyINR(Math.max(0, Math.round(amount)));
+
+const buildLegendRanges = (maxAmount, secondMax) => {
+    if (!maxAmount || maxAmount <= 0) {
+        return ['0', 'No data yet', 'No data yet', 'No data yet', 'No data yet', 'No data yet'];
+    }
+
+    const referenceAmount = secondMax > 0 && secondMax < maxAmount ? secondMax : maxAmount;
+    const lowMax = Math.max(1, Math.floor(referenceAmount * 0.2));
+    const lowMedMax = Math.max(lowMax + 1, Math.floor(referenceAmount * 0.45));
+    const midMax = Math.max(lowMedMax + 1, Math.floor(referenceAmount * 0.7));
+    const peakMin = Math.max(midMax + 1, Math.ceil(maxAmount * 0.95));
+    const highMax = Math.max(midMax + 1, peakMin - 1);
+
+    return [
+        '0',
+        `${formatRangeAmount(1)} - ${formatRangeAmount(lowMax)}`,
+        `${formatRangeAmount(lowMax + 1)} - ${formatRangeAmount(lowMedMax)}`,
+        `${formatRangeAmount(lowMedMax + 1)} - ${formatRangeAmount(midMax)}`,
+        `${formatRangeAmount(midMax + 1)} - ${formatRangeAmount(highMax)}`,
+        `${formatRangeAmount(peakMin)}+`,
+    ];
+};
+
 /**
  * CalendarHeatmap
  *
@@ -36,6 +61,7 @@ function CalendarHeatmap({ transactions, transactionType, startDate, endDate }) 
     const {
         calendarWeeks,
         maxAmount,
+        secondMax,
         getDayData,
         getColorLevel,
         isInRange,
@@ -57,6 +83,11 @@ function CalendarHeatmap({ transactions, transactionType, startDate, endDate }) 
         });
         return peakStr;
     }, [calendarWeeks, getDayData, isInRange]);
+
+    const legendRanges = React.useMemo(
+        () => buildLegendRanges(maxAmount, secondMax),
+        [maxAmount, secondMax]
+    );
 
     const handleDayClick = (dateStr, dayData) => {
         if (!dayData || dayData.transactions.length === 0) return;
@@ -87,10 +118,25 @@ function CalendarHeatmap({ transactions, transactionType, startDate, endDate }) 
                     {transactionType === 'income' ? 'Income' : 'Spend'}:
                 </span>
                 {LEVEL_LABELS.map((label, i) => (
-                    <React.Fragment key={i}>
-                        <span className={`${styles.legendSwatch} ${SWATCH_CLASSES[i]}`} />
-                        <span className={styles.legendText}>{label}</span>
-                    </React.Fragment>
+                    <OverlayTrigger
+                        key={label}
+                        placement="top"
+                        trigger={['hover', 'focus', 'click']}
+                        overlay={(
+                            <Tooltip id={`calendar-legend-${transactionType}-${i}`}>
+                                {label}: {legendRanges[i]}
+                            </Tooltip>
+                        )}
+                    >
+                        <button
+                            type="button"
+                            className={styles.legendItem}
+                            aria-label={`${label} range ${legendRanges[i]}`}
+                        >
+                            <span className={`${styles.legendSwatch} ${SWATCH_CLASSES[i]}`} />
+                            <span className={styles.legendText}>{label}</span>
+                        </button>
+                    </OverlayTrigger>
                 ))}
             </div>
 
