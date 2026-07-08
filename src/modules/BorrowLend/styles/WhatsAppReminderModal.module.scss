@@ -1,0 +1,47 @@
+.personBlock {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #e9eef9;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 14px;
+    background: #f8fbff;
+
+    > span {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        background: #25d366;
+        font-weight: 900;
+    }
+
+    strong,
+    small {
+        display: block;
+    }
+
+    strong {
+        color: #071336;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    small {
+        margin-top: 2px;
+        color: #52607c;
+        font-size: 12px;
+        font-weight: 700;
+    }
+}
+
+.confirmText {
+    margin: 8px 0 0;
+    color: #52607c;
+    font-size: 13px;
+    font-weight: 750;
+}

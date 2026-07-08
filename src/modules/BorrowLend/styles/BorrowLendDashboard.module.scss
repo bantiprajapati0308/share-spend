@@ -1,0 +1,293 @@
+.screen {
+    min-height: calc(100vh - 92px);
+    padding: 14px 10px 92px;
+    background: #ffffff;
+}
+
+.header {
+    height: 48px;
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h1 {
+        margin: 0;
+        color: #071336;
+        font-size: 15px;
+        font-weight: 900;
+        text-align: center;
+        letter-spacing: 0;
+    }
+}
+
+.iconButton,
+.searchButton {
+    border: 0;
+    background: transparent;
+    color: #071336;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.topSummary {
+    margin-bottom: 16px;
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.balanceCard {
+    min-width: 0;
+    min-height: 132px;
+    border: 1px solid #edf2fb;
+    border-radius: 17px;
+    padding: 13px 7px 11px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.iconWrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3px;
+
+    svg {
+        width: 19px;
+        height: 19px;
+        color: #ffffff;
+    }
+}
+
+.iconGreen {
+    background: #10b981;
+}
+
+.iconRed {
+    background: #ef4444;
+}
+
+.balancePositive {
+    background: linear-gradient(150deg, #e6f9f1 0%, #ccf0e1 100%);
+}
+
+.balanceNegative {
+    background: linear-gradient(150deg, #fff0ee 0%, #fdddd9 100%);
+}
+
+.balanceFace {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.72);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3px;
+    color: #071336;
+    font-size: 22px;
+    font-weight: 950;
+}
+
+.cardLabel {
+    color: #94a3b8;
+    font-size: 9px;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+}
+
+.cardAmount {
+    max-width: 100%;
+    font-size: clamp(13px, 4vw, 17px);
+    line-height: 1.1;
+    font-weight: 950;
+    letter-spacing: 0;
+    word-break: break-word;
+}
+
+.balanceCard small {
+    color: #94a3b8;
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.owed {
+    color: #079455;
+}
+
+.owe {
+    color: #dc2626;
+}
+
+.peopleHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 18px 0 10px;
+
+    h2 {
+        margin: 0;
+        color: #071336;
+        font-size: 14px;
+        font-weight: 900;
+    }
+}
+
+.searchButton {
+    border: 1px solid #e5ecfb;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.peopleList {
+    display: grid;
+    gap: 8px;
+}
+
+.personCard {
+    width: 100%;
+    border: 1px solid #e8eef9;
+    border-radius: 11px;
+    background: #fff;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+
+    &:active {
+        transform: scale(0.985);
+    }
+}
+
+.avatar,
+.emptyIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    font-weight: 900;
+}
+
+.borrow {
+    background: linear-gradient(135deg, #059669 0%, #27ae60 100%);
+}
+
+.personInfo {
+    min-width: 0;
+
+    strong,
+    small {
+        display: block;
+    }
+
+    strong {
+        color: #071336;
+        font-size: 13px;
+        font-weight: 900;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    small {
+        margin-top: 4px;
+        color: #52607c;
+        font-size: 11px;
+        font-weight: 700;
+    }
+}
+
+.amountInfo {
+    display: grid;
+    justify-items: end;
+    gap: 5px;
+
+    strong {
+        font-size: 12px;
+        font-weight: 950;
+    }
+}
+
+.emptyState {
+    border: 1px dashed #d7e0f4;
+    border-radius: 14px;
+    padding: 32px 18px;
+    text-align: center;
+    background: #f8fbff;
+
+    .emptyIcon {
+        margin: 0 auto 12px;
+        background: linear-gradient(135deg, #1d4ed8 0%, #8b5cf6 100%);
+    }
+
+    h3 {
+        margin: 0 0 6px;
+        color: #071336;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    p {
+        margin: 0;
+        color: #52607c;
+        font-size: 12px;
+    }
+}
+
+.bottomNav {
+    position: fixed;
+    left: max(12px, calc(50% - 220px));
+    right: max(12px, calc(50% - 220px));
+    bottom: 12px;
+    min-height: 58px;
+    border: 1px solid #e5ecfb;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12);
+    z-index: 30;
+
+    span {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        color: #52607c;
+        font-size: 10px;
+        font-weight: 800;
+    }
+}
+
+.activeNav {
+    color: #1d4ed8 !important;
+}

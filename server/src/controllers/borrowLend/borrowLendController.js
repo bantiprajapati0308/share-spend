@@ -4,6 +4,21 @@ const { v4: uuidv4 } = require('uuid');
 
 const col = (uid) => db.collection('users').doc(uid).collection('borrowLend');
 
+const normalizeContactValue = (value) => {
+    if (value === undefined || value === null) return '';
+    return String(value).trim();
+};
+
+const normalizeRecord = (docSnap) => {
+    const data = docSnap.data();
+    return {
+        id: docSnap.id,
+        mobileNumber: data.mobileNumber || '',
+        email: data.email || '',
+        ...data,
+    };
+};
+
 /**
  * Find the document containing an entry with the given UUID.
  * Fast path: uses array-contains on the denormalized `entryUuids` field (written by
@@ -28,7 +43,7 @@ const findDocByEntryUuid = async (uid, uuid) => {
 const getRecords = async (req, res) => {
     try {
         const snap = await col(req.uid).orderBy('createdAt', 'desc').get();
-        ok(res, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        ok(res, snap.docs.map(normalizeRecord));
     } catch (e) {
         fail(res, e.message);
     }
@@ -45,14 +60,40 @@ const getPersonNames = async (req, res) => {
             query = query.where('type', '==', type);
         }
 
-        const snap = await query.select('personName').get();
-        const names = Array.from(new Set(
-            snap.docs
-                .map((doc) => String(doc.data().personName || '').trim())
-                .filter(Boolean)
-        )).sort((a, b) => a.localeCompare(b));
+        const snap = await query.select('personName', 'mobileNumber', 'email', 'type').get();
+        const peopleByName = new Map();
 
-        ok(res, names);
+        snap.docs.forEach((doc) => {
+            const data = doc.data();
+            const personName = String(data.personName || '').trim();
+            if (!personName) return;
+
+            const key = personName.toLowerCase();
+            const current = peopleByName.get(key);
+            const next = {
+                id: doc.id,
+                personName,
+                mobileNumber: data.mobileNumber || '',
+                email: data.email || '',
+                type: data.type || type || '',
+            };
+
+            if (!current) {
+                peopleByName.set(key, next);
+                return;
+            }
+
+            peopleByName.set(key, {
+                ...current,
+                mobileNumber: current.mobileNumber || next.mobileNumber,
+                email: current.email || next.email,
+            });
+        });
+
+        const people = Array.from(peopleByName.values())
+            .sort((a, b) => a.personName.localeCompare(b.personName));
+
+        ok(res, people);
     } catch (e) {
         fail(res, e.message);
     }
@@ -61,7 +102,7 @@ const getPersonNames = async (req, res) => {
 // POST /api/borrow-lend  (gave / took)
 const addRecord = async (req, res) => {
     try {
-        const { personName, amount, type, date, dueDate, description, payment_type } = req.body;
+        const { personName, amount, type, date, dueDate, description, payment_type, mobileNumber, email } = req.body;
         if (!personName || amount == null || !type) return badRequest(res, 'personName, amount, type required');
 
         const normalizedPaymentType = payment_type || (type === 'gave' ? 'Lent' : 'Borrowed');
@@ -80,16 +121,21 @@ const addRecord = async (req, res) => {
         if (!existing.empty) {
             const existingDoc = existing.docs[0];
             const currentData = existingDoc.data().data || [];
-            await existingDoc.ref.update({
+            const updatePayload = {
                 data: [...currentData, entry],
                 entryUuids: FieldValue.arrayUnion(entry.uuid),
-            });
+            };
+            if (mobileNumber !== undefined) updatePayload.mobileNumber = normalizeContactValue(mobileNumber);
+            if (email !== undefined) updatePayload.email = normalizeContactValue(email);
+            await existingDoc.ref.update(updatePayload);
             return ok(res, { id: existingDoc.id, entry }, 201);
         }
 
         const ref = await col(req.uid).add({
             userId: req.uid,
             personName,
+            mobileNumber: normalizeContactValue(mobileNumber),
+            email: normalizeContactValue(email),
             type,
             createdAt: FieldValue.serverTimestamp(),
             data: [entry],
@@ -133,12 +179,40 @@ const addRepayment = async (req, res) => {
         const ref = await col(req.uid).add({
             userId: req.uid,
             personName,
+            mobileNumber: '',
+            email: '',
             type,
             createdAt: FieldValue.serverTimestamp(),
             data: [entry],
             entryUuids: [entry.uuid],
         });
         ok(res, { id: ref.id, entry }, 201);
+    } catch (e) {
+        fail(res, e.message);
+    }
+};
+
+// PATCH /api/borrow-lend/:id/contact
+const updateContact = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { mobileNumber, email } = req.body;
+        if (!id) return badRequest(res, 'Record ID is required');
+
+        const ref = col(req.uid).doc(id);
+        const docSnap = await ref.get();
+        if (!docSnap.exists) return notFound(res, 'Borrow/Lend record not found');
+
+        const updatePayload = {};
+        if (mobileNumber !== undefined) updatePayload.mobileNumber = normalizeContactValue(mobileNumber);
+        if (email !== undefined) updatePayload.email = normalizeContactValue(email);
+
+        if (Object.keys(updatePayload).length === 0) {
+            return badRequest(res, 'mobileNumber or email is required');
+        }
+
+        await ref.update(updatePayload);
+        ok(res, { id, ...updatePayload });
     } catch (e) {
         fail(res, e.message);
     }
@@ -215,4 +289,4 @@ const deleteEntry = async (req, res) => {
     }
 };
 
-module.exports = { getRecords, getPersonNames, addRecord, addRepayment, archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry };
+module.exports = { getRecords, getPersonNames, addRecord, addRepayment, updateContact, archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry };
