@@ -1,5 +1,13 @@
 import PropTypes from 'prop-types';
-import { ArrowLeft, ArrowUpRight, Bell, Pencil, ShieldCheck, ThreeDotsVertical } from 'react-bootstrap-icons';
+import {
+    ArrowLeft,
+    ArrowUpRight,
+    Bell,
+    ChevronRight,
+    FileEarmarkSpreadsheet,
+    Pencil,
+    ShieldCheck,
+} from 'react-bootstrap-icons';
 import StatusBadge from './StatusBadge';
 import TransactionActionsMenu from './TransactionActionsMenu';
 import {
@@ -10,6 +18,7 @@ import {
     isRepaymentPayment,
 } from '../utils/ledgerViewModel';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
+import { exportPersonLedgerExcel } from '../utils/exportPersonLedgerExcel';
 import styles from '../styles/PersonLedger.module.scss';
 
 function PersonLedger({
@@ -25,6 +34,13 @@ function PersonLedger({
 }) {
     const isLending = person.type === TRANSACTION_TYPES.GAVE;
     const totalBase = isLending ? person.totalLent : person.totalBorrowed;
+    const handleExportExcel = () => {
+        try {
+            exportPersonLedgerExcel({ person, transactions, formatAmount });
+        } catch (error) {
+            console.error('Ledger Excel export failed:', error);
+        }
+    };
 
     return (
         <div className={styles.screen}>
@@ -33,8 +49,9 @@ function PersonLedger({
                     <ArrowLeft size={17} />
                 </button>
                 <h1>{person.personName}</h1>
-                <button type="button" aria-label="More options" className={styles.iconButton}>
-                    <ThreeDotsVertical size={17} />
+                <button type="button" className={styles.exportButton} onClick={handleExportExcel}>
+                    <span>Export</span>
+                    <FileEarmarkSpreadsheet size={16} />
                 </button>
             </header>
 
@@ -47,10 +64,28 @@ function PersonLedger({
                     </div>
                     <StatusBadge status={person.status} />
                 </div>
-                <strong className={person.remaining === 0 ? styles.settledAmount : ''}>
-                    {formatAmount(person.remaining)}
-                </strong>
-                <p>{person.remaining === 0 ? 'Settled' : `Due on ${formatLedgerDate(person.dueDate)}`}</p>
+
+                <div className={styles.heroBottom}>
+                    <div className={styles.heroAmountBlock}>
+                        <strong className={person.remaining === 0 ? styles.settledAmount : ''}>
+                            {formatAmount(person.remaining)}
+                        </strong>
+                        <p>{person.remaining === 0 ? 'Settled' : `Due on ${formatLedgerDate(person.dueDate)}`}</p>
+                    </div>
+
+                    {person.remaining > 0 && (
+                        <button type="button" className={styles.heroReminderButton} onClick={onWhatsAppReminder}>
+                            <span className={styles.reminderIcon}>
+                                <Bell size={16} />
+                            </span>
+                            <span className={styles.reminderCopy}>
+                                <strong>Set Reminder</strong>
+                                <small>Remind on due date</small>
+                            </span>
+                            <ChevronRight size={17} />
+                        </button>
+                    )}
+                </div>
             </section>
 
             <section className={styles.summaryChips}>
@@ -101,6 +136,11 @@ function PersonLedger({
                                         <div>
                                             <h3>{getTransactionLabel(transaction)}</h3>
                                             <p>{transaction.description || (repayment ? 'Partial payment' : 'Cash given')}</p>
+                                            {transaction.dueDate && (
+                                                <span className={styles.transactionDueDate}>
+                                                    Due: {formatLedgerDate(transaction.dueDate)}
+                                                </span>
+                                            )}
                                         </div>
                                         <strong className={repayment ? styles.negative : styles.positive}>
                                             {repayment ? '-' : '+'} {formatAmount(transaction.amount)}
@@ -121,16 +161,6 @@ function PersonLedger({
                     })
                 )}
             </section>
-
-            {person.remaining > 0 && (
-                <button type="button" className={styles.reminderCard} onClick={onWhatsAppReminder}>
-                    <span>
-                        Due on {formatLedgerDate(person.dueDate)}
-                        <strong>{formatAmount(person.remaining)}</strong>
-                    </span>
-                    <span><Bell size={13} /> WhatsApp Reminder</span>
-                </button>
-            )}
 
             <nav className={styles.actionDock}>
                 <button type="button">

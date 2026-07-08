@@ -50,14 +50,14 @@ export const groupTransactionsByName = (transactions) => {
 
         grouped[name].data = grouped[name].data.concat(entries);
 
-        // Determine firstDate and dueDate based on earliest entries
+        // Determine firstDate from earliest entry and dueDate from latest entry.
         grouped[name].data.forEach(entry => {
             const entryDate = entry.insert_date ? new Date(entry.insert_date) : null;
             if (entryDate && (!grouped[name].firstDate || entryDate < grouped[name].firstDate)) {
                 grouped[name].firstDate = entryDate;
             }
             const entryDue = entry.due_date ? new Date(entry.due_date) : null;
-            if (entryDue && (!grouped[name].dueDate || entryDue < grouped[name].dueDate)) {
+            if (entryDue && (!grouped[name].dueDate || entryDue > grouped[name].dueDate)) {
                 grouped[name].dueDate = entryDue;
             }
         });
@@ -174,12 +174,12 @@ export const prepareAggregatedTableData = (transactions) => {
             return paymentType === 'lent' || paymentType === 'borrowed';
         });
 
-        let earliestDueDate = null;
+        let latestDueDate = null;
         relevantEntries.forEach(entry => {
             if (entry.due_date) {
                 const entryDue = new Date(entry.due_date);
-                if (!earliestDueDate || entryDue > earliestDueDate) {
-                    earliestDueDate = entryDue;
+                if (!latestDueDate || entryDue > latestDueDate) {
+                    latestDueDate = entryDue;
                 }
             }
         });
@@ -189,7 +189,7 @@ export const prepareAggregatedTableData = (transactions) => {
             totalDays: calculateTotalDays(item.firstDate),
             displayAmount: remaining.toFixed(2),
             displayFirstDate: formatTransactionDate(item.firstDate),
-            displayDueDate: formatTransactionDate(earliestDueDate),
+            displayDueDate: formatTransactionDate(latestDueDate),
             status: derivedStatus,
             statusStyle: getStatusColor(derivedStatus),
             totalLent,
