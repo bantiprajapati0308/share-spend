@@ -61,6 +61,7 @@ export const exportPersonLedgerExcel = ({ person, transactions, formatAmount }) 
                     ${buildCell(formatLedgerDate(transaction.date))}
                     ${buildCell(getTransactionLabel(transaction), repayment ? 'type-returned' : 'type-added')}
                     ${buildCell(description)}
+                    ${buildCell(transaction.dueDate ? formatLedgerDate(transaction.dueDate) : '-')}
                     ${buildCell(amount, repayment ? 'amount-negative' : 'amount-positive')}
                     ${buildCell(balanceAfter === 0 ? 'Cleared' : `${formatAmount(balanceAfter)} due`)}
                     ${buildCell(repayment ? 'Payment updated' : 'Amount added')}
@@ -69,7 +70,7 @@ export const exportPersonLedgerExcel = ({ person, transactions, formatAmount }) 
         }).join('')
         : `
             <tr>
-                <td colspan="7" class="empty">No transactions available for this person.</td>
+                <td colspan="8" class="empty">No transactions available for this person.</td>
             </tr>
         `;
 
@@ -171,50 +172,51 @@ export const exportPersonLedgerExcel = ({ person, transactions, formatAmount }) 
             </head>
             <body>
                 <table>
-                    <tr><td colspan="7" class="title">Borrow/Lend Ledger - ${escapeHtml(person.personName)}</td></tr>
-                    <tr><td colspan="7" class="subtitle">Generated on ${escapeHtml(generatedAt)} | Share Spend</td></tr>
-                    <tr><td colspan="7"></td></tr>
+                    <tr><td colspan="8" class="title">Borrow/Lend Ledger - ${escapeHtml(person.personName)}</td></tr>
+                    <tr><td colspan="8" class="subtitle">Generated on ${escapeHtml(generatedAt)} | Share Spend</td></tr>
+                    <tr><td colspan="8"></td></tr>
 
-                    <tr><td colspan="7" class="section">Summary</td></tr>
+                    <tr><td colspan="8" class="section">Summary</td></tr>
                     <tr>
                         <td colspan="2" class="summary-head">${escapeHtml(isLending ? 'Total Lent' : 'Total Borrowed')}</td>
                         <td colspan="2" class="summary-head">Returned</td>
-                        <td colspan="3" class="summary-head">Remaining</td>
+                        <td colspan="4" class="summary-head">Remaining</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="summary-value">${escapeHtml(formatAmount(totalBase))}</td>
                         <td colspan="2" class="summary-value">${escapeHtml(formatAmount(person.totalReturned))}</td>
-                        <td colspan="3" class="summary-value ${Number(person.remaining || 0) === 0 ? 'settled' : 'remaining'}">${escapeHtml(formatAmount(person.remaining))}</td>
+                        <td colspan="4" class="summary-value ${Number(person.remaining || 0) === 0 ? 'settled' : 'remaining'}">${escapeHtml(formatAmount(person.remaining))}</td>
                     </tr>
-                    <tr><td colspan="7"></td></tr>
+                    <tr><td colspan="8"></td></tr>
 
-                    <tr><td colspan="7" class="section">Person Details</td></tr>
+                    <tr><td colspan="8" class="section">Person Details</td></tr>
                     <tr>
                         <td class="label">Name</td>
                         <td colspan="2" class="value">${escapeHtml(person.personName)}</td>
                         <td class="label">Type</td>
-                        <td colspan="3" class="value">${escapeHtml(isLending ? 'You lent money' : 'You borrowed money')}</td>
+                        <td colspan="4" class="value">${escapeHtml(isLending ? 'You lent money' : 'You borrowed money')}</td>
                     </tr>
                     <tr>
                         <td class="label">Status</td>
                         <td colspan="2" class="value">${escapeHtml(person.status)}</td>
                         <td class="label">Due Date</td>
-                        <td colspan="3" class="value">${escapeHtml(formatLedgerDate(person.dueDate))}</td>
+                        <td colspan="4" class="value">${escapeHtml(formatLedgerDate(person.dueDate))}</td>
                     </tr>
                     <tr>
                         <td class="label">Mobile Number</td>
                         ${buildTextCell(mobileNumber, 'value').replace('<td', '<td colspan="2"')}
                         <td class="label">Email ID</td>
-                        <td colspan="3" class="value">${escapeHtml(person.email || 'Not available')}</td>
+                        <td colspan="4" class="value">${escapeHtml(person.email || 'Not available')}</td>
                     </tr>
-                    <tr><td colspan="7"></td></tr>
+                    <tr><td colspan="8"></td></tr>
 
-                    <tr><td colspan="7" class="section">Transaction History</td></tr>
+                    <tr><td colspan="8" class="section">Transaction History</td></tr>
                     <tr class="table-head">
                         <th>No.</th>
                         <th>Date</th>
                         <th>Type</th>
                         <th>Description</th>
+                        <th>Due Date</th>
                         <th>Amount</th>
                         <th>Balance After</th>
                         <th>Status</th>

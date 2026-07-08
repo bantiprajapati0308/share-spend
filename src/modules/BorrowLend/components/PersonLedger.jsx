@@ -3,6 +3,7 @@ import {
     ArrowLeft,
     ArrowUpRight,
     Bell,
+    ChevronRight,
     FileEarmarkSpreadsheet,
     Pencil,
     ShieldCheck,
@@ -63,10 +64,28 @@ function PersonLedger({
                     </div>
                     <StatusBadge status={person.status} />
                 </div>
-                <strong className={person.remaining === 0 ? styles.settledAmount : ''}>
-                    {formatAmount(person.remaining)}
-                </strong>
-                <p>{person.remaining === 0 ? 'Settled' : `Due on ${formatLedgerDate(person.dueDate)}`}</p>
+
+                <div className={styles.heroBottom}>
+                    <div className={styles.heroAmountBlock}>
+                        <strong className={person.remaining === 0 ? styles.settledAmount : ''}>
+                            {formatAmount(person.remaining)}
+                        </strong>
+                        <p>{person.remaining === 0 ? 'Settled' : `Due on ${formatLedgerDate(person.dueDate)}`}</p>
+                    </div>
+
+                    {person.remaining > 0 && (
+                        <button type="button" className={styles.heroReminderButton} onClick={onWhatsAppReminder}>
+                            <span className={styles.reminderIcon}>
+                                <Bell size={16} />
+                            </span>
+                            <span className={styles.reminderCopy}>
+                                <strong>Set Reminder</strong>
+                                <small>Remind on due date</small>
+                            </span>
+                            <ChevronRight size={17} />
+                        </button>
+                    )}
+                </div>
             </section>
 
             <section className={styles.summaryChips}>
@@ -117,6 +136,11 @@ function PersonLedger({
                                         <div>
                                             <h3>{getTransactionLabel(transaction)}</h3>
                                             <p>{transaction.description || (repayment ? 'Partial payment' : 'Cash given')}</p>
+                                            {transaction.dueDate && (
+                                                <span className={styles.transactionDueDate}>
+                                                    Due: {formatLedgerDate(transaction.dueDate)}
+                                                </span>
+                                            )}
                                         </div>
                                         <strong className={repayment ? styles.negative : styles.positive}>
                                             {repayment ? '-' : '+'} {formatAmount(transaction.amount)}
@@ -137,16 +161,6 @@ function PersonLedger({
                     })
                 )}
             </section>
-
-            {person.remaining > 0 && (
-                <button type="button" className={styles.reminderCard} onClick={onWhatsAppReminder}>
-                    <span>
-                        Due on {formatLedgerDate(person.dueDate)}
-                        <strong>{formatAmount(person.remaining)}</strong>
-                    </span>
-                    <span><Bell size={13} /> WhatsApp Reminder</span>
-                </button>
-            )}
 
             <nav className={styles.actionDock}>
                 <button type="button">
