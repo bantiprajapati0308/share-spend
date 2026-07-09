@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
+import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
+import { Container, Row, Col, Alert, Spinner, Tabs, Tab } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import useCategoryContext from './hooks/useCategoryContext';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
@@ -16,11 +16,20 @@ import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
 import { DailySpendTabsList } from '../../Util';
-import CategoryManager from './components/CategoryManager';
-import LimitsManager from './LimitsManager';
-import ReportsTabContent from './components/ReportsTabContent';
-import AnalyticsTabContent from './components/AnalyticsTabContent';
 import { formatLocalDate, getTransactionDateKey, parseLocalDate } from './utils/dateUtils';
+
+const AnalyticsTabContent = lazy(() => import('./components/AnalyticsTabContent'));
+const CategoryManager = lazy(() => import('./components/CategoryManager'));
+const LimitsManager = lazy(() => import('./LimitsManager'));
+const ReportsTabContent = lazy(() => import('./components/ReportsTabContent'));
+
+function TabLoader() {
+    return (
+        <div className="d-flex justify-content-center py-4">
+            <Spinner animation="border" size="sm" />
+        </div>
+    );
+}
 
 function DailySpends() {
     const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
@@ -49,12 +58,7 @@ function DailySpends() {
     const { categories: allCategories } = useCategoryContext();
     const { loadDateRange, saveDateRange } = useSelectedDateRange();
 
-    // Load saved date range from database on mount
-    useEffect(() => {
-        loadSavedDateRange();
-    }, []);
-
-    const loadSavedDateRange = async () => {
+    const loadSavedDateRange = useCallback(async () => {
         try {
             const savedRange = await loadDateRange();
             if (savedRange && savedRange.startDate && savedRange.endDate) {
@@ -67,7 +71,12 @@ function DailySpends() {
             console.error('Error loading saved date range:', err);
             setDateRangeLoaded(true);
         }
-    };
+    }, [loadDateRange]);
+
+    // Load saved date range from database on mount
+    useEffect(() => {
+        loadSavedDateRange();
+    }, [loadSavedDateRange]);
 
     const handleDateRangeChange = async (newRange) => {
         try {
@@ -287,22 +296,32 @@ function DailySpends() {
                                             />
                                         </div>
                                     )}
-                                    {tab.id === 'set_limits' && <LimitsManager embedded />}
+                                    {tab.id === 'set_limits' && (
+                                        <Suspense fallback={<TabLoader />}>
+                                            <LimitsManager embedded />
+                                        </Suspense>
+                                    )}
                                     {tab.id === 'analytics' && (
-                                        <AnalyticsTabContent
-                                            transactions={transactions}
-                                            categories={allCategories}
-                                        />
+                                        <Suspense fallback={<TabLoader />}>
+                                            <AnalyticsTabContent
+                                                transactions={transactions}
+                                                categories={allCategories}
+                                            />
+                                        </Suspense>
                                     )}
                                     {tab.id === 'reports' && (
-                                        <ReportsTabContent
-                                            transactions={transactions}
-                                            startDate={startDate}
-                                            endDate={endDate}
-                                        />
+                                        <Suspense fallback={<TabLoader />}>
+                                            <ReportsTabContent
+                                                transactions={transactions}
+                                                startDate={startDate}
+                                                endDate={endDate}
+                                            />
+                                        </Suspense>
                                     )}
                                     {tab.id === 'category' && (
-                                        <CategoryManager onCategoriesChanged={refreshTransactions} />
+                                        <Suspense fallback={<TabLoader />}>
+                                            <CategoryManager onCategoriesChanged={refreshTransactions} />
+                                        </Suspense>
                                     )}
                                 </Tab>
                             ))}

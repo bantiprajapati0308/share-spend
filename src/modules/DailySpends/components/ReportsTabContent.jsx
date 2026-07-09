@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { Spinner, Alert } from 'react-bootstrap';
 import { useReportData } from '../reporting/hooks/useReportData';
 import ChartsCarousel from '../reporting/components/ChartsCarousel';
@@ -123,3 +124,14 @@ function ReportsTabContent({ transactions, startDate, endDate }) {
 }
 
 export default ReportsTabContent;
+
+ReportsTabContent.propTypes = {
+    transactions: PropTypes.arrayOf(PropTypes.object).isRequired,
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+};
+
+ReportsTabContent.defaultProps = {
+    startDate: null,
+    endDate: null,
+};
