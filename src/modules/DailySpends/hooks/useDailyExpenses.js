@@ -3,17 +3,11 @@ import { useDispatch } from 'react-redux';
 import { setTransactions, appendTransaction, patchTransaction, removeTransaction as removeTransactionRedux } from '../../../redux/dailySpendsSlice';
 import {
     getTransactions,
-    getTransactionsByType,
     addTransaction,
     deleteTransaction,
     updateTransaction,
-    getTransactionSummary
 } from '../../../hooks/useDailySpends';
-import {
-    addBorrowLendRecord,
-    applyBorrowLendRepayment
-} from '../../BorrowLend/utils/borrowLendFirestore';
-import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
+import { syncDailySpendTransactionToBorrowLend } from '../../BorrowLend/utils/dailySpendSync';
 import useCategoryContext from './useCategoryContext';
 import {
     buildDisabledCategoryLookup,
@@ -87,49 +81,7 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
             dispatch(appendTransaction(result));
             if (companion) dispatch(appendTransaction(companion));
 
-            const normalizedCategory = (newTransaction.category || '').toLowerCase();
-            const personName = newTransaction.name || newTransaction.categoryName || 'Unknown';
-            const dueDate = newTransaction.dueDate || null;
-            const transactionDate = newTransaction.date || formatLocalDate(new Date());
-
-            if (normalizedCategory === 'lent') {
-                await addBorrowLendRecord({
-                    personName,
-                    amount: newTransaction.amount,
-                    type: TRANSACTION_TYPES.GAVE,
-                    date: transactionDate,
-                    dueDate,
-                    description: newTransaction.notes || ''
-                });
-            } else if (normalizedCategory === 'borrowed') {
-                await addBorrowLendRecord({
-                    personName,
-                    amount: newTransaction.amount,
-                    type: TRANSACTION_TYPES.TOOK,
-                    date: transactionDate,
-                    dueDate,
-                    description: newTransaction.notes || ''
-                });
-            } else if (normalizedCategory === 'repayment') {
-                await applyBorrowLendRepayment({
-                    personName,
-                    repaymentAmount: newTransaction.amount,
-                    type: TRANSACTION_TYPES.GAVE,
-                    date: transactionDate,
-                    description: newTransaction.notes || '',
-                    normalizedCategory
-                });
-            } else if (normalizedCategory === 'borrowed pay') {
-                await applyBorrowLendRepayment({
-                    personName,
-                    repaymentAmount: newTransaction.amount,
-                    type: TRANSACTION_TYPES.TOOK,
-                    date: transactionDate,
-                    description: newTransaction.notes || '',
-                    normalizedCategory
-                });
-            }
-
+            await syncDailySpendTransactionToBorrowLend(newTransaction);
 
             return result;
         } catch (err) {

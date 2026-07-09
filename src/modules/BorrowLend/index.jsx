@@ -17,6 +17,7 @@ import { addBorrowLendRecord } from './utils/borrowLendFirestore';
 import { TRANSACTION_TYPES } from './constants/transactionTypes';
 import { buildPeopleLedger, buildPersonTimeline } from './utils/ledgerViewModel';
 import { borrowLendApi } from '../../services/api/borrowLendApi';
+import { addBorrowLendTransactionToDailySpend, getBorrowLendDailySpendKind } from './utils/dailySpendSync';
 import { buildWhatsAppReminderMessage, openWhatsAppApp, openWhatsAppChat } from './utils/whatsappHelper';
 import { validateWhatsAppMobileNumber } from './utils/validationHelper';
 import styles from './styles/BorrowLend.module.scss';
@@ -49,9 +50,33 @@ function BorrowLend() {
     } = lendingHook;
 
     const people = useMemo(() => buildPeopleLedger(transactions), [transactions]);
+    const activeSelectedPerson = useMemo(() => {
+        if (!selectedPerson) return null;
+
+        const latestPerson = people.find((person) =>
+            person.key === selectedPerson.key ||
+            (
+                person.personName === selectedPerson.personName &&
+                person.type === selectedPerson.type
+            )
+        );
+
+        if (latestPerson) return latestPerson;
+
+        return {
+            ...selectedPerson,
+            totalLent: 0,
+            totalBorrowed: 0,
+            totalReturned: 0,
+            remaining: 0,
+            dueDate: null,
+            status: 'Settled',
+            transactionCount: 0,
+        };
+    }, [people, selectedPerson]);
     const selectedTransactions = useMemo(
-        () => buildPersonTimeline(expandedTransactions, selectedPerson),
-        [expandedTransactions, selectedPerson]
+        () => buildPersonTimeline(expandedTransactions, activeSelectedPerson),
+        [expandedTransactions, activeSelectedPerson]
     );
 
     const formatAmount = (amount) => `${currencySymbol}${Number(amount || 0).toLocaleString('en-IN', {
@@ -105,42 +130,63 @@ function BorrowLend() {
         if (kind === 'borrow') setFormState({ kind: 'add', type: TRANSACTION_TYPES.TOOK });
         if (kind === 'return') setFormState({
             kind: 'return',
-            selectedPersonId: selectedPerson?.id || '',
-            selectedPerson: selectedPerson?.personName || '',
-            remainingAmount: selectedPerson?.remaining || 0,
-            mobileNumber: selectedPerson?.mobileNumber || '',
-            email: selectedPerson?.email || '',
-            dueDate: selectedPerson?.dueDate || null,
+            selectedPersonId: activeSelectedPerson?.id || '',
+            selectedPerson: activeSelectedPerson?.personName || '',
+            remainingAmount: activeSelectedPerson?.remaining || 0,
+            mobileNumber: activeSelectedPerson?.mobileNumber || '',
+            email: activeSelectedPerson?.email || '',
+            dueDate: activeSelectedPerson?.dueDate || null,
         });
         if (kind === 'repay') setFormState({
             kind: 'repay',
-            selectedPersonId: selectedPerson?.id || '',
-            selectedPerson: selectedPerson?.personName || '',
-            remainingAmount: selectedPerson?.remaining || 0,
-            mobileNumber: selectedPerson?.mobileNumber || '',
-            email: selectedPerson?.email || '',
-            dueDate: selectedPerson?.dueDate || null,
+            selectedPersonId: activeSelectedPerson?.id || '',
+            selectedPerson: activeSelectedPerson?.personName || '',
+            remainingAmount: activeSelectedPerson?.remaining || 0,
+            mobileNumber: activeSelectedPerson?.mobileNumber || '',
+            email: activeSelectedPerson?.email || '',
+            dueDate: activeSelectedPerson?.dueDate || null,
         });
     };
 
     const handleAddTransaction = async (newTransaction) => {
         try {
-            const savedRecord = await addBorrowLendRecord(newTransaction);
+            const { syncToDailySpend, ...borrowLendTransaction } = newTransaction;
+            const savedRecord = await addBorrowLendRecord(borrowLendTransaction);
+            let dailySpendSynced = false;
+
+            if (syncToDailySpend) {
+                try {
+                    await addBorrowLendTransactionToDailySpend({
+                        kind: getBorrowLendDailySpendKind({ type: borrowLendTransaction.type }),
+                        personName: borrowLendTransaction.personName,
+                        amount: borrowLendTransaction.amount,
+                        date: borrowLendTransaction.date,
+                        dueDate: borrowLendTransaction.dueDate,
+                        description: borrowLendTransaction.description,
+                    });
+                    dailySpendSynced = true;
+                } catch (syncError) {
+                    console.error('Daily Spend sync failed:', syncError);
+                    toast.warning('Transaction saved in Borrow/Lend, but could not be added to Daily Spend.');
+                }
+            }
+
             closeForm();
             await refreshTransactions();
-            toast.success('Transaction added successfully');
+            toast.success(dailySpendSynced ? 'Transaction added to Borrow/Lend and Daily Spend' : 'Transaction added successfully');
             openReminderFlow({
                 id: savedRecord?.id || savedRecord?.entry?.id || '',
-                personName: newTransaction.personName,
-                mobileNumber: newTransaction.mobileNumber || '',
-                email: newTransaction.email || '',
-                remaining: Number(newTransaction.amount || 0),
-                dueDate: newTransaction.dueDate || null,
-                whatsAppContext: newTransaction.type === TRANSACTION_TYPES.TOOK ? 'new-took' : 'new-gave',
+                personName: borrowLendTransaction.personName,
+                mobileNumber: borrowLendTransaction.mobileNumber || '',
+                email: borrowLendTransaction.email || '',
+                remaining: Number(borrowLendTransaction.amount || 0),
+                dueDate: borrowLendTransaction.dueDate || null,
+                whatsAppContext: borrowLendTransaction.type === TRANSACTION_TYPES.TOOK ? 'new-took' : 'new-gave',
             }, { confirmBeforeOpen: true });
         } catch (err) {
             console.error('Error adding transaction:', err);
             toast.error('Failed to add transaction');
+            throw err;
         }
     };
 
@@ -269,17 +315,17 @@ function BorrowLend() {
         <Container className={styles.container}>
             <Row>
                 <Col lg={5} md={7} sm={9} className="mx-auto">
-                    {selectedPerson ? (
+                    {activeSelectedPerson ? (
                         <PersonLedger
-                            person={selectedPerson}
+                            person={activeSelectedPerson}
                             transactions={selectedTransactions}
                             formatAmount={formatAmount}
                             onBack={() => setSelectedPerson(null)}
-                            onRecordReturn={() => openAction(selectedPerson.type === TRANSACTION_TYPES.GAVE ? 'return' : 'repay')}
+                            onRecordReturn={() => openAction(activeSelectedPerson.type === TRANSACTION_TYPES.GAVE ? 'return' : 'repay')}
                             onWhatsAppReminder={() => {
-                                openReminderFlow(selectedPerson);
+                                openReminderFlow(activeSelectedPerson);
                             }}
-                            onUpdateContact={() => setContactPerson(selectedPerson)}
+                            onUpdateContact={() => setContactPerson(activeSelectedPerson)}
                             onEdit={showEditUnavailable}
                             onView={setTransactionDetails}
                             onDelete={setTransactionToDelete}
