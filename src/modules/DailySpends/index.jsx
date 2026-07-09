@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
-import { PlusLg } from 'react-bootstrap-icons';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import useCategoryContext from './hooks/useCategoryContext';
 import { useSelectedDateRange } from './hooks/useSelectedDateRange';
@@ -13,9 +12,9 @@ import ExpenseList from './components/ExpenseList';
 import DateRangePicker from './components/DateRangePicker';
 import TimeSummarySection from './components/TimeSummarySection';
 import styles from './styles/DailySpends.module.scss';
-import fabStyles from './styles/FAB.module.scss';
 import { toast } from 'react-toastify';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
+import FloatingActionButton from '../../components/common/FloatingActionButton';
 import { DailySpendTabsList } from '../../Util';
 import CategoryManager from './components/CategoryManager';
 import LimitsManager from './LimitsManager';
@@ -410,15 +409,7 @@ function DailySpends() {
                 </Col>
             </Row>
 
-            {/* ── Floating Action Button ── */}
-            <button
-                type="button"
-                className={fabStyles.fab}
-                onClick={handleFAB}
-                aria-label="Add new transaction"
-            >
-                <PlusLg size={22} />
-            </button>
+            <FloatingActionButton onClick={handleFAB} ariaLabel="Add new transaction" fixed />
         </Container>
     );
 }
