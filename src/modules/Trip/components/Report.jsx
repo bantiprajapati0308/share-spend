@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { getCurrencySymbol, DEFAULT_CURRENCY, DISABLED_FLAG } from '../../../Util';
 import styles from '../../../assets/scss/Report.module.scss';
@@ -8,13 +8,11 @@ import { filterExpenses } from '../../../utils/expenseFilterUtils';
 
 // Import components that are still directly used
 import ParticipantsModal from './report/ParticipantsModal';
-import ExportActions from './report/ExportActions';
 import SettlementModal from './report/settlement/SettlementModal';
 import ToastNotification from '../../../components/common/ToastNotification';
 
 // Import hooks and utilities
 import useReportCalculations from '../hooks/useReportCalculations';
-import { generateExcelReport } from '../utils/excelExport';
 import useSettlements from '../hooks/useSettlements';
 
 // Import report utilities
@@ -47,7 +45,7 @@ function Report() {
     // Basic state
     const [members, setMembers] = useState([]);
     const [expenses, setExpenses] = useState([]);
-    const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
+    const [currency] = useState(DEFAULT_CURRENCY);
     const [loadingReport, setLoadingReport] = useState(true);
 
     // Initialize states using utilities
@@ -74,7 +72,6 @@ function Report() {
         settlements,
         addSettlement,
         removeSettlement,
-        getTotalSettled,
         getSettlementHistory,
         refreshSettlements
     } = useSettlements(tripId);
@@ -156,11 +153,6 @@ function Report() {
         showErrorToast
     });
 
-    // Excel export handler
-    const handleExportExcel = () => {
-        generateExcelReport(expenses, spentAmounts, balances, totalExpense, transactions);
-    };
-
     // Apply filters to expenses
     const filteredExpenses = filterExpenses(expenses, expenseFilters);
 
@@ -194,7 +186,6 @@ function Report() {
                                 {getCurrencySymbol(currency)}{totalExpense.toFixed(2)}
                             </strong>
                         </h5>
-                        <ExportActions onExportExcel={handleExportExcel} />
                     </Col>
                 </Row>
 
