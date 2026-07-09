@@ -2,7 +2,7 @@ import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ArrowLeftRight, ChevronRight, PieChart, Wallet, XCircleFill } from 'react-bootstrap-icons';
 import { formatCurrencyINR } from '../../../Util';
-import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
+import CategoryDetailsModal from '../reporting/components/CategoryDetailsModal';
 import TransactionTypeSelector from './common/TransactionTypeSelector';
 import styles from '../styles/AnalyticsTab.module.scss';
 import { formatLocalDate } from '../utils/dateUtils';

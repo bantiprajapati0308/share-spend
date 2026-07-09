@@ -1,0 +1,48 @@
+@use '../../../../assets/scss/variables' as *;
+
+.categoryModal {
+    :global(.modal-content) {
+        border: 0;
+        border-radius: $radius-2xl;
+        box-shadow: $shadow-xl;
+        overflow: hidden;
+    }
+}
+
+.modalTitle {
+    color: $neutral-900;
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+}
+
+.categoryIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-full;
+    background: $gradient-primary;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $spacing-3;
+}
+
+.modalBody {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.transactionsList {
+    background: $bg-primary;
+}
+
+.transactionItem {
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: $neutral-50;
+    }
+}
+
+.brandIcon {
+    flex: 0 0 auto;
+}

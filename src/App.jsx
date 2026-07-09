@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { auth } from './firebase';
 import { ensureUserProfile } from './hooks/useUserProfile';
 import TopBar from './components/TopBar';
@@ -12,8 +12,6 @@ import AuthModule from './modules/Auth';
 import DailySpends from './modules/DailySpends';
 import BorrowLend from './modules/BorrowLend';
 import HelpCenter from './modules/HelpCenter';
-import BreakdownReport from './modules/DailySpends/components/BreakdownReport';
-import MasterReport from './modules/DailySpends/MasterReport';
 import SecuritySettings from './pages/settings/security/SecuritySettings';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
@@ -24,13 +22,6 @@ import JoinTripDialog from './modules/Trip/components/JoinTripDialog';
 import useInviteCheck from './modules/Trip/hooks/useInviteCheck';
 import { SecurityProvider } from './context/SecurityContext.jsx';
 import ProtectedRoute from './routes/ProtectedRoute';
-
-// MasterReport wrapper to handle location state
-function MasterReportWrapper() {
-  const location = useLocation();
-  const { startDate, endDate } = location.state || {};
-  return <MasterReport startDate={startDate} endDate={endDate} />;
-}
 
 const IS_MAINTENANCE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 
@@ -90,8 +81,6 @@ function AppContent({ user }) {
             <Route path="/expenses/:tripId" element={<Expense />} />
             <Route path="/report/:tripId" element={<Report />} />
             <Route path="/daily-expenses" element={<DailySpends />} />
-            <Route path="/breakdown-report" element={<BreakdownReport />} />
-            <Route path="/daily-expenses/master-report" element={<MasterReportWrapper />} />
             <Route path="/lending" element={<BorrowLend />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/settings/security" element={<SecuritySettings />} />

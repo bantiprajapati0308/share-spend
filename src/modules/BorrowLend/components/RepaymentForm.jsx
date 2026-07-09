@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Col, Row } from 'react-bootstrap';
-import { ArrowLeft, InfoCircle } from 'react-bootstrap-icons';
+import { Col, Row, Spinner } from 'react-bootstrap';
+import { ArrowLeft, InfoCircle, Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 import { applyBorrowLendRepayment } from '../utils/borrowLendFirestore';
+import {
+    addBorrowLendTransactionToDailySpend,
+    DAILY_SPEND_SYNC_CHOICES,
+    getBorrowLendDailySpendKind,
+} from '../utils/dailySpendSync';
 import { getInitials } from '../utils/ledgerViewModel';
 import styles from '../styles/TransactionForm.module.scss';
 
@@ -16,6 +21,8 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
+    const [dailySpendSyncChoice, setDailySpendSyncChoice] = useState('');
+    const [dailySpendSyncError, setDailySpendSyncError] = useState('');
 
     const isReturn = mode === 'return';
     const recordType = isReturn ? TRANSACTION_TYPES.GAVE : TRANSACTION_TYPES.TOOK;
@@ -41,6 +48,13 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
             return;
         }
 
+        if (!dailySpendSyncChoice) {
+            const message = 'Please choose whether you want to add this transaction to your Daily Spend records.';
+            setDailySpendSyncError(message);
+            toast.error(message);
+            return;
+        }
+
         const repaymentAmount = settleFull && remainingAmount ? remainingAmount : parseFloat(amount);
         if (!repaymentAmount || repaymentAmount <= 0) {
             toast.error('Please enter a valid amount');
@@ -56,7 +70,26 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
                 description,
                 type: recordType,
             });
-            toast.success(isReturn ? 'Return recorded' : 'Repayment recorded');
+            let dailySpendSynced = false;
+            if (dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES) {
+                try {
+                    await addBorrowLendTransactionToDailySpend({
+                        kind: getBorrowLendDailySpendKind({ mode }),
+                        personName: personName.trim(),
+                        amount: repaymentAmount,
+                        date,
+                        description,
+                    });
+                    dailySpendSynced = true;
+                } catch (syncError) {
+                    console.error('Daily Spend sync failed:', syncError);
+                    toast.warning(`${isReturn ? 'Return' : 'Repayment'} saved in Borrow/Lend, but could not be added to Daily Spend.`);
+                }
+            }
+
+            toast.success(dailySpendSynced
+                ? `${isReturn ? 'Return' : 'Repayment'} recorded in Borrow/Lend and Daily Spend`
+                : `${isReturn ? 'Return' : 'Repayment'} recorded`);
             onSaved({
                 ...savedRepayment,
                 personName: personName.trim(),
@@ -156,18 +189,6 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
                 />
             </div>
 
-            {/* Payment method hidden for now. Keep this block ready for the next UI pass.
-            <div className={styles.group}>
-                <label>Payment Method</label>
-                <div className={styles.paymentMethods}>
-                    <button type="button" className={styles.selectedMethod}>Cash</button>
-                    <button type="button">UPI</button>
-                    <button type="button">Bank</button>
-                    <button type="button">+ Other</button>
-                </div>
-            </div>
-            */}
-
             <div className={styles.group}>
                 <label>Notes</label>
                 <textarea
@@ -178,6 +199,37 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
                 />
             </div>
 
+            <section className={styles.syncChoiceCard}>
+                <h4>Do you want to add this transaction to your Daily Spend records?</h4>
+                <label className={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES ? styles.selectedSyncOption : ''}>
+                    <input
+                        type="radio"
+                        name="dailySpendSync"
+                        value={DAILY_SPEND_SYNC_CHOICES.YES}
+                        checked={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES}
+                        onChange={(event) => {
+                            setDailySpendSyncChoice(event.target.value);
+                            setDailySpendSyncError('');
+                        }}
+                    />
+                    <span>Yes, add to Daily Spend</span>
+                </label>
+                <label className={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.NO ? styles.selectedSyncOption : ''}>
+                    <input
+                        type="radio"
+                        name="dailySpendSync"
+                        value={DAILY_SPEND_SYNC_CHOICES.NO}
+                        checked={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.NO}
+                        onChange={(event) => {
+                            setDailySpendSyncChoice(event.target.value);
+                            setDailySpendSyncError('');
+                        }}
+                    />
+                    <span>No, only save in Borrow/Lend</span>
+                </label>
+                {dailySpendSyncError && <p>{dailySpendSyncError}</p>}
+            </section>
+
             <div className={styles.buttonRow}>
                 <button type="button" className={styles.secondaryButton} disabled={saving} onClick={() => handleSubmit(false)}>
                     {saving ? 'Saving...' : copy.partialLabel}
@@ -187,9 +239,19 @@ function RepaymentForm({ mode, selectedPerson, remainingAmount, onSaved, onCance
                 </button>
             </div>
             <button type="button" className={styles.primaryButton} onClick={() => handleSubmit(false)} disabled={saving}>
-                Review
+                {saving ? (
+                    <>
+                        <Spinner animation="border" size="sm" />
+                        Saving...
+                    </>
+                ) : (
+                    <>
+                        <Plus size={17} />
+                        Add Transaction
+                    </>
+                )}
             </button>
-            <button type="button" className={styles.cancelButton} onClick={onCancel}>Cancel</button>
+            <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={saving}>Cancel</button>
         </div>
     );
 }

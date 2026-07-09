@@ -218,58 +218,6 @@ const updateContact = async (req, res) => {
     }
 };
 
-// PATCH /api/borrow-lend/entries/:uuid/archive
-const archiveEntry = async (req, res) => {
-    try {
-        const docSnap = await findDocByEntryUuid(req.uid, req.params.uuid);
-        if (!docSnap) return notFound(res, 'Entry not found');
-
-        const entries = (docSnap.data().data || []).map((e) =>
-            e.uuid === req.params.uuid ? { ...e, archived: true, archivedAt: new Date().toISOString() } : e
-        );
-        await docSnap.ref.update({ data: entries });
-        ok(res, { archived: true });
-    } catch (e) {
-        fail(res, e.message);
-    }
-};
-
-// PATCH /api/borrow-lend/entries/:uuid/unarchive
-const unarchiveEntry = async (req, res) => {
-    try {
-        const docSnap = await findDocByEntryUuid(req.uid, req.params.uuid);
-        if (!docSnap) return notFound(res, 'Entry not found');
-
-        const entries = (docSnap.data().data || []).map((e) => {
-            if (e.uuid !== req.params.uuid) return e;
-            const { archived, archivedAt, ...rest } = e;
-            return rest;
-        });
-        await docSnap.ref.update({ data: entries });
-        ok(res, { unarchived: true });
-    } catch (e) {
-        fail(res, e.message);
-    }
-};
-
-// PATCH /api/borrow-lend/entries/:uuid/mark-done
-const toggleMarkDone = async (req, res) => {
-    try {
-        const docSnap = await findDocByEntryUuid(req.uid, req.params.uuid);
-        if (!docSnap) return notFound(res, 'Entry not found');
-
-        const entries = (docSnap.data().data || []).map((e) => {
-            if (e.uuid !== req.params.uuid) return e;
-            const isDone = !e.markAsDone;
-            return { ...e, markAsDone: isDone, markedDoneAt: isDone ? new Date().toISOString() : null };
-        });
-        await docSnap.ref.update({ data: entries });
-        ok(res, { toggled: true });
-    } catch (e) {
-        fail(res, e.message);
-    }
-};
-
 // DELETE /api/borrow-lend/entries/:uuid
 const deleteEntry = async (req, res) => {
     try {
@@ -281,7 +229,10 @@ const deleteEntry = async (req, res) => {
         if (filtered.length === 0) {
             await docSnap.ref.delete();
         } else {
-            await docSnap.ref.update({ data: filtered });
+            await docSnap.ref.update({
+                data: filtered,
+                entryUuids: filtered.map((entry) => entry.uuid).filter(Boolean),
+            });
         }
         ok(res, { deleted: true });
     } catch (e) {
@@ -289,4 +240,4 @@ const deleteEntry = async (req, res) => {
     }
 };
 
-module.exports = { getRecords, getPersonNames, addRecord, addRepayment, updateContact, archiveEntry, unarchiveEntry, toggleMarkDone, deleteEntry };
+module.exports = { getRecords, getPersonNames, addRecord, addRepayment, updateContact, deleteEntry };

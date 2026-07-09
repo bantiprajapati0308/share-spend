@@ -1,19 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { borrowLendApi } from '../../../services/api/borrowLendApi';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
-import { addBorrowLendRecord } from '../utils/borrowLendFirestore';
-import {
-    getDueTrackingTransactions,
-    getDueStatus,
-    getUpcomingTransactions,
-    getOverdueTransactions
-} from '../utils/dueDateUtils';
-import {
-    archiveEntryByUuid,
-    unarchiveEntryByUuid,
-    toggleMarkAsDoneByUuid,
-    deleteEntryByUuid
-} from '../utils/firebaseOperations';
+import { deleteEntryByUuid } from '../utils/firebaseOperations';
 
 
 const expandTransactionsFromRecords = (records) => {
@@ -34,10 +22,6 @@ const expandTransactionsFromRecords = (records) => {
                 dueDate: entry.due_date || null,
                 description: entry.description || '',
                 paymentType: entry.payment_type || (record.type === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed'),
-                archived: entry.archived || false,
-                archivedAt: entry.archivedAt || null,
-                markAsDone: entry.markAsDone || false,
-                markedDoneAt: entry.markedDoneAt || null,
             });
         });
     });
@@ -82,23 +66,6 @@ export const useLendingTransactions = () => {
         }
     };
 
-    const addTransaction = async (transactionData) => {
-        try {
-            await addBorrowLendRecord({
-                personName: transactionData.personName,
-                amount: transactionData.amount,
-                type: transactionData.type,
-                date: transactionData.date,
-                dueDate: transactionData.dueDate,
-                description: transactionData.description,
-            });
-            await fetchTransactions();
-        } catch (err) {
-            console.error('Error adding lending transaction:', err);
-            throw err;
-        }
-    };
-
     const deleteTransaction = async (entryUuid) => {
         return deleteEntryByUuid(entryUuid, fetchTransactions);
     };
@@ -139,163 +106,14 @@ export const useLendingTransactions = () => {
         return Math.round(total * 100) / 100;
     };
 
-    const getNetBalance = () => {
-        const given = getTotalGiven();
-        const taken = getTotalTaken();
-        return Math.round((given - taken) * 100) / 100;
-    };
-
-    // Count unique people with outstanding > 0 (excludes fully paid)
-    const getGivenPeopleCount = () => {
-        const seen = new Set();
-        transactions
-            .filter(t => t.type === TRANSACTION_TYPES.GAVE && computeRecordTotals(t).outstanding > 0)
-            .forEach(t => seen.add(t.personName));
-        return seen.size;
-    };
-
-    const getTakenPeopleCount = () => {
-        const seen = new Set();
-        transactions
-            .filter(t => t.type === TRANSACTION_TYPES.TOOK && computeRecordTotals(t).outstanding > 0)
-            .forEach(t => seen.add(t.personName));
-        return seen.size;
-    };
-
     const expandedTransactions = useMemo(() => expandTransactionsFromRecords(transactions), [transactions]);
-
-    // Compute record totals by type for due tracking
-    const recordTotals = useMemo(() => {
-        const totals = {
-            [TRANSACTION_TYPES.GAVE]: [],
-            [TRANSACTION_TYPES.TOOK]: []
-        };
-
-        // Group transactions by type and person
-        Object.keys(totals).forEach(type => {
-            const recordsOfType = transactions.filter(t => t.type === type);
-
-            recordsOfType.forEach(record => {
-                const computed = computeRecordTotals(record);
-                totals[type].push({
-                    person: record.personName,
-                    ...computed
-                });
-            });
-        });
-
-        return totals;
-    }, [transactions]);
-
-    const getFilteredTransactions = (filterType) => {
-        if (filterType === 'all') return expandedTransactions;
-        return expandedTransactions.filter(t => t.type === filterType);
-    };
-
-    const getUniquePersonNames = () => {
-        const names = new Set();
-        transactions.forEach(record => {
-            if (record.personName && record.personName.trim()) {
-                names.add(record.personName.trim());
-            }
-        });
-        return Array.from(names).sort();
-    };
-
-    // Archive functionality
-    const archiveTransaction = async (entryUuid) => {
-        return archiveEntryByUuid(entryUuid, fetchTransactions);
-    };
-
-    // Mark as done functionality
-    const markTransactionAsDone = async (entryUuid) => {
-        return toggleMarkAsDoneByUuid(entryUuid, fetchTransactions);
-    };
-
-    const unarchiveTransaction = async (entryUuid) => {
-        return unarchiveEntryByUuid(entryUuid, fetchTransactions);
-    };
-
-    // Due tracking functionality
-    const getActiveTransactions = () => {
-        return expandedTransactions.filter(t => !t.archived && !t.markAsDone);
-    };
-
-    const getArchivedTransactions = () => {
-        return expandedTransactions.filter(t => t.archived);
-    };
-
-    const getDueTrackingData = () => {
-        const activeTransactions = getActiveTransactions();
-        return getDueTrackingTransactions(activeTransactions);
-    };
-
-    const getDueTrackingByType = (transactionType) => {
-        const activeTransactions = getActiveTransactions().filter(t => t.type === transactionType);
-
-        // Create a function to get outstanding amount for a specific person/type
-        const getOutstandingForPerson = (personName, type) => {
-            const records = recordTotals[type] || [];
-            const personRecord = records.find(record => record.person === personName);
-            return personRecord ? Math.abs(personRecord.outstanding) : 0;
-        };
-
-        return getDueTrackingTransactions(activeTransactions, getOutstandingForPerson);
-    };
-
-    const getUpcomingDues = (transactionType = null) => {
-        const transactions = transactionType
-            ? getActiveTransactions().filter(t => t.type === transactionType)
-            : getActiveTransactions();
-
-        // Create a function to get outstanding amount for a specific person/type
-        const getOutstandingForPerson = (personName, type) => {
-            const records = recordTotals[type] || [];
-            const personRecord = records.find(record => record.person === personName);
-            return personRecord ? Math.abs(personRecord.outstanding) : 0;
-        };
-
-        return getUpcomingTransactions(transactions, getOutstandingForPerson);
-    };
-
-    const getOverdueDues = (transactionType = null) => {
-        const transactions = transactionType
-            ? getActiveTransactions().filter(t => t.type === transactionType)
-            : getActiveTransactions();
-
-        // Create a function to get outstanding amount for a specific person/type
-        const getOutstandingForPerson = (personName, type) => {
-            const records = recordTotals[type] || [];
-            const personRecord = records.find(record => record.person === personName);
-            return personRecord ? Math.abs(personRecord.outstanding) : 0;
-        };
-
-        return getOverdueTransactions(transactions, getOutstandingForPerson);
-    };
 
     return {
         transactions,
         expandedTransactions,
-        addTransaction,
         deleteTransaction,
         getTotalGiven,
         getTotalTaken,
-        getNetBalance,
-        getGivenPeopleCount,
-        getTakenPeopleCount,
-        getFilteredTransactions,
-        getUniquePersonNames,
-        // Archive functionality
-        archiveTransaction,
-        unarchiveTransaction,
-        getActiveTransactions,
-        getArchivedTransactions,
-        markTransactionAsDone,
-        // Due tracking functionality
-        getDueTrackingData,
-        getDueTrackingByType,
-        getUpcomingDues,
-        getOverdueDues,
         loading,
         error,
         refreshTransactions: fetchTransactions,

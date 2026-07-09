@@ -50,7 +50,7 @@ const buildLegendRanges = (maxAmount, secondMax) => {
  * Renders a calendar grid where each day is colour-coded by total spend / income.
  * Clicking a day with transactions opens a TimeSummaryDetailModal.
  *
- * @param {Array}  transactions    - Full transaction list (from useMasterReportData)
+ * @param {Array}  transactions    - Full transaction list for the active report range
  * @param {string} transactionType - 'spend' | 'income'
  * @param {Date}   startDate       - Range start (optional)
  * @param {Date}   endDate         - Range end   (optional)

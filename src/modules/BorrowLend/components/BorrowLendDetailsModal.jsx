@@ -18,7 +18,6 @@ function BorrowLendDetailsModal({ transaction, show, onHide, formatAmount }) {
                     <div><span>Amount</span><strong>{formatAmount(transaction.amount)}</strong></div>
                     <div><span>Date</span><strong>{formatLedgerDate(transaction.date)}</strong></div>
                     <div><span>Due Date</span><strong>{formatLedgerDate(transaction.dueDate)}</strong></div>
-                    <div><span>Status</span><strong>{transaction.markAsDone ? 'Done' : 'Active'}</strong></div>
                     {transaction.description && (
                         <div><span>Notes</span><strong>{transaction.description}</strong></div>
                     )}

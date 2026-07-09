@@ -7,7 +7,7 @@ import useLimitsManager from './hooks/useLimitsManager';
 import { useSelectedDateRange } from '../hooks/useSelectedDateRange';
 import LimitsPanel from './components/LimitsPanel';
 import LimitForm from './components/LimitForm';
-import CategoryDetailsModal from '../MasterReport/components/CategoryDetailsModal';
+import CategoryDetailsModal from '../reporting/components/CategoryDetailsModal';
 import TransactionTypeSelector from '../components/common/TransactionTypeSelector';
 import styles from './styles/LimitsManager.module.scss';
 import useCategoryContext from '../hooks/useCategoryContext';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { CashCoin, InfoCircle, Plus, ShieldCheck } from 'react-bootstrap-icons';
+import { CashCoin, Plus, ShieldCheck } from 'react-bootstrap-icons';
+import FloatingActionButton from '../../../components/common/FloatingActionButton';
 import styles from '../styles/FloatingActionMenu.module.scss';
 
 const actions = [
@@ -33,9 +34,13 @@ function FloatingActionMenu({ onAction }) {
                         <i className={styles[tone]}><Icon size={16} /></i>
                     </button>
                 ))}
-                <button type="button" className={styles.fab} onClick={() => setOpen((value) => !value)} aria-label="Quick actions">
+                <FloatingActionButton
+                    onClick={() => setOpen((value) => !value)}
+                    ariaLabel="Quick actions"
+                    expanded={open}
+                >
                     <Plus size={24} />
-                </button>
+                </FloatingActionButton>
             </div>
         </div>
     );
