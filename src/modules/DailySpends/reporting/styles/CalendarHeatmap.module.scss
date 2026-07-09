@@ -1,5 +1,8 @@
-@use 'variables' as *;
-@use 'mixins' as *;
+@use '../../../../assets/scss/variables' as *;
+
+$text-secondary: $neutral-600;
+$text-muted: $neutral-500;
+$text-primary: $neutral-900;
 
 // ── Color Levels ────────────────────────────────────────────────────────────
 // Light backgrounds → dark text | Dark backgrounds → white text

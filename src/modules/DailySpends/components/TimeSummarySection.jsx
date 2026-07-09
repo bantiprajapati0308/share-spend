@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { GraphUpArrow, ArrowUp, ArrowDown, Dash } from 'react-bootstrap-icons';
 import { formatCurrencyINR } from '../../../Util';
 import { useTimeSummary } from '../hooks/useTimeSummary';
-import TimeSummaryDetailModal from '../MasterReport/components/TimeSummaryDetailModal';
+import TimeSummaryDetailModal from '../reporting/components/TimeSummaryDetailModal';
 import styles from '../styles/TimeSummarySection.module.scss';
 
 // ── Today's date mini-badge ─────────────────────────────────────────────────

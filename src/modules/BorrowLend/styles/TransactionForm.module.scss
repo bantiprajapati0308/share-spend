@@ -218,28 +218,64 @@
     }
 }
 
-.paymentMethods {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 15px;
+.syncChoiceCard {
+    border: 1px solid #dbe5f7;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 2px 0 14px;
+    background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 
-    button {
-        border: 1px solid #dbe5f7;
-        border-radius: 9px;
+    h4 {
+        margin: 0 0 10px;
+        color: #071336;
+        font-size: 12px;
+        font-weight: 950;
+        line-height: 1.35;
+    }
+
+    label {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid #e5ecfb;
+        border-radius: 10px;
+        padding: 9px 11px;
+        margin: 0 0 8px;
         background: #ffffff;
         color: #071336;
-        min-height: 34px;
-        padding: 0 10px;
-        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
         font-weight: 850;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
     }
 
-    .selectedMethod {
-        border-color: #10b981;
-        color: #047857;
-        background: #eafaf2;
+    input {
+        width: 16px;
+        height: 16px;
+        accent-color: #2563eb;
+        flex: 0 0 auto;
     }
+
+    p {
+        margin: 9px 0 0;
+        color: #dc2626;
+        font-size: 11px;
+        font-weight: 850;
+        line-height: 1.35;
+    }
+}
+
+.selectedSyncOption {
+    border-color: #2563eb !important;
+    background: #eff6ff !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .summaryCard {
@@ -348,6 +384,15 @@
     color: #fff;
     background: linear-gradient(135deg, #2f6bff 0%, #1f5eff 100%);
     box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    &:disabled {
+        opacity: 0.72;
+        cursor: not-allowed;
+    }
 }
 
 .cancelButton {

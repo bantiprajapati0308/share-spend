@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Spinner, Alert } from 'react-bootstrap';
-import { useMasterReportData } from '../MasterReport/hooks/useMasterReportData';
-import ChartsCarousel from '../MasterReport/components/ChartsCarousel';
+import { useReportData } from '../reporting/hooks/useReportData';
+import ChartsCarousel from '../reporting/components/ChartsCarousel';
 
 function ReportsTabContent({ transactions, startDate, endDate }) {
     const [chartTransactionType, setChartTransactionType] = useState('spend');
 
-    const reportData = useMasterReportData(startDate, endDate, transactions);
+    const reportData = useReportData(startDate, endDate, transactions);
 
     const weeklyDataObj = useMemo(
         () => reportData.getWeeklyBreakdownData(chartTransactionType),

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col } from 'react-bootstrap';
-import { ArrowLeft, InfoCircle } from 'react-bootstrap-icons';
+import { Row, Col, Spinner } from 'react-bootstrap';
+import { ArrowLeft, InfoCircle, Plus } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '../styles/TransactionForm.module.scss';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import { TRANSACTION_TYPES, getTransactionTypeLabel } from '../constants/transactionTypes';
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import { primeBorrowLendPersonContact, primeBorrowLendPersonName } from '../hooks/useBorrowLendPersonNames';
+import { DAILY_SPEND_SYNC_CHOICES } from '../utils/dailySpendSync';
 
 function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.GAVE, contactPeople = [], onCancel = null }) {
     const [personName, setPersonName] = useState('');
@@ -17,6 +18,9 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
     const [description, setDescription] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
     const [email, setEmail] = useState('');
+    const [dailySpendSyncChoice, setDailySpendSyncChoice] = useState('');
+    const [dailySpendSyncError, setDailySpendSyncError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const type = initialType;
 
     const actionInfo = type === TRANSACTION_TYPES.GAVE
@@ -39,6 +43,13 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
             return;
         }
 
+        if (!dailySpendSyncChoice) {
+            const message = 'Please choose whether you want to add this transaction to your Daily Spend records.';
+            setDailySpendSyncError(message);
+            toast.error(message);
+            return;
+        }
+
         if (dueDate && new Date(dueDate) < new Date(date)) {
             toast.error('Due date cannot be before transaction date');
             return;
@@ -54,25 +65,33 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
             description: description,
             mobileNumber,
             email,
+            syncToDailySpend: dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES,
             createdAt: new Date().toISOString(),
         };
 
-        await onAddTransaction(newTransaction);
-        primeBorrowLendPersonName(type, trimmedPersonName);
-        primeBorrowLendPersonContact(type, {
-            personName: trimmedPersonName,
-            mobileNumber,
-            email,
-            type,
-        });
+        try {
+            setIsSubmitting(true);
+            await onAddTransaction(newTransaction);
+            primeBorrowLendPersonName(type, trimmedPersonName);
+            primeBorrowLendPersonContact(type, {
+                personName: trimmedPersonName,
+                mobileNumber,
+                email,
+                type,
+            });
 
-        setPersonName('');
-        setAmount('');
-        setDate(new Date().toISOString().split('T')[0]);
-        setDueDate('');
-        setDescription('');
-        setMobileNumber('');
-        setEmail('');
+            setPersonName('');
+            setAmount('');
+            setDate(new Date().toISOString().split('T')[0]);
+            setDueDate('');
+            setDescription('');
+            setMobileNumber('');
+            setEmail('');
+            setDailySpendSyncChoice('');
+            setDailySpendSyncError('');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const findKnownPersonContact = (name) => {
@@ -207,24 +226,6 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
                 </Col>
             </Row>
 
-            {/* Payment method hidden for now. Keep this block ready for the next UI pass.
-            <div className={styles.group}>
-                <label>Payment Method</label>
-                <div className={styles.paymentMethods}>
-                    {['Cash', 'UPI', 'Bank', '+ Other'].map((method) => (
-                        <button
-                            type="button"
-                            key={method}
-                            className={paymentMethod === method ? styles.selectedMethod : ''}
-                            onClick={() => setPaymentMethod(method)}
-                        >
-                            {method}
-                        </button>
-                    ))}
-                </div>
-            </div>
-            */}
-
             <div className={styles.group}>
                 <label>Notes (Optional)</label>
                 <textarea
@@ -235,11 +236,52 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
                 />
             </div>
 
-            <button type="submit" className={styles.primaryButton}>
-                Continue
+            <section className={styles.syncChoiceCard}>
+                <h4>Do you want to add this transaction to your Daily Spend records?</h4>
+                <label className={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES ? styles.selectedSyncOption : ''}>
+                    <input
+                        type="radio"
+                        name="dailySpendSync"
+                        value={DAILY_SPEND_SYNC_CHOICES.YES}
+                        checked={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.YES}
+                        onChange={(event) => {
+                            setDailySpendSyncChoice(event.target.value);
+                            setDailySpendSyncError('');
+                        }}
+                    />
+                    <span>Yes, add to Daily Spend</span>
+                </label>
+                <label className={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.NO ? styles.selectedSyncOption : ''}>
+                    <input
+                        type="radio"
+                        name="dailySpendSync"
+                        value={DAILY_SPEND_SYNC_CHOICES.NO}
+                        checked={dailySpendSyncChoice === DAILY_SPEND_SYNC_CHOICES.NO}
+                        onChange={(event) => {
+                            setDailySpendSyncChoice(event.target.value);
+                            setDailySpendSyncError('');
+                        }}
+                    />
+                    <span>No, only save in Borrow/Lend</span>
+                </label>
+                {dailySpendSyncError && <p>{dailySpendSyncError}</p>}
+            </section>
+
+            <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>
+                {isSubmitting ? (
+                    <>
+                        <Spinner animation="border" size="sm" />
+                        Adding Transaction...
+                    </>
+                ) : (
+                    <>
+                        <Plus size={17} />
+                        Add Transaction
+                    </>
+                )}
             </button>
             {onCancel && (
-                <button type="button" className={styles.cancelButton} onClick={onCancel}>
+                <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={isSubmitting}>
                     Cancel
                 </button>
             )}
