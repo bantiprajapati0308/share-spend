@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Alert, Tabs, Tab } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import useCategoryContext from './hooks/useCategoryContext';
@@ -47,10 +47,6 @@ function DailySpends() {
     } = useDailyExpenses(startDate, endDate);
 
     const { categories: allCategories } = useCategoryContext();
-    const userCategories = useMemo(
-        () => allCategories.filter(c => c.isEnable !== false).map(c => c.name),
-        [allCategories]
-    );
     const { loadDateRange, saveDateRange } = useSelectedDateRange();
 
     // Load saved date range from database on mount
@@ -71,38 +67,6 @@ function DailySpends() {
             console.error('Error loading saved date range:', err);
             setDateRangeLoaded(true);
         }
-    };
-
-    const getDateRangeSummary = () => {
-        if (!startDate || !endDate) return 0;
-        const rangeStartStr = formatLocalDate(startDate);
-        const rangeEndStr = formatLocalDate(endDate);
-
-        return transactions
-            .filter(tx => {
-                const txDateStr = getTransactionDateKey(tx);
-                return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr && tx.type === 'spend';
-            })
-            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
-    };
-
-    const getDateRangeIncome = () => {
-        if (!startDate || !endDate) return 0;
-        const rangeStartStr = formatLocalDate(startDate);
-        const rangeEndStr = formatLocalDate(endDate);
-
-        return transactions
-            .filter(tx => {
-                const txDateStr = getTransactionDateKey(tx);
-                return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr && tx.type === 'income';
-            })
-            .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
-    };
-
-    const getDateRangePercentage = () => {
-        const totalIncome = getDateRangeIncome();
-        const totalSpend = getDateRangeSummary();
-        return totalIncome > 0 ? (totalSpend / totalIncome) * 100 : 0;
     };
 
     const handleDateRangeChange = async (newRange) => {
@@ -193,52 +157,6 @@ function DailySpends() {
         set_limits: styles.tabIconLimits,
         reports: styles.tabIconReports,
         category: styles.tabIconCategory,
-    };
-
-    const renderTabContent = () => {
-        if (activeLandingTab === 'add-transaction') {
-            return (
-                <AddExpenseForm
-                    onAddExpense={handleAddTransaction}
-                    onUpdateExpense={handleUpdateTransaction}
-                    editingTransaction={editingTransaction}
-                    isEditMode={isEditMode}
-                    onCancelEdit={handleCancelEdit}
-                    onCategoriesChanged={refreshTransactions}
-                    onGoToCategories={() => handleLandingTabChange('category')}
-                    key={formResetKey}
-                />
-            );
-        }
-
-        if (activeLandingTab === 'set_limits') {
-            return <LimitsManager embedded />;
-        }
-
-        if (activeLandingTab === 'category') {
-            return <CategoryManager onCategoriesChanged={refreshTransactions} />;
-        }
-        if (activeLandingTab === 'reports') {
-            return (
-                <ReportsTabContent
-                    transactions={transactions}
-                    startDate={startDate}
-                    endDate={endDate}
-                />
-            );
-        }
-
-        const content = tabContentById[activeLandingTab] || {
-            title: 'Coming Soon',
-            description: 'Coming Soon'
-        };
-
-        return (
-            <div className={styles.comingSoonState}>
-                <h4>{content.title}</h4>
-                <p>{content.description}</p>
-            </div>
-        );
     };
 
     const handleLandingTabChange = (tabId) => {

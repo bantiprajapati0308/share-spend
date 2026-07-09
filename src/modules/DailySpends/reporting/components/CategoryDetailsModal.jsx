@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Badge } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import styles from '../styles/MasterReport.module.scss';
+import styles from '../styles/ReportModal.module.scss';
 
 /**
  * Professional Category Details Modal Component  

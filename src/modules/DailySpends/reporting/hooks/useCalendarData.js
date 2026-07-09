@@ -34,7 +34,7 @@ function computeColorLevel(amount, maxAmount, secondMax) {
  *
  * Core business logic for the calendar heatmap.
  *
- * @param {Array}  transactions    - All transactions from useMasterReportData
+ * @param {Array}  transactions    - All transactions for the active report range
  * @param {string} transactionType - 'spend' | 'income'
  * @param {Date}   startDate       - Range start (optional; defaults to 30 days ago)
  * @param {Date}   endDate         - Range end   (optional; defaults to today)
