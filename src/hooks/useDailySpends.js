@@ -55,6 +55,23 @@ export const addTransaction = async (transactionData) => {
     }
 };
 
+// POST: Add several reviewed transactions in one atomic backend request.
+export const addTransactionsBulk = async (transactions) => {
+    try {
+        const result = await dailySpendsApi.addTransactionsBulk(transactions);
+        if (!result.success) throw new Error(result.error);
+        return result.data.transactions.map(({ _companion, ...primaryData }) => ({
+            transaction: { ...primaryData, createdAt: normalizeDate(primaryData.createdAt) },
+            companion: _companion
+                ? { ..._companion, createdAt: normalizeDate(_companion.createdAt) }
+                : null,
+        }));
+    } catch (error) {
+        console.error('Error adding transactions in bulk:', error);
+        throw error;
+    }
+};
+
 // UPDATE: Update an existing transaction.
 // Returns { transaction, companion, deletedCompanionId } to mirror the add shape.
 export const updateTransaction = async (transactionId, transactionData) => {

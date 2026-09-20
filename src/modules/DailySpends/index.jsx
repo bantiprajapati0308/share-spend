@@ -47,6 +47,7 @@ function DailySpends() {
     const {
         transactions,
         addTransaction,
+        addTransactionsBulk,
         deleteTransaction,
         updateTransaction,
         getTransactionsByType,
@@ -98,6 +99,15 @@ function DailySpends() {
             await addTransaction(newTransaction);
         } catch (err) {
             toast.error(err.message || 'Failed to add transaction');
+            throw err;
+        }
+    };
+
+    const handleAddTransactionsBulk = async (newTransactions) => {
+        try {
+            await addTransactionsBulk(newTransactions);
+        } catch (err) {
+            toast.error(err.message || 'Failed to add transactions');
             throw err;
         }
     };
@@ -286,6 +296,7 @@ function DailySpends() {
                                         <div>
                                             <AddExpenseForm
                                                 onAddExpense={handleAddTransaction}
+                                                onAddTransactionsBulk={handleAddTransactionsBulk}
                                                 onUpdateExpense={handleUpdateTransaction}
                                                 editingTransaction={editingTransaction}
                                                 isEditMode={isEditMode}

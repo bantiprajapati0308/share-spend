@@ -1,0 +1,66 @@
+@use '../../../assets/scss/variables' as *;
+
+.quickAddPanel { margin:.55rem 0 .8rem; padding:.8rem; border:1px solid $primary-200; border-radius:$radius-2xl; background:linear-gradient(135deg, #f8f9ff, #fff); box-shadow:$shadow-sm; }
+.quickAddHeader { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; margin-bottom:.55rem; h3 { margin:.05rem 0; font-size:1rem; font-weight:$font-weight-bold; color:$text-primary; } p { margin:0; color:$text-secondary; font-size:$font-size-xs; } }
+.quickAddEyebrow { display:inline-flex; align-items:center; gap:.3rem; color:$primary-600; font-weight:$font-weight-bold; font-size:$font-size-xs; text-transform:uppercase; letter-spacing:.04em; }
+.promptBox { display:flex; gap:.6rem; align-items:stretch; textarea { width:100%; border:1px solid $primary-200; border-radius:$radius-xl; padding:.75rem; resize:vertical; font:inherit; &:focus { outline:0; border-color:$primary-500; box-shadow:0 0 0 3px rgba($primary-500,.12); } } button { border:0; min-width:48px; border-radius:$radius-xl; color:#fff; background:$gradient-primary; &:disabled { opacity:.65; } } }
+.examples { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.7rem; button { border:0; background:$primary-50; color:$primary-700; border-radius:$radius-full; padding:.35rem .6rem; font-size:$font-size-xs; text-align:left; &:hover { background:$primary-100; } } }
+.processing, .parseError, .reviewAlert { display:flex; align-items:center; gap:.65rem; padding:.75rem; border-radius:$radius-lg; margin-top:.85rem; font-size:$font-size-sm; }
+.processing { color:$primary-700; background:$primary-50; small { display:block; color:$text-secondary; margin-top:.1rem; } }
+.processingOrb { width:25px; height:25px; flex:0 0 auto; border-radius:50%; background:$gradient-primary; box-shadow:0 0 0 8px rgba($primary-500,.12); animation:pulse 1.1s ease-in-out infinite; }
+.parseError { color:$danger-700; background:$danger-50; }
+.clearButton, .iconButton { border:0; background:transparent; color:$text-secondary; &:hover { color:$danger-600; } }
+.reviewSection { margin-top:.35rem; }
+.reviewHeading { display:flex; justify-content:space-between; align-items:center; h4 { margin:.45rem 0 .25rem; font-size:1.1rem; } }
+.foundPill { display:inline-flex; gap:.35rem; align-items:center; padding:.3rem .6rem; border-radius:$radius-full; color:$success-700; background:$success-100; font-size:$font-size-xs; font-weight:$font-weight-bold; }
+.reviewAlert { color:$warning-800; background:$warning-50; border:1px solid $warning-200; }
+.serverWarning { margin-top:.4rem; padding:.5rem .7rem; border-radius:$radius-md; color:$warning-800; background:$warning-50; font-size:$font-size-sm; }
+.reviewList { display:grid; gap:.45rem; margin-top:.55rem; }
+.reviewCard { position:relative; padding:.55rem .65rem; border:1px solid $neutral-200; border-radius:$radius-xl; background:#fff; box-shadow:$shadow-sm; }
+.inlineEditor { margin-top:.55rem; padding-top:.55rem; border-top:1px dashed $primary-200; }
+.editorToolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:.35rem; color:$text-secondary; font-size:$font-size-xs; font-weight:$font-weight-semibold; }
+.reviewCardHeader { display:flex; align-items:center; gap:.55rem; }
+.reviewRowTop { display:flex; align-items:flex-start; gap:.55rem; }
+.reviewMainInfo { flex:1; min-width:0; }
+.reviewType { color:$text-secondary; font-size:$font-size-xs; font-weight:$font-weight-semibold; text-transform:uppercase; letter-spacing:.04em; }
+.reviewPrimaryLine { display:flex; align-items:center; gap:.45rem; min-width:0; }
+.reviewCategoryIcon { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:1rem; }
+.reviewName { flex:1; min-width:0; font-size:.97rem; font-weight:$font-weight-bold; color:$text-primary; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.reviewAmount { font-size:1rem; font-weight:$font-weight-bold; color:$text-primary; }
+.reviewSubtitle { margin-top:.2rem; color:$text-secondary; font-size:.78rem; }
+.reviewActions { display:flex; align-items:center; gap:.28rem; margin-left:auto; }
+.confidenceButton { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border:none; border-radius:50%; padding:0; }
+.confidenceButtonmedium { background:$warning-100; color:$warning-700; }
+.confidenceButtonlow { background:$danger-100; color:$danger-700; }
+.iconButton, .trashButton { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1px solid $neutral-200; border-radius:$radius-lg; background:#fff; color:$text-secondary; }
+.trashButton { color:$danger-600; }
+.transactionNumber { display:grid; place-items:center; width:21px; height:21px; border-radius:50%; color:$primary-700; background:$primary-50; border:1px solid $primary-200; font-size:11px; font-weight:$font-weight-bold; }
+.reviewMetaRow { margin-top:.55rem; color:$text-secondary; font-size:.78rem; }
+.reviewMetaLine { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-top:.25rem; color:$text-secondary; font-size:.76rem; }
+.reviewValueGrid { display:grid; grid-template-columns:1.25fr .75fr 1.2fr 1.25fr; gap:.38rem; margin-top:.35rem; }
+.reviewValue { min-width:0; padding:.32rem .42rem; border:1px solid $neutral-200; border-radius:$radius-md; background:$neutral-50; span { display:block; margin-bottom:.08rem; color:$text-secondary; font-size:10px; font-weight:$font-weight-semibold; } strong { display:block; overflow:hidden; color:$text-primary; font-size:$font-size-xs; text-overflow:ellipsis; white-space:nowrap; } select { width:100%; min-width:0; border:1px solid $warning-400; border-radius:4px; background:#fff; padding:.1rem .2rem; color:$text-primary; font-size:$font-size-xs; } }
+.confidencePopover { margin-top:.35rem; padding:.38rem .5rem; border:1px solid $warning-200; border-radius:$radius-md; background:$warning-50; color:$warning-800; font-size:11px; }
+.quickPaymentSelect { border:1px solid $warning-400; border-radius:4px; background:#fff; padding:.16rem .35rem; color:$text-primary; font-size:$font-size-xs; }
+.metaPill { display:inline-flex; align-items:center; padding:.18rem .42rem; border-radius:$radius-full; background:$neutral-100; border:1px solid $neutral-200; }
+.metaDivider { color:$text-tertiary; }
+.reviewCompactFields { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:.55rem; margin-top:.7rem; }
+.reviewCompactField { display:block; min-width:0; span { display:block; margin-bottom:.18rem; color:$text-secondary; font-size:11px; font-weight:$font-weight-semibold; } select { width:100%; min-width:0; border:1px solid $neutral-300; border-radius:$radius-md; background:#fff; padding:.42rem .5rem; color:$text-primary; font-size:$font-size-sm; &:focus { outline:0; border-color:$primary-500; } } }
+.reviewTitleWrap { flex:1; min-width:0; }
+.nameInput { width:100%; border:0; padding:0; color:$text-primary; background:transparent; font-weight:$font-weight-bold; &:focus { outline:0; border-bottom:1px solid $primary-400; } }
+.transactionType { color:$text-tertiary; font-size:11px; text-transform:capitalize; }
+.amountInputWrap { display:flex; align-items:center; color:$text-primary; font-weight:$font-weight-bold; input { max-width:70px; border:0; padding:0; background:transparent; color:inherit; font:inherit; text-align:right; &:focus { outline:0; border-bottom:1px solid $primary-400; } } }
+.reviewFields { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:.55rem; margin-top:.75rem; }
+.reviewField, .noteField { display:block; min-width:0; span { display:flex; align-items:center; gap:.3rem; margin-bottom:.25rem; color:$text-secondary; font-size:11px; font-weight:$font-weight-semibold; } select, input { width:100%; min-width:0; border:1px solid $neutral-300; border-radius:$radius-md; background:#fff; padding:.42rem .5rem; color:$text-primary; font-size:$font-size-sm; &:focus { outline:0; border-color:$primary-500; } } small { display:block; color:$text-tertiary; font-size:11px; margin-top:.2rem; } }
+.noteField { margin-top:.6rem; }
+.confidenceBadge { display:inline-flex; align-items:center; gap:.2rem; padding:.12rem .32rem; border-radius:$radius-full; font-size:10px; text-transform:capitalize; }.confidencewarning { color:$warning-800; background:$warning-100; }.confidencealert { color:$danger-700; background:$danger-100; }
+.fieldnormal { border-color:$neutral-300 !important; background:#fff !important; }
+.fieldmedium { border-color:$warning-400 !important; background:$warning-50 !important; }
+.fieldlow { border-color:$danger-400 !important; background:$danger-50 !important; }
+.categorySummary { display:inline-flex; margin-top:.6rem; color:$text-secondary; font-size:$font-size-xs; }
+.editIcon { position:absolute; right:.75rem; bottom:.75rem; color:$primary-500; }
+.reviewHelperText { margin-top:.5rem; padding:.5rem .7rem; border-radius:$radius-md; background:$danger-50; border:1px solid $danger-200; color:$danger-700; font-size:$font-size-xs; }
+.reviewFooter { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-top:.85rem; padding:.8rem; border-radius:$radius-xl; background:$primary-50; span, strong { display:block; } span { font-size:$font-size-xs; color:$text-secondary; } strong { color:$text-primary; font-size:$font-size-lg; } }
+.saveButton { border:0; border-radius:$radius-lg; background:$gradient-primary; color:#fff; padding:.65rem .8rem; font-size:$font-size-sm; font-weight:$font-weight-bold; &:disabled { opacity:.6; } }
+@keyframes pulse { 50% { transform:scale(.84); opacity:.65; } }
+@media (max-width: 640px) { .reviewValueGrid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .quickAddPanel { padding:.7rem; } .reviewFooter { align-items:flex-end; } .saveButton { max-width:150px; } }

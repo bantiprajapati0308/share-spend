@@ -17,7 +17,8 @@ function CategorySelectDropdown({
     onChange,
     isMulti = false,
     type = 'spend', // 'spend' or 'income' - filter categories by type
-    placeholder = 'Select a category...'
+    placeholder = 'Select a category...',
+    confidenceState,
 }) {
     const { categories, loading, isInitialized } = useCategoryContext();
 
@@ -41,7 +42,8 @@ function CategorySelectDropdown({
             ...base,
             minHeight: '40px',
             borderRadius: '0.75rem',
-            borderColor: '#dee2e6',
+            borderColor: confidenceState === 'low' ? '#dc3545' : confidenceState === 'medium' ? '#f59e0b' : confidenceState === 'confirmed' ? '#28a745' : '#dee2e6',
+            borderWidth: confidenceState ? '2px' : '1px',
             '&:hover': {
                 borderColor: '#1e62d0',
             },
@@ -95,12 +97,14 @@ CategorySelectDropdown.propTypes = {
     isMulti: PropTypes.bool,
     type: PropTypes.oneOf(['spend', 'income']),
     placeholder: PropTypes.string,
+    confidenceState: PropTypes.oneOf(['low', 'medium', 'confirmed']),
 };
 
 CategorySelectDropdown.defaultProps = {
     isMulti: false,
     type: 'spend',
     placeholder: 'Select a category...',
+    confidenceState: undefined,
 };
 
 export default CategorySelectDropdown;

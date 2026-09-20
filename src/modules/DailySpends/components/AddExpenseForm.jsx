@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col, Spinner } from 'react-bootstrap';
-import { Plus, PencilSquare } from 'react-bootstrap-icons';
+import { Plus, PencilSquare, CheckCircleFill, ExclamationTriangleFill, ExclamationCircleFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import DatePickerInput from '../../../utils/DatePickerInput';
 import styles from '../styles/DailySpends.module.scss';
 import CategorySelectDropdown from './CategorySelectDropdown';
@@ -15,14 +16,19 @@ import useCategoryContext from '../hooks/useCategoryContext';
 import PaymentMethodSelector from './common/PaymentMethodSelector';
 import { formatLocalDate } from '../utils/dateUtils';
 import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
+import QuickAddPanel from '../QuickAdd/components/QuickAddPanel';
 
 function AddExpenseForm({
     onAddExpense,
+    onAddTransactionsBulk,
     onUpdateExpense,
     editingTransaction,
     isEditMode,
     onCancelEdit,
     onGoToCategories,
+    inlineQuickAddEdit = false,
+    quickAddConfidence,
+    onConfirmQuickAddField,
 }) {
     const nowDatetime = () => {
         const d = new Date();
@@ -44,22 +50,27 @@ function AddExpenseForm({
     const [personName, setPersonName] = useState('');
     const [paymentMethodId, setPaymentMethodId] = useState(null);
     const { categories } = useCategoryContext();
+    const quickAddStatus = useSelector((state) => state.quickAdd.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Populate form when editing
     useEffect(() => {
         if (!isEditMode || !editingTransaction) return;
-        setTransactionType(editingTransaction.type || 'spend');
+        // AI returns "expense"; the shared form toggle uses "spend".
+        setTransactionType(editingTransaction.type === 'income' ? 'income' : 'spend');
         setExpenseName(editingTransaction.name || '');
         setAmount(editingTransaction.amount?.toString() || '');
         setCategory({
-            categoryId: editingTransaction.categoryId,
+            categoryId: editingTransaction.categoryId || null,
             // Resolve live name+emoji by ID so renames are reflected immediately
             ...(() => {
-                const live = categories.find(c => c.id === editingTransaction.categoryId);
+                const live = editingTransaction.categoryId ? categories.find(c => c.id === editingTransaction.categoryId) : null;
+                const fallbackName = editingTransaction.categoryName || editingTransaction.category || '';
+                const fallbackLabel = editingTransaction.categoryIcon ? `${editingTransaction.categoryIcon} ${fallbackName}`.trim() : fallbackName;
+
                 return live
                     ? { categoryName: live.name, emoji: live.emoji, label: `${live.emoji} ${live.name}` }
-                    : { categoryName: editingTransaction.categoryName || editingTransaction.category, emoji: editingTransaction.categoryIcon || '??', label: `${editingTransaction.categoryIcon} ${editingTransaction.categoryName}` };
+                    : { categoryName: fallbackName, emoji: editingTransaction.categoryIcon || '??', label: fallbackLabel || 'Uncategorized' };
             })(),
         });
         setDate(editingTransaction.date || nowDatetime());
@@ -69,7 +80,7 @@ function AddExpenseForm({
         // Restore payment method selection
         setPaymentMethodId(editingTransaction.paymentMethodId || null);
 
-        const catName = (editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
+        const catName = String(editingTransaction.categoryName || editingTransaction.category || '').toLowerCase();
         if (['lent', 'repayment', 'borrowed', 'borrowed pay'].includes(catName)) {
             setPersonName(editingTransaction.name || '');
             setExpenseName('');
@@ -97,7 +108,7 @@ function AddExpenseForm({
         setTransactionType(type);
     };
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
 
         if ((!isLendingTransaction && !expenseName.trim()) || !amount.trim() || !category || !paymentMethodId) {
             toast.error('Please fill in all required fields');
@@ -117,7 +128,7 @@ function AddExpenseForm({
             return;
         }
 
-        const isDueDate = category &&
+        const isDueDate = category && category.categoryName &&
             ['lent', 'borrowed'].includes(category.categoryName.toLowerCase());
 
         const newTransaction = {
@@ -139,7 +150,7 @@ function AddExpenseForm({
             const label = transactionType === 'spend' ? 'Expense' : 'Income';
             if (isEditMode) {
                 await onUpdateExpense(newTransaction);
-                toast.success(`${label} updated successfully!`);
+                toast.success(inlineQuickAddEdit ? 'Draft updated' : `${label} updated successfully!`);
             } else {
                 await onAddExpense(newTransaction);
                 toast.success(`${label} added successfully!`);
@@ -152,19 +163,34 @@ function AddExpenseForm({
         }
     };
 
-    const isLent = category && category.categoryName.toLowerCase() === 'lent';
-    const isRepayment = category && category.categoryName.toLowerCase() === 'repayment';
-    const isBorrowed = category && category.categoryName.toLowerCase() === 'borrowed';
-    const isBorrowedPay = category && category.categoryName.toLowerCase() === 'borrowed pay';
+    const isLent = !!category && !!category.categoryName && category.categoryName.toLowerCase() === 'lent';
+    const isRepayment = !!category && !!category.categoryName && category.categoryName.toLowerCase() === 'repayment';
+    const isBorrowed = !!category && !!category.categoryName && category.categoryName.toLowerCase() === 'borrowed';
+    const isBorrowedPay = !!category && !!category.categoryName && category.categoryName.toLowerCase() === 'borrowed pay';
     const isLendingTransaction = isLent || isRepayment || isBorrowed || isBorrowedPay;
     const personNameType = (isLent || isRepayment)
         ? TRANSACTION_TYPES.GAVE
         : (isBorrowed || isBorrowedPay)
             ? TRANSACTION_TYPES.TOOK
             : undefined;
+    const FormContainer = inlineQuickAddEdit ? 'div' : 'form';
+    const getConfidence = (field) => quickAddConfidence?.[`${field}Confidence`] || 'high';
+    const getStatus = (field) => quickAddConfidence?.[`${field}Status`] || (getConfidence(field) === 'high' ? 'confirmed' : 'pending');
+    const confirmField = (field) => onConfirmQuickAddField?.(field);
+    const fieldClassName = (field) => `${styles.quickAddReviewField} ${styles[`quickAddReviewField${getStatus(field) === 'confirmed' ? 'confirmed' : getConfidence(field)}`]}`;
+    const inputClassName = (field) => inlineQuickAddEdit ? styles[`quickAddInput${getStatus(field) === 'confirmed' ? 'confirmed' : getConfidence(field)}`] : '';
+    const FieldIndicator = ({ field, label }) => {
+        const confidence = getConfidence(field);
+        const confirmed = getStatus(field) === 'confirmed';
+        const Icon = confirmed ? CheckCircleFill : confidence === 'low' ? ExclamationCircleFill : ExclamationTriangleFill;
+        return <button type="button" className={`${styles.quickAddFieldIndicator} ${field === 'date' ? styles.quickAddDateIndicator : ''}`} onClick={() => confirmField(field)} title={confirmed ? `${label} confirmed` : `${label} needs review`} aria-label={confirmed ? `Confirm ${label}` : `Review ${label}`}><Icon /></button>;
+    };
+    FieldIndicator.propTypes = { field: PropTypes.string.isRequired, label: PropTypes.string.isRequired };
 
     return (
-        <form onSubmit={handleSubmit} className={styles.formSection}>
+        <FormContainer onSubmit={inlineQuickAddEdit ? undefined : handleSubmit} className={`${styles.formSection} ${inlineQuickAddEdit ? styles.inlineQuickAddForm : ''}`}>
+            {!inlineQuickAddEdit && <QuickAddPanel categories={categories} onAddTransactionsBulk={onAddTransactionsBulk} />}
+            <div className={!inlineQuickAddEdit && quickAddStatus === 'review' ? styles.manualFormHidden : ''}>
             {/* -- Header --------------------------------------------------- */}
             <div className={styles.formHeader}>
                 <div className={styles.formHeaderRow}>
@@ -180,6 +206,7 @@ function AddExpenseForm({
                     value={transactionType}
                     onChange={type => toggleHandler(type)}
                     showLabel={false}
+                    compact={inlineQuickAddEdit}
                 />
             </div>
 
@@ -197,15 +224,19 @@ function AddExpenseForm({
                         </button>
                     )}
                 </div>
-                <CategorySelectDropdown
-                    value={category}
-                    onChange={setCategory}
-                    type={transactionType}
-                    placeholder="Search category..."
-                />
+                <div className={`${styles.quickAddInputControl} ${inlineQuickAddEdit ? fieldClassName('category') : ''}`}>
+                    <CategorySelectDropdown
+                        value={category}
+                        onChange={(value) => { setCategory(value); confirmField('category'); }}
+                        type={transactionType}
+                        placeholder="Search category..."
+                        confidenceState={inlineQuickAddEdit ? (getStatus('category') === 'confirmed' ? 'confirmed' : getConfidence('category')) : undefined}
+                    />
+                    {inlineQuickAddEdit && <FieldIndicator field="category" label="Category" />}
+                </div>
                 <div className={styles.topCategoriesRow}>
                     <TopCategories
-                        selectedCategory={setCategory}
+                        selectedCategory={(value) => { setCategory(value); confirmField('category'); }}
                         transactionType={transactionType}
                         onGoToCategories={onGoToCategories}
                     />
@@ -217,34 +248,28 @@ function AddExpenseForm({
                 <Col xs={5}>
                     <div className={styles.formGroup}>
                         <label>Amount *</label>
-                        <AmountInput
-                            placeholder="0.00 or 10+5"
-                            value={amount}
-                            onValueChange={setAmount}
-                            onInvalidExpression={(msg) => toast.error(msg)}
-                        />
+                        <div className={`${styles.quickAddInputControl} ${inlineQuickAddEdit ? fieldClassName('amount') : ''}`}>
+                            <AmountInput className={inputClassName('amount')} placeholder="0.00 or 10+5" value={amount} onValueChange={(value) => { setAmount(value); confirmField('amount'); }} onInvalidExpression={(msg) => toast.error(msg)} />
+                            {inlineQuickAddEdit && <FieldIndicator field="amount" label="Amount" />}
+                        </div>
                     </div>
                 </Col>
                 <Col xs={7}>
                     {isLendingTransaction ? (
                         <div className={styles.formGroup}>
                             <label>Person Name *</label>
-                            <PersonNameDropdown
-                                value={personName}
-                                onChange={setPersonName}
-                                placeholder="Person name..."
-                                type={personNameType}
-                            />
+                            <div className={`${styles.quickAddInputControl} ${inlineQuickAddEdit ? fieldClassName('name') : ''}`}>
+                                <PersonNameDropdown value={personName} onChange={(value) => { setPersonName(value); confirmField('name'); }} placeholder="Person name..." type={personNameType} />
+                                {inlineQuickAddEdit && <FieldIndicator field="name" label="Person name" />}
+                            </div>
                         </div>
                     ) : (
                         <div className={styles.formGroup}>
                             <label>Name *</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Coffee, Groceries..."
-                                value={expenseName}
-                                onChange={(e) => setExpenseName(e.target.value)}
-                            />
+                            <div className={`${styles.quickAddInputControl} ${inlineQuickAddEdit ? fieldClassName('name') : ''}`}>
+                                <input className={inputClassName('name')} type="text" placeholder="e.g. Coffee, Groceries..." value={expenseName} onChange={(e) => { setExpenseName(e.target.value); confirmField('name'); }} />
+                                {inlineQuickAddEdit && <FieldIndicator field="name" label="Expense name" />}
+                            </div>
                         </div>
                     )}
                 </Col>
@@ -254,15 +279,10 @@ function AddExpenseForm({
             <Row className="g-2">
                 <Col xs={(isLent || isBorrowed) ? 6 : 12}>
                     <div className={styles.formGroup}>
-                        <DatePickerInput
-                            label="Date *"
-                            value={date}
-                            onChange={(val) => val && setDate(val)}
-                            maxDate={formatLocalDate(new Date())}
-                            required
-                            placeholder="Select date & time"
-                            showTimeSelect
-                        />
+                        <div className={`${styles.quickAddInputControl} ${inlineQuickAddEdit ? fieldClassName('date') : ''}`}>
+                            <DatePickerInput inputClassName={inputClassName('date')} label="Date *" value={date} onChange={(val) => { if (val) { setDate(val); confirmField('date'); confirmField('time'); } }} maxDate={formatLocalDate(new Date())} required placeholder="Select date & time" showTimeSelect />
+                            {inlineQuickAddEdit && <FieldIndicator field="date" label="Date and time" />}
+                        </div>
                     </div>
                 </Col>
                 {(isLent || isBorrowed) && (
@@ -282,7 +302,7 @@ function AddExpenseForm({
             </Row>
 
             {/* -- Payment Method ------------------------------------------- */}
-            <PaymentMethodSelector value={paymentMethodId} onChange={setPaymentMethodId} />
+            <PaymentMethodSelector compact={inlineQuickAddEdit} value={paymentMethodId} onChange={(value) => { setPaymentMethodId(value); confirmField('paymentMethod'); }} />
 
             {/* -- Notes --------------------------------------------------- */}
             <div className={styles.formGroup}>
@@ -297,16 +317,16 @@ function AddExpenseForm({
 
             {/* -- Submit -------------------------------------------------- */}
             <div className="d-flex gap-2">
-                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                <button type={inlineQuickAddEdit ? 'button' : 'submit'} onClick={inlineQuickAddEdit ? handleSubmit : undefined} className={styles.submitBtn} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>
                             <Spinner animation="border" size="sm" style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
-                            {isEditMode ? 'Updating...' : 'Adding...'}
+                            {isEditMode ? (inlineQuickAddEdit ? 'Saving...' : 'Updating...') : 'Adding...'}
                         </>
                     ) : (
                         <>
                             <Plus size={18} style={{ marginRight: '0.4rem' }} />
-                            {isEditMode ? 'Update' : `Add ${transactionType === 'spend' ? 'Expense' : 'Income'}`}
+                            {isEditMode ? (inlineQuickAddEdit ? 'Save' : 'Update') : `Add ${transactionType === 'spend' ? 'Expense' : 'Income'}`}
                         </>
                     )}
                 </button>
@@ -321,17 +341,22 @@ function AddExpenseForm({
                     </button>
                 )}
             </div>
-        </form>
+            </div>
+        </FormContainer>
     );
 }
 
 AddExpenseForm.propTypes = {
-    onAddExpense: PropTypes.func.isRequired,
+    onAddExpense: PropTypes.func,
+    onAddTransactionsBulk: PropTypes.func,
     onUpdateExpense: PropTypes.func,
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
     onCancelEdit: PropTypes.func,
     onGoToCategories: PropTypes.func,
+    inlineQuickAddEdit: PropTypes.bool,
+    quickAddConfidence: PropTypes.object,
+    onConfirmQuickAddField: PropTypes.func,
 };
 
 export default AddExpenseForm;

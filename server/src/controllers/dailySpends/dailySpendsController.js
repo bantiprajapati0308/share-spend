@@ -113,6 +113,62 @@ const addTransaction = async (req, res) => {
     }
 };
 
+// POST /api/daily-spends/bulk
+// Writes all reviewed Quick Add transactions in one Firestore batch so a
+// multi-transaction prompt cannot lose earlier entries during repeated saves.
+const addTransactionsBulk = async (req, res) => {
+    try {
+        const transactions = req.body?.transactions;
+        if (!Array.isArray(transactions) || transactions.length === 0) {
+            return fail(res, 'transactions must be a non-empty array', 400);
+        }
+        if (transactions.length > 20) {
+            return fail(res, 'A maximum of 20 transactions can be saved at once', 400);
+        }
+
+        const needsCreditCardCategory = transactions.some((transaction) => (
+            transaction.type === 'spend' && transaction.paymentMethodId === CREDIT_CARD_ID
+        ));
+        const creditCardCategory = needsCreditCardCategory ? await getCreditCardCategory(req.uid) : null;
+        const now = FieldValue.serverTimestamp();
+        const batch = db.batch();
+        const created = [];
+
+        for (const transaction of transactions) {
+            const ref = col(req.uid).doc();
+            batch.set(ref, { ...transaction, userId: req.uid, createdAt: now, updatedAt: now });
+            const result = { id: ref.id, ...transaction };
+
+            if (transaction.type === 'spend' && transaction.paymentMethodId === CREDIT_CARD_ID && creditCardCategory) {
+                const companionRef = col(req.uid).doc();
+                const companion = buildCreditCardIncome(transaction, ref.id, creditCardCategory);
+                batch.set(companionRef, { ...companion, userId: req.uid, createdAt: now, updatedAt: now });
+                result._companion = { id: companionRef.id, ...companion };
+            }
+            created.push(result);
+        }
+
+        await batch.commit();
+
+        const user = await UserRepository.getUser(req.uid);
+        const currentLastEntry = user ? normalizeDateString(user.lastSpendEntry) : null;
+        const latestSpendDate = transactions
+            .filter((transaction) => transaction.type === 'spend')
+            .map((transaction) => normalizeDateString(transaction.date))
+            .filter(Boolean)
+            .sort()
+            .pop();
+        const updatedLastEntry = DailySpendService.computeLastSpendEntryOnAdd(latestSpendDate, currentLastEntry);
+        if (updatedLastEntry && updatedLastEntry !== currentLastEntry) {
+            await UserRepository.updateLastSpendEntry(req.uid, updatedLastEntry);
+        }
+
+        return ok(res, { transactions: created }, 201);
+    } catch (e) {
+        return fail(res, e.message);
+    }
+};
+
 // PUT /api/daily-spends/:id
 // Syncs the companion credit-card income entry (if any) automatically:
 //   - Still credit card  → patch companion amount + date
@@ -236,4 +292,4 @@ const deleteTransaction = async (req, res) => {
     }
 };
 
-module.exports = { getTransactions, addTransaction, updateTransaction, deleteTransaction };
+module.exports = { getTransactions, addTransaction, addTransactionsBulk, updateTransaction, deleteTransaction };

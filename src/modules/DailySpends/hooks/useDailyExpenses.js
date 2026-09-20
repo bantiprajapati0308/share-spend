@@ -4,6 +4,7 @@ import { setTransactions, appendTransaction, patchTransaction, removeTransaction
 import {
     getTransactions,
     addTransaction,
+    addTransactionsBulk,
     deleteTransaction,
     updateTransaction,
 } from '../../../hooks/useDailySpends';
@@ -86,6 +87,26 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
             return result;
         } catch (err) {
             console.error('Error adding transaction:', err);
+            throw err;
+        }
+    };
+
+    const addTransactionsBulkHandler = async (newTransactions) => {
+        try {
+            const results = await addTransactionsBulk(newTransactions);
+            const incoming = results.flatMap(({ transaction, companion }) => companion ? [transaction, companion] : [transaction]);
+
+            setRawTransactions((current) => [...incoming, ...current].sort((a, b) => {
+                const dateA = a.createdAt || new Date(0);
+                const dateB = b.createdAt || new Date(0);
+                return new Date(dateB) - new Date(dateA);
+            }));
+            incoming.forEach((transaction) => dispatch(appendTransaction(transaction)));
+
+            await Promise.all(newTransactions.map((transaction) => syncDailySpendTransactionToBorrowLend(transaction)));
+            return results;
+        } catch (err) {
+            console.error('Error adding transactions in bulk:', err);
             throw err;
         }
     };
@@ -246,6 +267,7 @@ export const useDailyExpenses = (startDate = null, endDate = null) => {
     return {
         transactions,
         addTransaction: addTransactionHandler,
+        addTransactionsBulk: addTransactionsBulkHandler,
         deleteTransaction: deleteTransactionHandler,
         updateTransaction: updateTransactionHandler,
         getTotalSpend,

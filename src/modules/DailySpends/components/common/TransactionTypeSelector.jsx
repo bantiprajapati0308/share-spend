@@ -10,10 +10,10 @@ const DEFAULT_OPTIONS = [
  * Pill-style toggle used in AddExpenseForm, CategoryManager, LimitsManager.
  * Pass a custom `options` array to override labels/values.
  */
-function TransactionTypeSelector({ value, onChange, options, showLabel, label }) {
+function TransactionTypeSelector({ value, onChange, options, showLabel, label, compact }) {
     const opts = options || DEFAULT_OPTIONS;
     return (
-        <div className={styles.pillToggle}>
+        <div className={`${styles.pillToggle} ${compact ? styles.compact : ''}`}>
             {showLabel && <span className={styles.toggleLabel}>{label}</span>}
             <div className={styles.pillGroup}>
                 {opts.map((opt) => (
@@ -37,12 +37,14 @@ TransactionTypeSelector.propTypes = {
     options: PropTypes.arrayOf(PropTypes.shape({ value: PropTypes.string, label: PropTypes.string })),
     label: PropTypes.string,
     showLabel: PropTypes.bool,
+    compact: PropTypes.bool,
 };
 
 TransactionTypeSelector.defaultProps = {
     options: null,
     label: 'Transaction Type',
     showLabel: false,
+    compact: false,
 };
 
 export default TransactionTypeSelector;

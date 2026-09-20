@@ -3,6 +3,8 @@
 // -- Container ----------------------------------------------------------------
 .topCategoriesContainer {
     display: flex;
+    width: 100%;
+    min-width: 0;
     gap: 0.25rem;
     overflow-x: auto;
     padding-bottom: 0.25rem;

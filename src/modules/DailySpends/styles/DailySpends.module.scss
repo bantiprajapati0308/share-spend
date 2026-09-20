@@ -1117,6 +1117,8 @@
 
 .topCategoriesRow {
     margin-top: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
 }
 
 // ==========================================
@@ -2366,4 +2368,83 @@
 .landingTabs .landingTabBtn:hover i,
 .landingTabs .landingTabBtnActive i {
     color: currentColor;
+}
+
+.inlinePaymentMethodCards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+
+    .paymentMethodCard { min-width: 0; }
+}
+
+.inlineQuickAddForm {
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+    contain: inline-size;
+    padding: .5rem;
+    border: 1px solid rgba($primary-color, .18);
+    background: rgba($primary-light, .035);
+    box-shadow: none;
+
+    .formHeader { min-width: 0; overflow: hidden; margin-bottom: .5rem; }
+    .formHeader h3 { min-width: 0; }
+    .formTitle { font-size: 1.05rem; margin-bottom: .75rem; }
+    .formGroup { margin-bottom: .75rem; }
+
+    :global(.row) { --bs-gutter-x: .5rem; width: 100%; margin-right: 0; margin-left: 0; }
+    :global(.col) { min-width: 0; padding-right: .25rem; padding-left: .25rem; }
+    :global(input), :global(textarea), :global(button) { max-width: 100%; }
+}
+
+.manualFormHidden { display: none; }
+
+.quickAddInputControl {
+    position: relative;
+    min-width: 0;
+}
+
+.quickAddReviewField {
+    min-width: 0;
+}
+
+.quickAddInputlow, .quickAddInputmedium, .quickAddInputconfirmed {
+    border-width: 2px !important;
+    padding-right: 2.2rem !important;
+}
+
+.quickAddInputlow { border-color: $danger-color !important; }
+.quickAddInputmedium { border-color: $warning-color !important; }
+.quickAddInputconfirmed { border-color: $success-color !important; }
+
+.quickAddFieldIndicator {
+    position: absolute;
+    z-index: 3;
+    right: .55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: $success-color;
+    cursor: pointer;
+
+    svg { width: 1rem; height: 1rem; }
+
+    .quickAddReviewFieldlow & { color: $danger-color; }
+    .quickAddReviewFieldmedium & { color: $warning-color; }
+}
+
+.quickAddDateIndicator {
+    top: auto;
+    bottom: .55rem;
+    transform: none;
 }

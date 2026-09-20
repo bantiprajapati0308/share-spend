@@ -4,6 +4,7 @@ import tripReducer from './tripSlice';
 import dailySpendsReducer from './dailySpendsSlice';
 import appConfigReducer from './appConfigSlice';
 import notificationReducer from './notificationSlice';
+import quickAddReducer from './quickAddSlice';
 
 // Combine reducers (in case you have more in the future)
 const rootReducer = combineReducers({
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
     dailySpends: dailySpendsReducer,
     appConfig: appConfigReducer,
     notifications: notificationReducer,
+    quickAdd: quickAddReducer,
 });
 
 // Create store with root reducer
