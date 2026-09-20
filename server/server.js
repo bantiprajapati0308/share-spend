@@ -40,6 +40,7 @@ app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/settlements', require('./src/routes/settlements'));
 app.use('/api/daily-spends', require('./src/routes/dailySpends'));
 app.use('/api/categories', require('./src/routes/categories'));
+app.use('/api/quick-add', require('./src/routes/quickAdd'));
 app.use('/api/category-limits', require('./src/routes/categoryLimits'));
 app.use('/api/settings', require('./src/routes/settings'));
 app.use('/api/borrow-lend', require('./src/routes/borrowLend'));

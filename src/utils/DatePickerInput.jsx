@@ -18,7 +18,7 @@ import styles from './DatePickerInput.module.scss';
  *   showTimeSelect  — shows time picker alongside date (default false)
  *   timeIntervals   — minute step for time picker (default 15)
  */
-function DatePickerInput({ label, value, onChange, minDate, maxDate, required, isClearable, placeholder, showTimeSelect, timeIntervals }) {
+function DatePickerInput({ label, value, onChange, minDate, maxDate, required, isClearable, placeholder, showTimeSelect, timeIntervals, inputClassName }) {
     // Convert value string → Date object
     const toDate = (str) => {
         if (!str) return null;
@@ -55,7 +55,7 @@ function DatePickerInput({ label, value, onChange, minDate, maxDate, required, i
                 minDate={toDate(minDate)}
                 maxDate={toDate(maxDate)}
                 wrapperClassName={styles.wrapper}
-                className={styles.input}
+                className={`${styles.input} ${inputClassName || ''}`}
                 showMonthDropdown
                 showYearDropdown
                 dropdownMode="select"
@@ -80,6 +80,7 @@ DatePickerInput.propTypes = {
     placeholder: PropTypes.string,
     showTimeSelect: PropTypes.bool,
     timeIntervals: PropTypes.number,
+    inputClassName: PropTypes.string,
 };
 
 DatePickerInput.defaultProps = {
@@ -92,6 +93,7 @@ DatePickerInput.defaultProps = {
     placeholder: 'Select date',
     showTimeSelect: false,
     timeIntervals: 15,
+    inputClassName: '',
 };
 
 export default DatePickerInput;

@@ -16,6 +16,7 @@ export const dailySpendsApi = {
         return apiClient.get(`/api/daily-spends${qs ? `?${qs}` : ''}`);
     },
     addTransaction: (data) => apiClient.post('/api/daily-spends', data),
+    addTransactionsBulk: (transactions) => apiClient.post('/api/daily-spends/bulk', { transactions }),
     updateTransaction: (id, data) => apiClient.put(`/api/daily-spends/${id}`, data),
     deleteTransaction: (id) => apiClient.delete(`/api/daily-spends/${id}`),
 };

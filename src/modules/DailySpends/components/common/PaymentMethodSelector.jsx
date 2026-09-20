@@ -18,7 +18,7 @@ const PM_ICONS = {
     net_banking: <Bank size={26} color="#6610f2" />,
 };
 
-function PaymentMethodSelector({ value, onChange }) {
+function PaymentMethodSelector({ value, onChange, compact }) {
     const { paymentMethods } = usePaymentMethods();
     const transactions = useSelector(state => state.dailySpends.transactions);
 
@@ -36,7 +36,7 @@ function PaymentMethodSelector({ value, onChange }) {
     return (
         <div className={styles.formGroup}>
             <label>Payment Method *</label>
-            <div className={styles.paymentMethodCards}>
+            <div className={`${styles.paymentMethodCards} ${compact ? styles.inlinePaymentMethodCards : ''}`}>
                 {paymentMethods.map(pm => {
                     const isSelected = value === pm.value;
                     const isMostUsed = mostUsedId === pm.value;
@@ -71,6 +71,7 @@ function PaymentMethodSelector({ value, onChange }) {
 PaymentMethodSelector.propTypes = {
     value: PropTypes.string,
     onChange: PropTypes.func.isRequired,
+    compact: PropTypes.bool,
 };
 
 export default PaymentMethodSelector;
