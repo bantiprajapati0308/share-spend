@@ -2,6 +2,7 @@ import apiClient from '../apiClient';
 
 export const borrowLendApi = {
     getRecords: () => apiClient.get('/api/borrow-lend'),
+    parseTransactions: ({ text, image, defaultAction }) => apiClient.post('/api/borrow-lend/parse', { text, image, defaultAction }),
     getPersonNames: (type) => {
         const params = new URLSearchParams();
         if (type) params.set('type', type);

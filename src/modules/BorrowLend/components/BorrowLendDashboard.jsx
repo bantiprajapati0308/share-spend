@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
-import { Bell, Calendar2, HouseDoor, Search } from 'react-bootstrap-icons';
+import { Calendar2, HouseDoor, Magic, Search } from 'react-bootstrap-icons';
+import { useState } from 'react';
+import AIInputComposer from '../../../components/common/AIInputComposer';
 import StatusBadge from './StatusBadge';
 import { getInitials } from '../utils/ledgerViewModel';
 import styles from '../styles/BorrowLendDashboard.module.scss';
@@ -10,7 +12,10 @@ function BorrowLendDashboard({
     totalBorrowed,
     formatAmount,
     onSelectPerson,
+    onAIInput,
+    aiBusy,
 }) {
+    const [aiPrompt, setAiPrompt] = useState('');
     const remainingBalance = totalLent - totalBorrowed;
     const isPositiveBalance = remainingBalance >= 0;
 
@@ -51,6 +56,18 @@ function BorrowLendDashboard({
                         <small>{isPositiveBalance ? 'You will receive' : 'You owe more'}</small>
                     </article>
                 </div>
+            </section>
+
+            <section className={styles.aiQuickAdd} aria-label="AI Borrow/Lend quick add">
+                <div className={styles.aiQuickAddHeading}><span><Magic size={14} /> AI QUICK ADD</span><p>Describe lending, borrowing, returns, or repayments.</p></div>
+                <AIInputComposer
+                    value={aiPrompt}
+                    onChange={setAiPrompt}
+                    onSubmit={onAIInput}
+                    placeholder="e.g. give someone 5000
+                    "
+                    busy={aiBusy}
+                />
             </section>
 
             <section className={styles.peopleHeader}>
@@ -109,6 +126,8 @@ BorrowLendDashboard.propTypes = {
     totalBorrowed: PropTypes.number.isRequired,
     formatAmount: PropTypes.func.isRequired,
     onSelectPerson: PropTypes.func.isRequired,
+    onAIInput: PropTypes.func.isRequired,
+    aiBusy: PropTypes.bool.isRequired,
 };
 
 export default BorrowLendDashboard;

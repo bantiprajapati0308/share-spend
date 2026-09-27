@@ -1,8 +1,78 @@
 const { db, FieldValue } = require('../../config/firebase');
 const { ok, fail, notFound, badRequest } = require('../../utils/response');
 const { v4: uuidv4 } = require('uuid');
+const { parseBorrowLendInput } = require('../../services/ai/borrowLendAiService');
 
 const col = (uid) => db.collection('users').doc(uid).collection('borrowLend');
+const MAX_BORROW_LEND_IMAGE_BYTES = 1.5 * 1024 * 1024;
+const BORROW_LEND_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+const normalizePersonName = (name) => String(name || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+const counterpartTypeForAction = (action) => ['lend', 'return'].includes(action) ? 'gave' : 'took';
+
+const annotatePersonMatch = (transaction, records) => {
+    const inputName = normalizePersonName(transaction.personName);
+    if (!inputName) return { ...transaction, personMatch: { status: 'missing', candidates: [] } };
+
+    const type = counterpartTypeForAction(transaction.action);
+    const knownNames = [...new Set(records.filter((record) => record.type === type).map((record) => String(record.personName || '').trim()).filter(Boolean))];
+    const exactName = knownNames.find((name) => normalizePersonName(name) === inputName);
+    if (exactName) return { ...transaction, personMatch: { status: 'exact', matchedName: exactName, candidates: [exactName] } };
+
+    const tokens = inputName.split(' ');
+    const candidates = knownNames.filter((name) => {
+        const known = normalizePersonName(name);
+        return known.startsWith(`${inputName} `) || tokens.some((token) => token.length >= 3 && known.split(' ').some((knownToken) => knownToken.startsWith(token)));
+    });
+    return {
+        ...transaction,
+        personMatch: candidates.length
+            ? { status: 'suggested', candidates }
+            : { status: 'new', candidates: [] },
+    };
+};
+
+const parseTransactionsWithAi = async (req, res) => {
+    try {
+        const { text = '', image = null, defaultAction = null } = req.body || {};
+        if (typeof text !== 'string' || (!text.trim() && !image)) return badRequest(res, 'Add a description or image');
+        if (defaultAction && !['lend', 'borrow', 'return', 'repay'].includes(defaultAction)) return badRequest(res, 'Invalid default transaction action');
+
+        let validatedImage = null;
+        if (image) {
+            if (typeof image.data !== 'string' || !BORROW_LEND_IMAGE_TYPES.has(image.mimeType)) return badRequest(res, 'Use a JPEG, PNG, or WebP image');
+            const base64 = image.data.replace(/^data:image\/(?:jpeg|png|webp);base64,/, '');
+            if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) return badRequest(res, 'The image data is invalid');
+            const buffer = Buffer.from(base64, 'base64');
+            if (!buffer.length || buffer.length > MAX_BORROW_LEND_IMAGE_BYTES) return badRequest(res, 'Image must be smaller than 1.5 MB');
+            validatedImage = { data: buffer.toString('base64'), mimeType: image.mimeType };
+        }
+
+        const recordsSnapshot = await col(req.uid).get();
+        const records = recordsSnapshot.docs.map(normalizeRecord);
+        const currentDate = new Date().toISOString().slice(0, 10);
+        const ledger = records.slice(0, 200).map((record) => ({
+            personName: record.personName,
+            type: record.type,
+            transactions: (record.data || []).slice(-10).map((entry) => ({
+                amount: Number(entry.amount || 0),
+                date: entry.insert_date || entry.date || null,
+                dueDate: entry.due_date || null,
+                paymentType: entry.payment_type || null,
+                description: entry.description || '',
+            })),
+        }));
+        const parsed = await parseBorrowLendInput({ text, image: validatedImage, defaultAction, ledger, currentDate });
+        parsed.transactions = parsed.transactions.map((transaction) => annotatePersonMatch(transaction, records));
+        return ok(res, parsed);
+    } catch (error) {
+        console.error('[borrowLendController] AI parse failed:', error?.message || error);
+        if (error.code === 'NO_API_KEY') return fail(res, 'AI service not configured', 503);
+        if (error.code === 'INVALID_AI_OUTPUT') return fail(res, error.message, 502);
+        if (error.code === 'AI_GENERATION_FAILED') return fail(res, 'AI generation failed', 502);
+        return fail(res, error.message || 'Failed to parse Borrow/Lend transactions', 500);
+    }
+};
 
 const normalizeContactValue = (value) => {
     if (value === undefined || value === null) return '';
@@ -240,4 +310,4 @@ const deleteEntry = async (req, res) => {
     }
 };
 
-module.exports = { getRecords, getPersonNames, addRecord, addRepayment, updateContact, deleteEntry };
+module.exports = { getRecords, getPersonNames, parseTransactionsWithAi, addRecord, addRepayment, updateContact, deleteEntry };

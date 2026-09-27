@@ -38,6 +38,29 @@
     margin-bottom: 16px;
 }
 
+.aiQuickAdd {
+    margin: -3px 0 20px;
+}
+
+.aiQuickAddHeading {
+    margin: 0 0 7px;
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #2563eb;
+        font-size: 10px;
+        font-weight: 900;
+    }
+
+    p {
+        margin: 2px 0 0;
+        color: #64748b;
+        font-size: 11px;
+    }
+}
+
 .cardGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
