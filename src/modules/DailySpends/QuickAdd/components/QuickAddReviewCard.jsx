@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { ExclamationTriangleFill, PencilSquare, Trash3, ExclamationCircleFill, X } from 'react-bootstrap-icons';
+import { ExclamationTriangleFill, PencilSquare, Trash3, ExclamationCircleFill, CheckCircleFill, X } from 'react-bootstrap-icons';
 import { categoryForId, displayPaymentMethod, formatQuickAddDateTime, getFieldExplanation } from '../quickAddUtils';
 import AddExpenseForm from '../../components/AddExpenseForm';
 import styles from '../QuickAdd.module.scss';
@@ -80,11 +80,11 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
                 {reviewFields.map((item) => <div className={styles.reviewValue} key={item.field}>
                     <span>{item.label}</span>
                     {item.field === 'category' && categoryNeedsReview
-                        ? <select value={transaction.categoryId || ''} onChange={(event) => update({ categoryId: event.target.value || null, categoryConfidence: 'high', categoryStatus: 'confirmed' })}><option value="">Choose category</option>{availableCategories.map((option) => <option key={option.id} value={option.id}>{option.emoji} {option.name}</option>)}</select>
+                        ? <div className={styles.reviewFieldControl}><select value={transaction.categoryId || ''} onChange={(event) => update({ categoryId: event.target.value || null, categoryConfidence: 'high', categoryStatus: 'confirmed' })}><option value="">Choose category</option>{availableCategories.map((option) => <option key={option.id} value={option.id}>{option.emoji} {option.name}</option>)}</select><button type="button" className={styles.reviewConfirmButton} disabled={!transaction.categoryId} onClick={() => confirmField('category')} aria-label="Accept suggested category" title="Accept suggested category"><CheckCircleFill size={16} /></button></div>
                         : <strong>{item.value}</strong>}
                 </div>)}
             </div>
-            {paymentNeedsReview && <div className={styles.reviewMetaLine}><select className={styles.quickPaymentSelect} value={transaction.paymentMethod || ''} onChange={(event) => update({ paymentMethod: event.target.value || null, paymentMethodConfidence: 'high', paymentMethodStatus: 'confirmed' })}><option value="">Choose payment method</option>{paymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}</select></div>}
+            <div className={styles.reviewMetaLine}><span>Payment method:</span>{paymentNeedsReview ? <div className={styles.reviewFieldControl}><select className={styles.quickPaymentSelect} value={transaction.paymentMethod || ''} onChange={(event) => update({ paymentMethod: event.target.value || null, paymentMethodConfidence: 'high', paymentMethodStatus: 'confirmed' })}><option value="">Choose payment method</option>{paymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}</select><button type="button" className={styles.reviewConfirmButton} disabled={!transaction.paymentMethod} onClick={() => confirmField('paymentMethod')} aria-label="Accept suggested payment method" title="Accept suggested payment method"><CheckCircleFill size={16} /></button></div> : <strong>{displayPaymentMethod(paymentMethods, transaction.paymentMethod)}</strong>}</div>
             </>}
 
             {isEditing && <div className={styles.inlineEditor}>
