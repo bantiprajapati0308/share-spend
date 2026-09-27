@@ -1,0 +1,12 @@
+@use '../../assets/scss/variables' as *;
+
+.promptBox { display:flex; flex-direction:column; gap:.35rem; border:1px solid $primary-200; border-radius:$radius-xl; padding:.6rem .7rem .5rem; background:#fff; transition:border-color .15s ease, box-shadow .15s ease; &:focus-within { border-color:$primary-500; box-shadow:0 0 0 3px rgba($primary-500,.12); } textarea { width:100%; min-height:48px; border:0; padding:.2rem 0; resize:vertical; background:transparent; color:$text-primary; font:inherit; &:focus { outline:0; } &:disabled { opacity:.65; } } }
+.hiddenFileInput { display:none; }
+.receiptPreview { display:flex; align-items:center; gap:.5rem; min-width:0; width:max-content; max-width:100%; padding:.3rem .4rem; border:1px solid $neutral-200; border-radius:$radius-md; background:$neutral-50; img { width:42px; height:42px; border-radius:4px; object-fit:cover; } span { overflow:hidden; max-width:220px; color:$text-secondary; font-size:$font-size-xs; text-overflow:ellipsis; white-space:nowrap; } button { display:grid; place-items:center; flex:0 0 26px; width:26px; height:26px; border:0; border-radius:50%; color:$text-secondary; background:transparent; &:hover { color:$danger-700; background:$danger-50; } } }
+.promptActions, .promptTools { display:flex; align-items:center; }
+.promptActions { justify-content:space-between; }
+.promptTools { gap:.3rem; }
+.promptToolButton { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:$radius-lg; color:$text-secondary; background:transparent; &:hover:not(:disabled) { color:$primary-700; background:$primary-50; } &:disabled { color:$neutral-300; cursor:not-allowed; } }
+.promptSendButton { display:grid; place-items:center; width:34px; height:34px; border:0; border-radius:50%; color:#fff; background:$primary-600; transition:background .15s ease, transform .15s ease; &:hover:not(:disabled) { background:$primary-700; transform:translateY(-1px); } &:disabled { background:$neutral-300; cursor:not-allowed; } }
+.spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,.55); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }

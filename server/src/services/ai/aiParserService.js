@@ -47,7 +47,9 @@ function buildPrompt(text, currentDate, options = {}) {
     const catList = JSON.stringify(categories);
     const pmList = JSON.stringify(paymentMethods);
 
-    return `Extract financial transactions from the user's input. Respond ONLY with JSON that validates against the provided schema. Do not include any prose or markdown. Languages: English, Hindi, Hinglish, Romanized Hindi, mixed Hindi+English. Use the supplied currentDate (${currentDate}) and timezone (${timezone || 'none'}) to resolve relative dates (today, yesterday, aaj, kal) and times. Never invent values — if a field is missing or ambiguous, return null for that field. For categoryId and paymentMethod return ONLY values from the provided lists. Do NOT invent categories or payment methods. If no confident match exists, return null for categoryId. For paymentMethod, if missing or ambiguous, use the Online Banking fallback only if that exact payment method exists in the provided list; mark such fallback results with paymentMethodConfidence: "low". If the user explicitly mentions a payment method, set paymentMethodConfidence: "high". If wording gives a reasonable but not explicit hint, set "medium". Allowed paymentMethodConfidence values: high, medium, low, or null.
+    return `Extract financial transactions from the user's text and attached image, if present. Images may be receipts, payment screenshots, or handwriting. Read English, Hindi, Hinglish, and Romanized Hindi. Return only JSON matching the provided schema. Extract amount, date, time, payment method, concise name, and useful merchant/item notes. For itemized receipts, group items by best matching category and sum amounts within each category; keep separate payments separate. Do not duplicate a purchase described in both text and image. If no transaction is readable, return no transactions and explain in warnings. Never guess unreadable or missing values; use null.
+
+Use currentDate (${currentDate}) and timezone (${timezone || 'none'}) to resolve relative dates and times. Return explicit times as HH:MM:SS. Time-of-day defaults: morning 10:00, afternoon 14:00, evening 18:00, night 22:00. Use currentDate with medium date confidence when no date is visible or mentioned. Use only category IDs and payment-method values from the supplied lists. Categories explicitly stated are high confidence; clear category inferences are medium; no reasonable match is null. Explicit payment methods are high confidence, clear hints medium. If payment method is missing, use the Online Banking option only if it exists and mark it low confidence; otherwise return null. Keep names concise and put extra context in note.
 
 Time rules: Return explicit times in HH:MM:SS 24-hour format. If the user gives only a time-of-day phrase and no explicit time, use these defaults: morning/subah = 10:00:00, afternoon/dopahar = 14:00:00, evening/shaam/sham = 18:00:00, night/raat = 22:00:00.
 
@@ -133,14 +135,15 @@ function completeInferredFields(parsed, currentDate) {
 }
 
 async function parseText(text, options = {}) {
-    if (!text || typeof text !== 'string' || !text.trim()) {
+    const { image = null } = options;
+    if ((!text || typeof text !== 'string' || !text.trim()) && !image) {
         const err = new Error('Empty input');
         err.code = 'EMPTY_INPUT';
         throw err;
     }
 
     // enforce maximum input length to avoid sending excessively large content to Gemini
-    if (typeof MAX_INPUT_LENGTH === 'number' && text.length > MAX_INPUT_LENGTH) {
+    if (text && typeof MAX_INPUT_LENGTH === 'number' && text.length > MAX_INPUT_LENGTH) {
         const err = new Error('Input too large');
         err.code = 'INPUT_TOO_LARGE';
         throw err;
@@ -163,7 +166,9 @@ async function parseText(text, options = {}) {
     try {
         interaction = await ai.interactions.create({
             model: MODEL,
-            input: prompt,
+            input: image
+                ? [{ type: 'text', text: prompt }, { type: 'image', data: image.data, mime_type: image.mimeType }]
+                : prompt,
             response_format: {
                 type: 'text',
                 mime_type: 'application/json',

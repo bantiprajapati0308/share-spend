@@ -1,5 +1,5 @@
 import apiClient from '../apiClient';
 
 export const quickAddApi = {
-    parse: (text) => apiClient.post('/api/quick-add/parse', { text }),
+    parse: (text, image = null) => apiClient.post('/api/quick-add/parse', { text, image }),
 };

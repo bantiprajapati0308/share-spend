@@ -3,6 +3,9 @@ const { parseText } = require('../services/ai/aiParserService');
 const { db } = require('../config/firebase');
 const UserRepository = require('../repositories/UserRepository');
 
+const MAX_IMAGE_BYTES = 1.5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 // Minimal validation for the QuickAddResponse schema described in the task.
 function validateParsedResponse(obj) {
     if (!obj || typeof obj !== 'object') return false;
@@ -66,8 +69,22 @@ async function getUserTimezone(uid) {
 // POST /api/quick-add/parse
 const parse = async (req, res) => {
     try {
-        const { text } = req.body || {};
-        if (!text || typeof text !== 'string' || !text.trim()) return badRequest(res, 'text is required');
+        const { text = '', image = null } = req.body || {};
+        if (typeof text !== 'string' || (!text.trim() && !image)) return badRequest(res, 'Add a description or receipt image');
+
+        let validatedImage = null;
+        if (image) {
+            if (typeof image.data !== 'string' || !ALLOWED_IMAGE_TYPES.has(image.mimeType)) {
+                return badRequest(res, 'Use a JPEG, PNG, or WebP image');
+            }
+            const base64 = image.data.replace(/^data:image\/(?:jpeg|png|webp);base64,/, '');
+            if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64)) return badRequest(res, 'The image data is invalid');
+            const imageBuffer = Buffer.from(base64, 'base64');
+            if (!imageBuffer.length || imageBuffer.length > MAX_IMAGE_BYTES) {
+                return badRequest(res, 'Image must be smaller than 1.5 MB');
+            }
+            validatedImage = { data: imageBuffer.toString('base64'), mimeType: image.mimeType };
+        }
 
         const uid = req.uid; // set by auth middleware
         const currentDate = new Date().toISOString().slice(0, 10);
@@ -79,7 +96,7 @@ const parse = async (req, res) => {
             getUserTimezone(uid),
         ]);
 
-        const parsed = await parseText(text, { currentDate, categories, paymentMethods, timezone });
+        const parsed = await parseText(text, { currentDate, categories, paymentMethods, timezone, image: validatedImage });
 
         // Validate structure
         if (!validateParsedResponse(parsed)) {
