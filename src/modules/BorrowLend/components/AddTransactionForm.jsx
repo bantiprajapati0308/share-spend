@@ -9,9 +9,8 @@ import { TRANSACTION_TYPES, getTransactionTypeLabel } from '../constants/transac
 import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import { primeBorrowLendPersonContact, primeBorrowLendPersonName } from '../hooks/useBorrowLendPersonNames';
 import { DAILY_SPEND_SYNC_CHOICES } from '../utils/dailySpendSync';
-import AIInputComposer from '../../../components/common/AIInputComposer';
 
-function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.GAVE, contactPeople = [], onCancel = null, onAIInput = null }) {
+function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.GAVE, contactPeople = [], onCancel = null }) {
     const [personName, setPersonName] = useState('');
     const [amount, setAmount] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -22,7 +21,6 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
     const [dailySpendSyncChoice, setDailySpendSyncChoice] = useState('');
     const [dailySpendSyncError, setDailySpendSyncError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [aiPrompt, setAiPrompt] = useState('');
     const type = initialType;
 
     const actionInfo = type === TRANSACTION_TYPES.GAVE
@@ -144,13 +142,6 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
                     <p>{actionInfo.description}</p>
                 </div>
             </section>
-
-            <AIInputComposer
-                value={aiPrompt}
-                onChange={setAiPrompt}
-                onSubmit={onAIInput ? (input) => onAIInput({ ...input, type }) : undefined}
-                placeholder={type === TRANSACTION_TYPES.GAVE ? 'Describe money you lent…' : 'Describe money you borrowed…'}
-            />
 
             <Row className="mt-3">
                 <Col xs={12}>
@@ -308,7 +299,6 @@ AddTransactionForm.propTypes = {
         type: PropTypes.string,
     })),
     onCancel: PropTypes.func,
-    onAIInput: PropTypes.func,
 };
 
 export default AddTransactionForm;

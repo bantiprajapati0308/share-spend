@@ -3,6 +3,7 @@ import { Col, Container, Modal, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useLendingTransactions } from './hooks/useLendingTransactions';
 import AddTransactionForm from './components/AddTransactionForm';
+import BorrowLendAIReview from './components/BorrowLendAIReview';
 import BorrowLendDashboard from './components/BorrowLendDashboard';
 import BorrowLendDetailsModal from './components/BorrowLendDetailsModal';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
@@ -13,7 +14,7 @@ import RepaymentForm from './components/RepaymentForm';
 import WhatsAppReminderModal from './components/WhatsAppReminderModal';
 import FullScreenLoader from '../../components/common/FullScreenLoader';
 import { getCurrencySymbol } from '../../Util';
-import { addBorrowLendRecord } from './utils/borrowLendFirestore';
+import { addBorrowLendRecord, applyBorrowLendRepayment } from './utils/borrowLendFirestore';
 import { TRANSACTION_TYPES } from './constants/transactionTypes';
 import { buildPeopleLedger, buildPersonTimeline } from './utils/ledgerViewModel';
 import { borrowLendApi } from '../../services/api/borrowLendApi';
@@ -34,6 +35,9 @@ function BorrowLend() {
     const [isOpeningWhatsApp, setIsOpeningWhatsApp] = useState(false);
     const [isSavingContact, setIsSavingContact] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [aiReview, setAiReview] = useState(null);
+    const [isParsingAi, setIsParsingAi] = useState(false);
+    const [isSavingAi, setIsSavingAi] = useState(false);
     const currency = localStorage.getItem('defaultCurrency') || 'INR';
     const currencySymbol = getCurrencySymbol(currency);
     const lendingHook = useLendingTransactions();
@@ -190,6 +194,119 @@ function BorrowLend() {
         }
     };
 
+    const handleAIInput = async ({ text, image, type }) => {
+        const defaultAction = ({
+            [TRANSACTION_TYPES.GAVE]: 'lend',
+            [TRANSACTION_TYPES.TOOK]: 'borrow',
+            return: 'return',
+            repay: 'repay',
+        })[type] || null;
+        setIsParsingAi(true);
+        try {
+            const result = await borrowLendApi.parseTransactions({ text, image, defaultAction });
+            if (!result.success) throw new Error(result.error || 'Could not analyze transaction input');
+            const parsedDrafts = result.data.transactions.map((transaction, index) => ({
+                ...transaction,
+                draftId: `${Date.now()}-${index}`,
+                amount: transaction.amount == null ? '' : String(transaction.amount),
+                personName: transaction.personMatch?.status === 'exact'
+                    ? transaction.personMatch.matchedName
+                    : transaction.personName || '',
+                matchConfirmed: transaction.personMatch?.status !== 'suggested',
+                syncToDailySpend: null,
+            }));
+            if (!parsedDrafts.length) {
+                toast.info(result.data.warnings?.[0] || 'No Borrow/Lend transactions were found.');
+                return;
+            }
+            setAiReview({ drafts: parsedDrafts, warnings: result.data.warnings || [] });
+        } catch (parseError) {
+            toast.error(parseError.message || 'Could not analyze transaction input');
+        } finally {
+            setIsParsingAi(false);
+        }
+    };
+
+    const saveAiDrafts = async () => {
+        if (!aiReview?.drafts?.length || isSavingAi) return;
+        setIsSavingAi(true);
+        const failedDrafts = [];
+        const savedDrafts = [];
+        let syncFailures = 0;
+
+        for (const draft of aiReview.drafts) {
+            const action = draft.action;
+            const ledgerType = ['lend', 'return'].includes(action) ? TRANSACTION_TYPES.GAVE : TRANSACTION_TYPES.TOOK;
+            const transaction = {
+                personName: draft.personName.trim(),
+                amount: Number(draft.amount),
+                type: ledgerType,
+                date: draft.date,
+                dueDate: ['lend', 'borrow'].includes(action) ? draft.dueDate || null : null,
+                description: draft.description || '',
+            };
+
+            try {
+                let savedRecord;
+                if (['lend', 'borrow'].includes(action)) {
+                    savedRecord = await addBorrowLendRecord(transaction);
+                } else {
+                    savedRecord = await applyBorrowLendRepayment({
+                        personName: transaction.personName,
+                        repaymentAmount: transaction.amount,
+                        date: transaction.date,
+                        description: transaction.description,
+                        type: ledgerType,
+                    });
+                }
+
+                if (draft.syncToDailySpend === 'yes') {
+                    try {
+                        await addBorrowLendTransactionToDailySpend({
+                            kind: getBorrowLendDailySpendKind({ type: ledgerType, mode: action === 'return' || action === 'repay' ? action : undefined }),
+                            personName: transaction.personName,
+                            amount: transaction.amount,
+                            date: transaction.date,
+                            dueDate: transaction.dueDate,
+                            description: transaction.description,
+                        });
+                    } catch (syncError) {
+                        syncFailures += 1;
+                        console.error('Daily Spend sync failed:', syncError);
+                    }
+                }
+                savedDrafts.push({ draft, transaction, savedRecord });
+            } catch (saveError) {
+                failedDrafts.push(draft);
+                console.error('AI Borrow/Lend draft save failed:', saveError);
+            }
+        }
+
+        if (savedDrafts.length) {
+            await refreshTransactions();
+            toast.success(`${savedDrafts.length} transaction${savedDrafts.length === 1 ? '' : 's'} saved${syncFailures ? `; ${syncFailures} Daily Spend sync${syncFailures === 1 ? '' : 's'} failed` : ''}`);
+            const firstSaved = savedDrafts[0];
+            const contact = people.find((person) => person.type === firstSaved.transaction.type && person.personName.toLowerCase() === firstSaved.transaction.personName.toLowerCase());
+            openReminderFlow({
+                id: firstSaved.savedRecord?.id || firstSaved.savedRecord?.entry?.id || '',
+                personName: firstSaved.transaction.personName,
+                mobileNumber: contact?.mobileNumber || '',
+                email: contact?.email || '',
+                remaining: firstSaved.transaction.amount,
+                dueDate: firstSaved.transaction.dueDate,
+                whatsAppContext: ({ lend: 'new-gave', borrow: 'new-took', return: 'return', repay: 'repay' })[firstSaved.draft.action],
+            }, { confirmBeforeOpen: true });
+        }
+
+        if (failedDrafts.length) {
+            setAiReview({ ...aiReview, drafts: failedDrafts, warnings: [...aiReview.warnings, `${failedDrafts.length} transaction${failedDrafts.length === 1 ? '' : 's'} could not be saved. Review and retry.`] });
+        } else {
+            setAiReview(null);
+            closeForm();
+        }
+        setIsSavingAi(false);
+    };
+
     const handleSavedRepayment = async (savedRepayment = {}) => {
         const currentFormState = formState || {};
         closeForm();
@@ -337,6 +454,8 @@ function BorrowLend() {
                             totalBorrowed={getTotalTaken()}
                             formatAmount={formatAmount}
                             onSelectPerson={setSelectedPerson}
+                            onAIInput={handleAIInput}
+                            aiBusy={isParsingAi}
                         />
                     )}
                 </Col>
@@ -367,6 +486,21 @@ function BorrowLend() {
                     </Modal.Body>
                 </Modal>
             )}
+
+            <Modal show={!!aiReview} onHide={() => !isSavingAi && setAiReview(null)} centered size="lg" scrollable className={styles.modalShell}>
+                <Modal.Body>
+                    {aiReview && <BorrowLendAIReview
+                        drafts={aiReview.drafts}
+                        warnings={aiReview.warnings}
+                        people={people}
+                        saving={isSavingAi}
+                        onChange={(index, changes) => setAiReview((current) => ({ ...current, drafts: current.drafts.map((draft, draftIndex) => draftIndex === index ? { ...draft, ...changes } : draft) }))}
+                        onRemove={(index) => setAiReview((current) => ({ ...current, drafts: current.drafts.filter((_, draftIndex) => draftIndex !== index) }))}
+                        onSave={saveAiDrafts}
+                        onCancel={() => setAiReview(null)}
+                    />}
+                </Modal.Body>
+            </Modal>
 
             <DeleteConfirmationModal
                 show={!!transactionToDelete}
