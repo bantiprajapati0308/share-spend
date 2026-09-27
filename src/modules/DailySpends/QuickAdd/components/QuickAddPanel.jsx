@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Magic, Send, XCircleFill } from 'react-bootstrap-icons';
+import { ArrowUp, Cart3, ChevronRight, CupHotFill, FuelPumpFill, ForkKnife, Image, Magic, MicFill, XCircleFill } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { quickAddApi } from '../../../../services/api/quickAddApi';
@@ -9,14 +9,23 @@ import { categoryForId, transactionPayload } from '../quickAddUtils';
 import QuickAddReview from './QuickAddReview';
 import styles from '../QuickAdd.module.scss';
 
-const examples = ['Spent ₹200 on fuel and ₹90 on snacks', 'Paid ₹1,200 for dinner with UPI', 'Bought groceries for ₹500 and fuel for ₹200 in cash'];
+const examples = [
+    { text: 'Spent ₹200 on fuel and ₹90 on snacks', icon: FuelPumpFill, tone: 'fuel' },
+    { text: 'Bought groceries for ₹500 in cash', icon: Cart3, tone: 'groceries' },
+    { text: 'Paid ₹1,200 for dinner with UPI', icon: ForkKnife, tone: 'dining' },
+    { text: 'Coffee ₹150 at CCD', icon: CupHotFill, tone: 'coffee' },
+    { text: 'Paid ₹800 for electricity bill online', icon: Magic, tone: 'bills' },
+    { text: 'Received ₹5,000 from a friend', icon: Magic, tone: 'income' },
+];
 
 function QuickAddPanel({ categories, onAddTransactionsBulk }) {
     const dispatch = useDispatch();
     const { prompt, status, transactions, warnings, error } = useSelector((state) => state.quickAdd);
     const paymentMethods = useSelector((state) => state.appConfig.paymentMethods);
     const [saving, setSaving] = useState(false);
+    const [showMoreExamples, setShowMoreExamples] = useState(false);
     const parseRequestId = useRef(0);
+    const promptRef = useRef(null);
 
     const parsePrompt = async () => {
         if (!prompt.trim()) return toast.error('Describe one or more transactions first');
@@ -67,8 +76,18 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
         <section className={styles.quickAddPanel}>
             <div className={styles.quickAddHeader}><div><span className={styles.quickAddEyebrow}><Magic size={14} /> AI assisted</span><h3>Add transactions with AI</h3><p>Describe your spending in any language. Review, then save.</p></div>{status !== 'idle' && <button type="button" className={styles.clearButton} onClick={() => { parseRequestId.current += 1; dispatch(resetQuickAdd()); }}>Cancel</button>}</div>
             {status !== 'review' && <>
-                <div className={styles.promptBox}><textarea value={prompt} onChange={(event) => dispatch(setPrompt(event.target.value))} placeholder="Tell us your transactions in any language — AI will organize them for you." rows="2" /><button type="button" disabled={status === 'loading'} onClick={parsePrompt} aria-label="Analyze transactions"><Send size={19} /></button></div>
-                <div className={styles.examples}>{examples.map((example) => <button type="button" key={example} onClick={() => dispatch(setPrompt(example))}>{example}</button>)}</div>
+                <div className={styles.promptBox}>
+                    <textarea ref={promptRef} value={prompt} onChange={(event) => dispatch(setPrompt(event.target.value))} placeholder="What did you spend on?" rows="2" aria-label="Describe your transactions" />
+                    <div className={styles.promptActions}>
+                        <div className={styles.promptTools}>
+                            <button type="button" className={styles.promptToolButton} disabled title="Receipt image input is coming soon" aria-label="Attach an image, coming soon"><Image size={17} /></button>
+                            <button type="button" className={styles.promptToolButton} title="For voice input, please use your keyboard microphone." aria-label="For voice input, please use your keyboard microphone" onClick={() => promptRef.current?.focus()}><MicFill size={16} /></button>
+                        </div>
+                        <button type="button" className={styles.promptSendButton} disabled={status === 'loading' || !prompt.trim()} onClick={parsePrompt} aria-label="Analyze transactions" title="Analyze transactions"><ArrowUp size={19} /></button>
+                    </div>
+                </div>
+                <div className={styles.examplesHeading}><span>☀️ Try these examples</span><button type="button" onClick={() => setShowMoreExamples((showing) => !showing)} aria-expanded={showMoreExamples}>{showMoreExamples ? 'See less' : 'See more'} <ChevronRight size={13} className={showMoreExamples ? styles.chevronExpanded : ''} /></button></div>
+                <div className={styles.examples}>{examples.slice(0, showMoreExamples ? examples.length : 4).map(({ text, icon: ExampleIcon, tone }) => <button type="button" key={text} className={styles[`example${tone}`]} onClick={() => { dispatch(setPrompt(text)); promptRef.current?.focus(); }}><ExampleIcon size={18} /><span>{text}</span></button>)}</div>
                 {status === 'loading' && <div className={styles.processing}><span className={styles.processingOrb} /><div><strong>Analyzing your input…</strong><small>Finding transactions, categories, dates and payment methods.</small></div></div>}
                 {status === 'error' && <div className={styles.parseError}><XCircleFill size={17} /> {error || 'Unable to analyze this input. Please try again.'}</div>}
             </>}
