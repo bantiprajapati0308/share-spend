@@ -1,7 +1,6 @@
-const { GoogleGenAI } = require('@google/genai');
-const { MODEL, MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { generateJson } = require('./groqClient');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const BORROW_LEND_SCHEMA = {
     type: 'object',
     properties: {
@@ -59,22 +58,13 @@ async function parseBorrowLendInput({ text, image, defaultAction, ledger, curren
         error.code = 'INPUT_TOO_LARGE';
         throw error;
     }
-    if (!GEMINI_API_KEY) {
-        const error = new Error('AI service not configured');
-        error.code = 'NO_API_KEY';
-        throw error;
-    }
-
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
     const prompt = buildBorrowLendPrompt({ text, currentDate, defaultAction, ledger });
     let interaction;
     try {
-        interaction = await ai.interactions.create({
-            model: MODEL,
-            input: image
-                ? [{ type: 'text', text: prompt }, { type: 'image', data: image.data, mime_type: image.mimeType }]
-                : prompt,
-            response_format: { type: 'text', mime_type: 'application/json', schema: BORROW_LEND_SCHEMA },
+        interaction = await generateJson({
+            prompt,
+            schema: BORROW_LEND_SCHEMA,
+            image,
         });
     } catch (cause) {
         const error = new Error('AI generation failed');

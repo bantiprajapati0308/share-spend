@@ -66,6 +66,58 @@ async function getUserTimezone(uid) {
     }
 }
 
+async function getRecentTransactions(uid) {
+    const snapshot = await db.collection('users')
+        .doc(uid)
+        .collection('dailySpends')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .get();
+
+    return snapshot.docs
+        .filter((doc) => doc.data().isCreditCardCompanion !== true)
+        .slice(0, 50)
+        .map((doc) => {
+            const transaction = doc.data();
+            const textOrNull = (value, maxLength) => (
+                typeof value === 'string' ? value.slice(0, maxLength) : null
+            );
+            return {
+                type: textOrNull(transaction.type, 20),
+                name: textOrNull(transaction.name, 100),
+                amount: typeof transaction.amount === 'number' && Number.isFinite(transaction.amount)
+                    ? transaction.amount
+                    : null,
+                category: textOrNull(
+                    transaction.categoryName || transaction.category || transaction.categoryId,
+                    100
+                ),
+                date: textOrNull(transaction.date, 40),
+                paymentMethod: textOrNull(transaction.paymentMethodId, 50),
+                notes: textOrNull(transaction.notes, 300),
+            };
+        });
+}
+
+function getCurrentDateTime(timezone, now = new Date()) {
+    const parts = new Intl.DateTimeFormat('en', {
+        timeZone: timezone || 'UTC',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(now);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+
+    return {
+        currentDate: `${values.year}-${values.month}-${values.day}`,
+        currentTime: `${values.hour}:${values.minute}:${values.second}`,
+    };
+}
+
 // POST /api/quick-add/parse
 const parse = async (req, res) => {
     try {
@@ -87,16 +139,25 @@ const parse = async (req, res) => {
         }
 
         const uid = req.uid; // set by auth middleware
-        const currentDate = new Date().toISOString().slice(0, 10);
 
         // Provide optional context to the AI — helps mapping but not required.
-        const [categories, paymentMethods, timezone] = await Promise.all([
+        const [categories, paymentMethods, timezone, recentTransactions] = await Promise.all([
             getUserCategories(uid),
             getPaymentMethods(),
             getUserTimezone(uid),
+            getRecentTransactions(uid),
         ]);
+        const { currentDate, currentTime } = getCurrentDateTime(timezone);
 
-        const parsed = await parseText(text, { currentDate, categories, paymentMethods, timezone, image: validatedImage });
+        const parsed = await parseText(text, {
+            currentDate,
+            currentTime,
+            categories,
+            paymentMethods,
+            timezone,
+            recentTransactions,
+            image: validatedImage,
+        });
 
         // Validate structure
         if (!validateParsedResponse(parsed)) {
