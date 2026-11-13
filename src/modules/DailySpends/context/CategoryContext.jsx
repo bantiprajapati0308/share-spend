@@ -9,7 +9,7 @@ import { useUserCategories } from '../hooks/useUserCategories';
  */
 export const CategoryContext = createContext();
 
-export const CategoryProvider = ({ children }) => {
+export const CategoryProvider = ({ children, bootstrapReady = true }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -100,6 +100,7 @@ export const CategoryProvider = ({ children }) => {
         loading,
         error,
         isInitialized,
+        bootstrapReady,
 
         // Methods
         initializeCategories,
@@ -119,5 +120,5 @@ export const CategoryProvider = ({ children }) => {
 
 CategoryProvider.propTypes = {
     children: PropTypes.node.isRequired,
+    bootstrapReady: PropTypes.bool,
 };
-

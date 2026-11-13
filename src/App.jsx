@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { auth } from './firebase';
 import { ensureUserProfile } from './hooks/useUserProfile';
 import AuthModule from './modules/Auth';
-import FullScreenLoader from './components/common/FullScreenLoader';
+import StartupScreen from './components/common/StartupScreen';
 import MaintenancePage from './components/MaintenancePage';
 import { SecurityProvider } from './context/SecurityContext.jsx';
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -13,19 +13,32 @@ const IS_MAINTENANCE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 function App() {
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isProfileReady, setIsProfileReady] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        setIsAuthLoading(true);
-        await ensureUserProfile(firebaseUser);
-      }
-
+    let active = true;
+    let profileRequestId = 0;
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (!active) return;
+      const requestId = ++profileRequestId;
       setUser(firebaseUser);
       setIsAuthLoading(false);
+
+      if (!firebaseUser) {
+        setIsProfileReady(false);
+        return;
+      }
+
+      setIsProfileReady(false);
+      ensureUserProfile(firebaseUser).finally(() => {
+        if (active && requestId === profileRequestId) setIsProfileReady(true);
+      });
     });
 
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   if (IS_MAINTENANCE) {
@@ -33,7 +46,7 @@ function App() {
   }
 
   if (isAuthLoading) {
-    return <FullScreenLoader />;
+    return <StartupScreen message="Checking your session..." />;
   }
 
   if (!user) {
@@ -43,7 +56,7 @@ function App() {
   return (
     <SecurityProvider user={user}>
       <ProtectedRoute>
-        <AppContent user={user} />
+        <AppContent user={user} profileReady={isProfileReady} />
       </ProtectedRoute>
     </SecurityProvider>
   );

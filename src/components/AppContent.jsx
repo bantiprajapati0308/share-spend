@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import TopBar from './TopBar';
 import BottomNavigation from './BottomNavigation';
 import ErrorBoundary from './common/ErrorBoundary';
-import FullScreenLoader from './common/FullScreenLoader';
+import InlineLoader from './common/InlineLoader';
 import { CategoryProvider } from '../modules/DailySpends/context/CategoryContext.jsx';
 import JoinTripDialog from '../modules/Trip/components/JoinTripDialog';
 import useInviteCheck from '../modules/Trip/hooks/useInviteCheck';
@@ -19,7 +19,7 @@ const BorrowLend = lazy(() => import('../modules/BorrowLend'));
 const HelpCenter = lazy(() => import('../modules/HelpCenter'));
 const SecuritySettings = lazy(() => import('../pages/settings/security/SecuritySettings'));
 
-function AppContent({ user }) {
+function AppContent({ user, profileReady }) {
   const navigate = useNavigate();
   const { pendingInvites, setPendingInvites, refreshInvites } = useInviteCheck(user?.email);
   const [activeInvite, setActiveInvite] = useState(null);
@@ -57,11 +57,11 @@ function AppContent({ user }) {
   };
 
   return (
-    <CategoryProvider>
+    <CategoryProvider bootstrapReady={profileReady}>
       <div style={{ paddingBottom: '60px' }}>
         <ErrorBoundary>
           <TopBar onInviteNotificationClick={handleInviteNotificationClick} />
-          <Suspense fallback={<FullScreenLoader />}>
+          <Suspense fallback={<InlineLoader />}>
             <Routes>
               <Route path="/" element={<Navigate to="/daily-expenses" />} />
               <Route path="/trip" element={<Trip />} />
@@ -106,6 +106,7 @@ AppContent.propTypes = {
   user: PropTypes.shape({
     email: PropTypes.string,
   }).isRequired,
+  profileReady: PropTypes.bool.isRequired,
 };
 
 export default AppContent;

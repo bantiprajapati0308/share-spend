@@ -13,7 +13,6 @@ import DateRangePicker from './components/DateRangePicker';
 import TimeSummarySection from './components/TimeSummarySection';
 import styles from './styles/DailySpends.module.scss';
 import { toast } from 'react-toastify';
-import FullScreenLoader from '../../components/common/FullScreenLoader';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
 import { DailySpendTabsList } from '../../Util';
 import { formatLocalDate, getTransactionDateKey, parseLocalDate } from './utils/dateUtils';
@@ -56,10 +55,11 @@ function DailySpends() {
         error,
     } = useDailyExpenses(startDate, endDate);
 
-    const { categories: allCategories } = useCategoryContext();
+    const { categories: allCategories, bootstrapReady } = useCategoryContext();
     const { loadDateRange, saveDateRange } = useSelectedDateRange();
 
     const loadSavedDateRange = useCallback(async () => {
+        if (!bootstrapReady) return;
         try {
             const savedRange = await loadDateRange();
             if (savedRange && savedRange.startDate && savedRange.endDate) {
@@ -72,12 +72,12 @@ function DailySpends() {
             console.error('Error loading saved date range:', err);
             setDateRangeLoaded(true);
         }
-    }, [loadDateRange]);
+    }, [bootstrapReady, loadDateRange]);
 
     // Load saved date range from database on mount
     useEffect(() => {
-        loadSavedDateRange();
-    }, [loadSavedDateRange]);
+        if (bootstrapReady) loadSavedDateRange();
+    }, [bootstrapReady, loadSavedDateRange]);
 
     const handleDateRangeChange = async (newRange) => {
         try {
@@ -199,9 +199,23 @@ function DailySpends() {
             return txDateStr >= rangeStartStr && txDateStr <= rangeEndStr;
         });
     const sectionTitle = selectedType === 'spend' ? "Expenses" : "Income";
-    // Show loader while loading date range
-    if (!dateRangeLoaded || loading) {
-        return <FullScreenLoader />;
+    // Keep the dashboard shell visible while profile setup and saved settings load.
+    if (!dateRangeLoaded) {
+        return (
+            <Container className={styles.container} aria-busy="true">
+                <Row>
+                    <Col lg={8} className="mx-auto">
+                        <DailySpendsHeader />
+                        <div className="d-flex flex-column align-items-center py-5 text-center" aria-live="polite">
+                            <Spinner animation="border" role="status" className="mb-3">
+                                <span className="visually-hidden">Loading</span>
+                            </Spinner>
+                            <p className="text-secondary mb-0">Preparing your spending dashboard...</p>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        );
     }
 
     // Show date range selection screen if no date range is set
@@ -348,12 +362,19 @@ function DailySpends() {
                     <TimeSummarySection transactions={transactions} selectedType={selectedType} />
 
                     {/* Transaction List */}
-                    <ExpenseList
-                        expenses={displayedTransactions}
-                        onDelete={handleDeleteTransaction}
-                        onEdit={handleEditTransaction}
-                        title={sectionTitle}
-                    />
+                    {loading ? (
+                        <div className="d-flex justify-content-center py-4" role="status" aria-live="polite">
+                            <Spinner animation="border" size="sm" className="me-2" />
+                            <span>Loading transactions...</span>
+                        </div>
+                    ) : (
+                        <ExpenseList
+                            expenses={displayedTransactions}
+                            onDelete={handleDeleteTransaction}
+                            onEdit={handleEditTransaction}
+                            title={sectionTitle}
+                        />
+                    )}
                 </Col>
             </Row>
 
