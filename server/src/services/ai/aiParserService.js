@@ -1,10 +1,8 @@
-const { GoogleGenAI } = require('@google/genai');
-const { MODEL, MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { generateJson } = require('./groqClient');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-if (!GEMINI_API_KEY) {
-    console.warn('[aiParserService] GEMINI_API_KEY not set; AI parsing will fail until provided.');
+if (!process.env.GROQ_API_KEY) {
+    console.warn('[aiParserService] GROQ_API_KEY not set; AI parsing will fail until provided.');
 }
 
 // JSON Schema for the QuickAddResponse (strict — no additional properties)
@@ -42,14 +40,26 @@ const QUICK_ADD_JSON_SCHEMA = {
 };
 
 function buildPrompt(text, currentDate, options = {}) {
-    const { categories = [], paymentMethods = [], timezone = null } = options;
+    const {
+        categories = [],
+        paymentMethods = [],
+        timezone = null,
+        currentTime = null,
+        recentTransactions = [],
+    } = options;
     // Provide closed lists for categories (id, name, emoji, type) and paymentMethods (value,label)
     const catList = JSON.stringify(categories);
     const pmList = JSON.stringify(paymentMethods);
+    const transactionHistory = JSON.stringify(recentTransactions);
 
     return `Extract financial transactions from the user's text and attached image, if present. Images may be receipts, payment screenshots, or handwriting. Read English, Hindi, Hinglish, and Romanized Hindi. Return only JSON matching the provided schema. Extract amount, date, time, payment method, concise name, and useful merchant/item notes. For itemized receipts, group items by best matching category and sum amounts within each category; keep separate payments separate. Do not duplicate a purchase described in both text and image. If no transaction is readable, return no transactions and explain in warnings. Never guess unreadable or missing values; use null.
 
-Use currentDate (${currentDate}) and timezone (${timezone || 'none'}) to resolve relative dates and times. Return explicit times as HH:MM:SS. Time-of-day defaults: morning 10:00, afternoon 14:00, evening 18:00, night 22:00. Use currentDate with medium date confidence when no date is visible or mentioned. Use only category IDs and payment-method values from the supplied lists. Categories explicitly stated are high confidence; clear category inferences are medium; no reasonable match is null. Explicit payment methods are high confidence, clear hints medium. If payment method is missing, use the Online Banking option only if it exists and mark it low confidence; otherwise return null. Keep names concise and put extra context in note.
+Current local date: ${currentDate}
+Current local time: ${currentTime || 'not provided'}
+Timezone: ${timezone || 'UTC'}
+Use this date, time, and timezone to resolve relative dates and times. For "abhi"/"right now"/"just now", use the current local date and time. For relative phrases such as "1 ghanta pehle", "30 min phle", "2 hours ago", or "15 minutes earlier", subtract the stated duration from the current local date and time, including changing the date when the subtraction crosses midnight. Return the resulting time in HH:MM:SS and date in YYYY-MM-DD. Mark date and time confidence high when a precise relative duration or "just now" is given. Do not use the server's receipt-processing time as the transaction time when the user gives a different time.
+
+Return explicit times as HH:MM:SS. Time-of-day defaults: morning 10:00, afternoon 14:00, evening 18:00, night 22:00. Use currentDate with medium date confidence when no date is visible or mentioned. Use only category IDs and payment-method values from the supplied lists. Categories explicitly stated are high confidence; clear category inferences are medium; no reasonable match is null. Explicit payment methods are high confidence, clear hints medium. If payment method is missing, use the Online Banking option only if it exists and mark it low confidence; otherwise return null. Keep names concise and put extra context in note.
 
 Time rules: Return explicit times in HH:MM:SS 24-hour format. If the user gives only a time-of-day phrase and no explicit time, use these defaults: morning/subah = 10:00:00, afternoon/dopahar = 14:00:00, evening/shaam/sham = 18:00:00, night/raat = 22:00:00.
 
@@ -58,6 +68,9 @@ Inference and confidence rules:
 - Use dateConfidence "high" when the user gives an explicit or relative date (for example, 2026-01-10, today, aaj, yesterday, kal, parso). If no date is mentioned, use the supplied currentDate (${currentDate}) and dateConfidence "medium".
 - Use timeConfidence "high" for an explicit clock time. Use timeConfidence "medium" when applying a time-of-day default from the Time rules. If no time or time-of-day phrase is mentioned, return null for both time and timeConfidence.
 - Keep name minimal: only the concise expense or income name (for example, "Momos", "Petrol", or "Salary"). Put descriptive context such as people, vehicle, purpose, place, or other details in note.
+
+Recent user transactions are context only to help interpret the wording and entry style of the current input. Use them only to understand the user's naming, category, notes, and payment-method conventions. The current text and attached image are the sole source of transaction facts: never reuse or infer an amount, date, time, item, merchant, category, or payment method from history when it is not supported by the current input. Never create transactions from history or let it override the current input.
+${transactionHistory}
 
 Closed lists (do not invent):
 UserCategories: ${catList}
@@ -142,38 +155,22 @@ async function parseText(text, options = {}) {
         throw err;
     }
 
-    // enforce maximum input length to avoid sending excessively large content to Gemini
+    // enforce maximum input length before sending content to Groq
     if (text && typeof MAX_INPUT_LENGTH === 'number' && text.length > MAX_INPUT_LENGTH) {
         const err = new Error('Input too large');
         err.code = 'INPUT_TOO_LARGE';
         throw err;
     }
 
-    if (!GEMINI_API_KEY) {
-        const err = new Error('AI service not configured');
-        err.code = 'NO_API_KEY';
-        throw err;
-    }
-
     const currentDate = options.currentDate || new Date().toISOString().slice(0, 10);
     const prompt = buildPrompt(text, currentDate, options);
 
-    // Initialize official client
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-    // Request a JSON text response that conforms to our schema.
     let interaction;
     try {
-        interaction = await ai.interactions.create({
-            model: MODEL,
-            input: image
-                ? [{ type: 'text', text: prompt }, { type: 'image', data: image.data, mime_type: image.mimeType }]
-                : prompt,
-            response_format: {
-                type: 'text',
-                mime_type: 'application/json',
-                schema: QUICK_ADD_JSON_SCHEMA,
-            },
+        interaction = await generateJson({
+            prompt,
+            schema: QUICK_ADD_JSON_SCHEMA,
+            image,
         });
     } catch (e) {
         // Log a concise, non-sensitive diagnostic for server logs
@@ -181,7 +178,7 @@ async function parseText(text, options = {}) {
             console.error('[aiParserService] AI generation error:', e?.message || e);
             if (e?.code) console.error('[aiParserService] error.code:', e.code);
             // If SDK provides a response/status, log the keys only (no bodies)
-            if (e?.response) console.error('[aiParserService] response keys:', Object.keys(e.response).slice(0, 10));
+            if (e?.status) console.error('[aiParserService] provider status:', e.status);
         } catch (logErr) {
             console.error('[aiParserService] error while logging AI generation error');
         }
@@ -192,55 +189,12 @@ async function parseText(text, options = {}) {
         throw err;
     }
 
-    // Interactions API exposes the generated text as `output_text`.
     let parsed = null;
     try {
         if (interaction && typeof interaction.output_text === 'string') {
             parsed = JSON.parse(interaction.output_text);
         }
-    } catch (e) {
-        // Leave parsed null so the normal invalid-output path includes diagnostics.
-        parsed = null;
-    }
-
-    try {
-        // Some SDK responses include a top-level `output` or `result`.
-        // Try common locations conservatively.
-        if (interaction && typeof interaction === 'object') {
-            // If the SDK already parsed JSON, it may be present as `content` or `json`.
-            if (interaction.json) parsed = interaction.json;
-            if (!parsed && interaction.output && Array.isArray(interaction.output)) {
-                for (const out of interaction.output) {
-                    if (out && out.content) {
-                        for (const c of out.content) {
-                            if (c && c.type === 'application/json' && c.text) {
-                                try { parsed = JSON.parse(c.text); break; } catch (e) {}
-                            }
-                            if (c && c.type === 'message' && typeof c.text === 'string') {
-                                try { const maybe = JSON.parse(c.text); if (maybe) { parsed = maybe; break; } } catch (e) {}
-                            }
-                        }
-                    }
-                }
-            }
-            // Fallback: SDK sometimes exposes `candidates` or `content` fields
-            if (!parsed && interaction.candidates && Array.isArray(interaction.candidates)) {
-                for (const cand of interaction.candidates) {
-                    if (cand.content && typeof cand.content === 'string') {
-                        try { parsed = JSON.parse(cand.content); break; } catch (e) {}
-                    }
-                    if (cand.text && typeof cand.text === 'string') {
-                        try { parsed = JSON.parse(cand.text); break; } catch (e) {}
-                    }
-                }
-            }
-            // Last resort: if interaction.text exists and looks like JSON, parse it
-            if (!parsed && typeof interaction.text === 'string') {
-                try { parsed = JSON.parse(interaction.text); } catch (e) { parsed = null; }
-            }
-        }
-    } catch (e) {
-        // swallow — we'll validate below
+    } catch {
         parsed = null;
     }
 
@@ -250,24 +204,18 @@ async function parseText(text, options = {}) {
         const err = new Error('AI produced invalid or unexpected structured output');
         err.code = 'INVALID_AI_OUTPUT';
         // Attach a short diagnostic for server logs
-        const diag = { sample: typeof interaction === 'object' ? Object.keys(interaction).slice(0,10) : undefined };
+        const diag = { sample: typeof interaction === 'object' ? Object.keys(interaction).slice(0, 10) : undefined };
         if (parsed && Array.isArray(parsed.transactions)) {
             diag.transactionKeys = parsed.transactions.slice(0, 3).map((transaction) => (
                 transaction && typeof transaction === 'object' ? Object.keys(transaction) : typeof transaction
             ));
         }
 
-        // If developer enables debug, include a small, trimmed snippet of the SDK interaction
+        // If developer enables debug, include a small, trimmed snippet of the provider response
         // WARNING: this may contain parts of the user's input or AI output; enable only for local debugging.
         try {
             if (process.env.QUICK_ADD_DEBUG === '1' && interaction && typeof interaction === 'object') {
-                if (typeof interaction.output_text === 'string') {
-                    diag.outputTextSnippet = interaction.output_text.slice(0, 1000);
-                } else if (Array.isArray(interaction.output) && interaction.output.length > 0) {
-                    try { diag.outputSnippet = JSON.stringify(interaction.output[0]).slice(0, 1000); } catch (e) { /* ignore */ }
-                } else if (Array.isArray(interaction.candidates) && interaction.candidates.length > 0) {
-                    try { diag.candidateSnippet = JSON.stringify(interaction.candidates[0]).slice(0, 1000); } catch (e) { /* ignore */ }
-                }
+                if (typeof interaction.output_text === 'string') diag.outputTextSnippet = interaction.output_text.slice(0, 1000);
             }
         } catch (e) {
             // ignore any debug extraction errors
