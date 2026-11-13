@@ -16,7 +16,7 @@ export const useCategoryContext = () => {
 
     // Initialize categories only once when first needed
     useEffect(() => {
-        if (!initializeRef.current && !context.isInitialized && !context.loading) {
+        if (context.bootstrapReady && !initializeRef.current && !context.isInitialized && !context.loading) {
             initializeRef.current = true;
             context.initializeCategories();
         }
