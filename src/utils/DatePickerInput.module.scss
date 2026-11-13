@@ -2,6 +2,17 @@
 
 // Makes react-datepicker wrapper fill its parent column
 .wrapper {
+    :global(.react-datepicker) {
+        display: flex;
+        max-width: calc(100vw - 16px);
+    }
+
+    :global(.react-datepicker__month-container) {
+        float: none;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
     :global(.react-datepicker-wrapper) {
         width: 100%;
     }
@@ -16,7 +27,11 @@
 
     // Time picker section
     :global(.react-datepicker__time-container) {
+        float: none;
+        flex: 0 0 85px;
         border-left: 1px solid #aeaeae;
+        box-sizing: border-box;
+        width: 85px;
     }
 
     :global(.react-datepicker__time-list-item--selected) {
@@ -25,6 +40,41 @@
 
     :global(.react-datepicker__time-list-item:hover) {
         background-color: rgba($primary-color, 0.1) !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .wrapper {
+        :global(.react-datepicker) {
+            font-size: 0.7rem;
+        }
+
+        :global(.react-datepicker__month-select),
+        :global(.react-datepicker__year-select) {
+            max-width: 100%;
+        }
+
+        :global(.react-datepicker__month-dropdown-container--select),
+        :global(.react-datepicker__year-dropdown-container--select) {
+            margin-right: 3px;
+            margin-left: 3px;
+        }
+
+        :global(.react-datepicker__day-name),
+        :global(.react-datepicker__day) {
+            width: 1.9em;
+            line-height: 1.9em;
+            margin: 0.12em;
+        }
+
+        :global(.react-datepicker__time-container) {
+            flex-basis: 76px;
+            width: 76px;
+        }
+
+        :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box) {
+            width: 76px;
+        }
     }
 }
 

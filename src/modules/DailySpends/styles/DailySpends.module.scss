@@ -2400,6 +2400,8 @@
     :global(input), :global(textarea), :global(button) { max-width: 100%; }
 }
 
+.manualFormContent { scroll-margin-top: 6rem; }
+
 .manualFormHidden { display: none; }
 
 .quickAddInputControl {

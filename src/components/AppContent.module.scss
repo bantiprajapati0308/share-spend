@@ -1,0 +1,7 @@
+.appShell {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+
+    @media (min-width: 992px) {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+}
