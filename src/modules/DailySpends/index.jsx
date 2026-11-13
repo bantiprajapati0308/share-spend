@@ -42,6 +42,7 @@ function DailySpends() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [formResetKey, setFormResetKey] = useState(0);
     const addFormRef = useRef(null);
+    const editFormRef = useRef(null);
 
     const {
         transactions,
@@ -127,13 +128,12 @@ function DailySpends() {
         setActiveLandingTab('add-transaction');
         setIsEditMode(true);
 
-        // Scroll to form
-        if (addFormRef.current) {
-            addFormRef.current.scrollIntoView({
+        requestAnimationFrame(() => {
+            editFormRef.current?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start',
             });
-        }
+        });
     };
 
     const handleUpdateTransaction = async (updatedTransaction) => {
@@ -281,6 +281,7 @@ function DailySpends() {
                     <DualSummaryCards
                         startDate={startDate}
                         endDate={endDate}
+                        loading={loading}
                     />
                     <div ref={addFormRef}>
                         <Tabs
@@ -317,6 +318,7 @@ function DailySpends() {
                                                 onCancelEdit={handleCancelEdit}
                                                 onCategoriesChanged={refreshTransactions}
                                                 onGoToCategories={() => handleLandingTabChange('category')}
+                                                editScrollTargetRef={editFormRef}
                                                 key={formResetKey}
                                             />
                                         </div>

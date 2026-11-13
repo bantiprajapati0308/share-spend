@@ -6,6 +6,7 @@ import TopBar from './TopBar';
 import BottomNavigation from './BottomNavigation';
 import ErrorBoundary from './common/ErrorBoundary';
 import InlineLoader from './common/InlineLoader';
+import styles from './AppContent.module.scss';
 import { CategoryProvider } from '../modules/DailySpends/context/CategoryContext.jsx';
 import JoinTripDialog from '../modules/Trip/components/JoinTripDialog';
 import useInviteCheck from '../modules/Trip/hooks/useInviteCheck';
@@ -58,7 +59,7 @@ function AppContent({ user, profileReady }) {
 
   return (
     <CategoryProvider bootstrapReady={profileReady}>
-      <div style={{ paddingBottom: '60px' }}>
+      <div className={styles.appShell}>
         <ErrorBoundary>
           <TopBar onInviteNotificationClick={handleInviteNotificationClick} />
           <Suspense fallback={<InlineLoader />}>

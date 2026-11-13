@@ -29,6 +29,7 @@ function AddExpenseForm({
     inlineQuickAddEdit = false,
     quickAddConfidence,
     onConfirmQuickAddField,
+    editScrollTargetRef,
 }) {
     const nowDatetime = () => {
         const d = new Date();
@@ -190,7 +191,10 @@ function AddExpenseForm({
     return (
         <FormContainer onSubmit={inlineQuickAddEdit ? undefined : handleSubmit} className={`${styles.formSection} ${inlineQuickAddEdit ? styles.inlineQuickAddForm : ''}`}>
             {!inlineQuickAddEdit && <QuickAddPanel categories={categories} onAddTransactionsBulk={onAddTransactionsBulk} />}
-            <div className={!inlineQuickAddEdit && quickAddStatus === 'review' ? styles.manualFormHidden : ''}>
+            <div
+                ref={editScrollTargetRef}
+                className={`${styles.manualFormContent} ${!inlineQuickAddEdit && quickAddStatus === 'review' ? styles.manualFormHidden : ''}`}
+            >
             {/* -- Header --------------------------------------------------- */}
             <div className={styles.formHeader}>
                 <div className={styles.formHeaderRow}>
@@ -357,6 +361,7 @@ AddExpenseForm.propTypes = {
     inlineQuickAddEdit: PropTypes.bool,
     quickAddConfidence: PropTypes.object,
     onConfirmQuickAddField: PropTypes.func,
+    editScrollTargetRef: PropTypes.shape({ current: PropTypes.any }),
 };
 
 export default AddExpenseForm;

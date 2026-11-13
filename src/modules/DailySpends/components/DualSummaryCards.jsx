@@ -9,6 +9,7 @@ import {
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/DualSummaryCards.module.scss';
+import DualSummaryCardsSkeleton from './DualSummaryCardsSkeleton';
 import { formatCurrencyINR } from '../../../Util';
 import { formatPercentage } from '../../../utils/helper';
 import PaymentBreakdownModal from './PaymentBreakdownModal';
@@ -170,7 +171,7 @@ ProgressSection.propTypes = {
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
-function DualSummaryCards({ startDate, endDate }) {
+function DualSummaryCards({ startDate, endDate, loading }) {
     const rawTransactions = useSelector(state => state.dailySpends.transactions);
     const { categories } = useCategoryContext();
 
@@ -226,6 +227,8 @@ function DualSummaryCards({ startDate, endDate }) {
     const subBadgeText = isOverspent
         ? `${formatPercentage(diffPct)}% over budget`
         : `${formatPercentage(diffPct)}% of income`;
+
+    if (loading) return <DualSummaryCardsSkeleton />;
 
     return (
         <>
@@ -329,6 +332,11 @@ function DualSummaryCards({ startDate, endDate }) {
 DualSummaryCards.propTypes = {
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
+    loading: PropTypes.bool,
+};
+
+DualSummaryCards.defaultProps = {
+    loading: false,
 };
 
 export default DualSummaryCards;

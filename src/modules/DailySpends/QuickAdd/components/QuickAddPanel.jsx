@@ -93,7 +93,7 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
                     busy={status === 'loading'}
                 />
                 <div className={styles.examplesHeading}><span>☀️ Try these examples</span><button type="button" onClick={() => setShowMoreExamples((showing) => !showing)} aria-expanded={showMoreExamples}>{showMoreExamples ? 'See less' : 'See more'} <ChevronRight size={13} className={showMoreExamples ? styles.chevronExpanded : ''} /></button></div>
-                <div className={styles.examples}>{examples.slice(0, showMoreExamples ? examples.length : 4).map(({ text, icon: ExampleIcon, tone }) => <button type="button" key={text} className={styles[`example${tone}`]} onClick={() => dispatch(setPrompt(text))}><ExampleIcon size={18} /><span>{text}</span></button>)}</div>
+                <div className={styles.examples}>{examples.slice(0, showMoreExamples ? examples.length : 2).map(({ text, icon: ExampleIcon, tone }) => <button type="button" key={text} className={styles[`example${tone}`]} onClick={() => dispatch(setPrompt(text))}><ExampleIcon size={18} /><span>{text}</span></button>)}</div>
                 {status === 'loading' && <div className={styles.processing}><span className={styles.processingOrb} /><div><strong>Analyzing your input…</strong><small>Finding transactions, categories, dates and payment methods.</small></div></div>}
                 {status === 'error' && <div className={styles.parseError}><XCircleFill size={17} /> {error || 'Unable to analyze this input. Please try again.'}</div>}
             </>}
