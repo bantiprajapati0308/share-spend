@@ -2,15 +2,16 @@ const { db, FieldValue } = require('../../config/firebase');
 const { ok, fail, notFound, badRequest } = require('../../utils/response');
 const { v4: uuidv4 } = require('uuid');
 const { parseBorrowLendInput } = require('../../services/ai/borrowLendAiService');
-const UserRepository = require('../../repositories/UserRepository');
+const { DEFAULT_TIMEZONE } = require('../../config/aiConfig');
 
 const col = (uid) => db.collection('users').doc(uid).collection('borrowLend');
 const MAX_BORROW_LEND_IMAGE_BYTES = 1.5 * 1024 * 1024;
 const BORROW_LEND_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const getCurrentLocalDateTime = (timezone, now = new Date()) => {
+    const resolvedTimezone = timezone || DEFAULT_TIMEZONE;
     const parts = new Intl.DateTimeFormat('en', {
-        timeZone: timezone || 'UTC',
+        timeZone: resolvedTimezone,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -69,13 +70,7 @@ const parseTransactionsWithAi = async (req, res) => {
 
         const recordsSnapshot = await col(req.uid).get();
         const records = recordsSnapshot.docs.map(normalizeRecord);
-        let timezone = null;
-        try {
-            const user = await UserRepository.getUserById(req.uid);
-            timezone = user?.timezone || user?.timeZone || null;
-        } catch (timezoneError) {
-            console.warn('[borrowLendController] Could not load user timezone; using UTC for AI defaults:', timezoneError.message);
-        }
+        const timezone = DEFAULT_TIMEZONE;
         const { currentDate, currentTime } = getCurrentLocalDateTime(timezone);
         const ledger = records.slice(0, 200).map((record) => ({
             personName: record.personName,

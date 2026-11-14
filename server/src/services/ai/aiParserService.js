@@ -1,4 +1,4 @@
-const { MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { MAX_INPUT_LENGTH, DEFAULT_TIMEZONE } = require('../../config/aiConfig');
 const { generateJson } = require('./geminiClient');
 
 if (!process.env.GEMINI_API_KEY) {
@@ -43,7 +43,7 @@ function buildPrompt(text, currentDate, options = {}) {
     const {
         categories = [],
         paymentMethods = [],
-        timezone = null,
+        timezone = DEFAULT_TIMEZONE,
         currentTime = null,
         recentTransactions = [],
     } = options;
@@ -56,7 +56,7 @@ function buildPrompt(text, currentDate, options = {}) {
 
 Current local date: ${currentDate}
 Current local time: ${currentTime || 'not provided'}
-Timezone: ${timezone || 'UTC'}
+Timezone: ${timezone}
 Use this date, time, and timezone to resolve relative dates and times. For "abhi"/"right now"/"just now", use the current local date and time. For relative phrases such as "1 ghanta pehle", "30 min phle", "2 hours ago", or "15 minutes earlier", subtract the stated duration from the current local date and time, including changing the date when the subtraction crosses midnight. Return the resulting time in HH:MM:SS and date in YYYY-MM-DD. Mark date and time confidence high when a precise relative duration or "just now" is given. Do not use the server's receipt-processing time as the transaction time when the user gives a different time.
 
 Do not treat a time-of-day phrase as a relative duration. When the user says "aaj subah"/"this morning", use currentDate as the date and the morning default below as the time, even if the current local time is later in the day. Do not question whether the transaction time is plausible, compare it with the current time, lower confidence, or add an ambiguity warning just because the mentioned time is earlier than now. Apply the same rule to "aaj dopahar"/"this afternoon", "aaj shaam"/"this evening", and "aaj raat"/"tonight", using the corresponding defaults below.
@@ -170,9 +170,21 @@ async function parseText(text, options = {}) {
         throw err;
     }
 
-    const currentDate = options.currentDate || new Date().toISOString().slice(0, 10);
-    const currentTime = options.currentTime || new Date().toISOString().slice(11, 19);
-    const prompt = buildPrompt(text, currentDate, options);
+    const timezone = options.timezone || DEFAULT_TIMEZONE;
+    const localParts = new Intl.DateTimeFormat('en', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const localValues = Object.fromEntries(localParts.map(({ type, value }) => [type, value]));
+    const currentDate = options.currentDate || `${localValues.year}-${localValues.month}-${localValues.day}`;
+    const currentTime = options.currentTime || `${localValues.hour}:${localValues.minute}:${localValues.second}`;
+    const prompt = buildPrompt(text, currentDate, { ...options, currentTime, timezone });
 
     let interaction;
     try {
