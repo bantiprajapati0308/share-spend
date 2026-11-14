@@ -2,10 +2,29 @@ const { db, FieldValue } = require('../../config/firebase');
 const { ok, fail, notFound, badRequest } = require('../../utils/response');
 const { v4: uuidv4 } = require('uuid');
 const { parseBorrowLendInput } = require('../../services/ai/borrowLendAiService');
+const UserRepository = require('../../repositories/UserRepository');
 
 const col = (uid) => db.collection('users').doc(uid).collection('borrowLend');
 const MAX_BORROW_LEND_IMAGE_BYTES = 1.5 * 1024 * 1024;
 const BORROW_LEND_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+const getCurrentLocalDateTime = (timezone, now = new Date()) => {
+    const parts = new Intl.DateTimeFormat('en', {
+        timeZone: timezone || 'UTC',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(now);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    return {
+        currentDate: `${values.year}-${values.month}-${values.day}`,
+        currentTime: `${values.hour}:${values.minute}:${values.second}`,
+    };
+};
 
 const normalizePersonName = (name) => String(name || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
 const counterpartTypeForAction = (action) => ['lend', 'return'].includes(action) ? 'gave' : 'took';
@@ -50,19 +69,35 @@ const parseTransactionsWithAi = async (req, res) => {
 
         const recordsSnapshot = await col(req.uid).get();
         const records = recordsSnapshot.docs.map(normalizeRecord);
-        const currentDate = new Date().toISOString().slice(0, 10);
+        let timezone = null;
+        try {
+            const user = await UserRepository.getUserById(req.uid);
+            timezone = user?.timezone || user?.timeZone || null;
+        } catch (timezoneError) {
+            console.warn('[borrowLendController] Could not load user timezone; using UTC for AI defaults:', timezoneError.message);
+        }
+        const { currentDate, currentTime } = getCurrentLocalDateTime(timezone);
         const ledger = records.slice(0, 200).map((record) => ({
             personName: record.personName,
             type: record.type,
             transactions: (record.data || []).slice(-10).map((entry) => ({
                 amount: Number(entry.amount || 0),
                 date: entry.insert_date || entry.date || null,
+                time: entry.time || null,
                 dueDate: entry.due_date || null,
                 paymentType: entry.payment_type || null,
                 description: entry.description || '',
             })),
         }));
-        const parsed = await parseBorrowLendInput({ text, image: validatedImage, defaultAction, ledger, currentDate });
+        const parsed = await parseBorrowLendInput({
+            text,
+            image: validatedImage,
+            defaultAction,
+            ledger,
+            currentDate,
+            currentTime,
+            timezone,
+        });
         parsed.transactions = parsed.transactions.map((transaction) => annotatePersonMatch(transaction, records));
         return ok(res, parsed);
     } catch (error) {
@@ -172,14 +207,18 @@ const getPersonNames = async (req, res) => {
 // POST /api/borrow-lend  (gave / took)
 const addRecord = async (req, res) => {
     try {
-        const { personName, amount, type, date, dueDate, description, payment_type, mobileNumber, email } = req.body;
+        const { personName, amount, type, date, time, dueDate, description, payment_type, mobileNumber, email } = req.body;
         if (!personName || amount == null || !type) return badRequest(res, 'personName, amount, type required');
+        if (time != null && (typeof time !== 'string' || !/^\d{2}:\d{2}(:\d{2})?$/.test(time))) {
+            return badRequest(res, 'time must use HH:MM or HH:MM:SS format');
+        }
 
         const normalizedPaymentType = payment_type || (type === 'gave' ? 'Lent' : 'Borrowed');
         const entry = {
             uuid: uuidv4(),
             amount: Number(amount),
             insert_date: date || new Date().toISOString().split('T')[0],
+            ...(time ? { time } : {}),
             due_date: dueDate || null,
             payment_type: normalizedPaymentType,
             description: description || '',
@@ -220,14 +259,18 @@ const addRecord = async (req, res) => {
 // POST /api/borrow-lend/repayment
 const addRepayment = async (req, res) => {
     try {
-        const { personName, repaymentAmount, date, description, type } = req.body;
+        const { personName, repaymentAmount, date, time, description, type } = req.body;
         if (!personName || repaymentAmount == null || !type) return badRequest(res, 'personName, repaymentAmount, type required');
+        if (time != null && (typeof time !== 'string' || !/^\d{2}:\d{2}(:\d{2})?$/.test(time))) {
+            return badRequest(res, 'time must use HH:MM or HH:MM:SS format');
+        }
 
         const paymentType = type === 'took' ? 'borrowed pay' : 'Repayment';
         const entry = {
             uuid: uuidv4(),
             amount: Number(repaymentAmount),
             insert_date: date || new Date().toISOString().split('T')[0],
+            ...(time ? { time } : {}),
             due_date: null,
             payment_type: paymentType,
             description: description || '',

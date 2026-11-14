@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { Container, Row, Col, Alert, Spinner, Tabs, Tab } from 'react-bootstrap';
 import { useDailyExpenses } from './hooks/useDailyExpenses';
 import useCategoryContext from './hooks/useCategoryContext';
@@ -11,9 +12,11 @@ import TransactionViewToggle from './components/TransactionViewToggle';
 import ExpenseList from './components/ExpenseList';
 import DateRangePicker from './components/DateRangePicker';
 import TimeSummarySection from './components/TimeSummarySection';
+import QuickAddPanel from './QuickAdd/components/QuickAddPanel';
 import styles from './styles/DailySpends.module.scss';
 import { toast } from 'react-toastify';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
+import AIUnlockCard from '../../components/common/AIUnlockCard';
 import { DailySpendTabsList } from '../../Util';
 import { formatLocalDate, getTransactionDateKey, parseLocalDate } from './utils/dateUtils';
 
@@ -30,7 +33,7 @@ function TabLoader() {
     );
 }
 
-function DailySpends() {
+function DailySpends({ aiEnabled = false }) {
     const [activeLandingTab, setActiveLandingTab] = useState('add-transaction');
     const [selectedType, setSelectedType] = useState('spend');
     const [startDate, setStartDate] = useState(null);
@@ -283,6 +286,11 @@ function DailySpends() {
                         endDate={endDate}
                         loading={loading}
                     />
+                    <div className={styles.aiFeatureArea}>
+                        {aiEnabled
+                            ? <QuickAddPanel categories={allCategories} onAddTransactionsBulk={handleAddTransactionsBulk} />
+                            : <AIUnlockCard />}
+                    </div>
                     <div ref={addFormRef}>
                         <Tabs
                             id="daily-spends-tabs"
@@ -311,7 +319,6 @@ function DailySpends() {
                                         <div>
                                             <AddExpenseForm
                                                 onAddExpense={handleAddTransaction}
-                                                onAddTransactionsBulk={handleAddTransactionsBulk}
                                                 onUpdateExpense={handleUpdateTransaction}
                                                 editingTransaction={editingTransaction}
                                                 isEditMode={isEditMode}
@@ -384,5 +391,9 @@ function DailySpends() {
         </Container>
     );
 }
+
+DailySpends.propTypes = {
+    aiEnabled: PropTypes.bool,
+};
 
 export default DailySpends;

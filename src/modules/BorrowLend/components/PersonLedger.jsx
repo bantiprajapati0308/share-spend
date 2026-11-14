@@ -17,6 +17,7 @@ import StatusBadge from './StatusBadge';
 import TransactionActionsMenu from './TransactionActionsMenu';
 import {
     formatLedgerDate,
+    formatLedgerTime,
     formatShortDateParts,
     getInitials,
     getTransactionLabel,
@@ -203,6 +204,7 @@ function PersonLedger({
                                         <div>
                                             <h3>{getTransactionLabel(transaction)}</h3>
                                             <p>{transaction.description || (repayment ? 'Partial payment' : 'Cash given')}</p>
+                                            {transaction.time && <span className={styles.transactionTime}>{formatLedgerTime(transaction.time)}</span>}
                                             {transaction.dueDate && (
                                                 <span className={styles.transactionDueDate}>
                                                     Due: {formatLedgerDate(transaction.dueDate)}

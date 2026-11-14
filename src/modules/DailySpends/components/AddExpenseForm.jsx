@@ -16,11 +16,9 @@ import useCategoryContext from '../hooks/useCategoryContext';
 import PaymentMethodSelector from './common/PaymentMethodSelector';
 import { formatLocalDate } from '../utils/dateUtils';
 import { TRANSACTION_TYPES } from '../../BorrowLend/constants/transactionTypes';
-import QuickAddPanel from '../QuickAdd/components/QuickAddPanel';
 
 function AddExpenseForm({
     onAddExpense,
-    onAddTransactionsBulk,
     onUpdateExpense,
     editingTransaction,
     isEditMode,
@@ -190,7 +188,6 @@ function AddExpenseForm({
 
     return (
         <FormContainer onSubmit={inlineQuickAddEdit ? undefined : handleSubmit} className={`${styles.formSection} ${inlineQuickAddEdit ? styles.inlineQuickAddForm : ''}`}>
-            {!inlineQuickAddEdit && <QuickAddPanel categories={categories} onAddTransactionsBulk={onAddTransactionsBulk} />}
             <div
                 ref={editScrollTargetRef}
                 className={`${styles.manualFormContent} ${!inlineQuickAddEdit && quickAddStatus === 'review' ? styles.manualFormHidden : ''}`}
@@ -352,7 +349,6 @@ function AddExpenseForm({
 
 AddExpenseForm.propTypes = {
     onAddExpense: PropTypes.func,
-    onAddTransactionsBulk: PropTypes.func,
     onUpdateExpense: PropTypes.func,
     editingTransaction: PropTypes.object,
     isEditMode: PropTypes.bool,
