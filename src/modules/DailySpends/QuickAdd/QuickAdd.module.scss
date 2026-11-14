@@ -45,6 +45,7 @@
 .reviewMetaRow { margin-top:.55rem; color:$text-secondary; font-size:.78rem; }
 .reviewMetaLine { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-top:.25rem; color:$text-secondary; font-size:.76rem; }
 .reviewFieldControl { display:flex; align-items:center; gap:.25rem; min-width:0; select { flex:1; } }
+.personNameDropdown { min-width:0; width:100%; }
 .reviewConfirmButton { display:inline-flex; align-items:center; justify-content:center; flex:0 0 24px; width:24px; height:24px; padding:0; border:0; border-radius:50%; background:$success-100; color:$success-700; &:disabled { opacity:.4; cursor:not-allowed; } &:not(:disabled):hover { background:$success-200; } }
 .reviewValueGrid { display:grid; grid-template-columns:1.25fr .75fr 1.2fr 1.25fr; gap:.38rem; margin-top:.35rem; }
 .reviewValue { min-width:0; padding:.32rem .42rem; border:1px solid $neutral-200; border-radius:$radius-md; background:$neutral-50; span { display:block; margin-bottom:.08rem; color:$text-secondary; font-size:10px; font-weight:$font-weight-semibold; } strong { display:block; overflow:hidden; color:$text-primary; font-size:$font-size-xs; text-overflow:ellipsis; white-space:nowrap; } select { width:100%; min-width:0; border:1px solid $warning-400; border-radius:4px; background:#fff; padding:.1rem .2rem; color:$text-primary; font-size:$font-size-xs; } .reviewFieldControl select { width:auto; } }

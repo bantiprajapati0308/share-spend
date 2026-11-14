@@ -43,6 +43,7 @@ app.use('/api/categories', require('./src/routes/categories'));
 app.use('/api/quick-add', require('./src/routes/quickAdd'));
 app.use('/api/category-limits', require('./src/routes/categoryLimits'));
 app.use('/api/settings', require('./src/routes/settings'));
+app.use('/api/ai-access', require('./src/routes/aiAccess'));
 app.use('/api/borrow-lend', require('./src/routes/borrowLend'));
 app.use('/api/app-config', require('./src/routes/appConfig'));
 app.use('/api/cron', require('./src/routes/cron'));

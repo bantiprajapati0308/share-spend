@@ -1,5 +1,5 @@
 const { MAX_INPUT_LENGTH } = require('../../config/aiConfig');
-const { generateJson } = require('./groqClient');
+const { generateJson } = require('./geminiClient');
 
 const BORROW_LEND_SCHEMA = {
     type: 'object',

@@ -10,8 +10,9 @@ import PersonNameDropdown from '../../../components/common/PersonNameDropdown';
 import { primeBorrowLendPersonContact, primeBorrowLendPersonName } from '../hooks/useBorrowLendPersonNames';
 import { DAILY_SPEND_SYNC_CHOICES } from '../utils/dailySpendSync';
 import AIInputComposer from '../../../components/common/AIInputComposer';
+import AIUnlockCard from '../../../components/common/AIUnlockCard';
 
-function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.GAVE, contactPeople = [], onCancel = null, onAIInput = null }) {
+function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.GAVE, contactPeople = [], onCancel = null, onAIInput = null, aiEnabled = false }) {
     const [personName, setPersonName] = useState('');
     const [amount, setAmount] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -145,12 +146,14 @@ function AddTransactionForm({ onAddTransaction, initialType = TRANSACTION_TYPES.
                 </div>
             </section>
 
-            <AIInputComposer
-                value={aiPrompt}
-                onChange={setAiPrompt}
-                onSubmit={onAIInput ? (input) => onAIInput({ ...input, type }) : undefined}
-                placeholder={type === TRANSACTION_TYPES.GAVE ? 'Describe money you lent…' : 'Describe money you borrowed…'}
-            />
+            {aiEnabled ? (
+                <AIInputComposer
+                    value={aiPrompt}
+                    onChange={setAiPrompt}
+                    onSubmit={onAIInput ? (input) => onAIInput({ ...input, type }) : undefined}
+                    placeholder={type === TRANSACTION_TYPES.GAVE ? 'Describe money you lent…' : 'Describe money you borrowed…'}
+                />
+            ) : <AIUnlockCard />}
 
             <Row className="mt-3">
                 <Col xs={12}>
@@ -309,6 +312,7 @@ AddTransactionForm.propTypes = {
     })),
     onCancel: PropTypes.func,
     onAIInput: PropTypes.func,
+    aiEnabled: PropTypes.bool,
 };
 
 export default AddTransactionForm;

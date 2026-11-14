@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Col, Container, Modal, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useLendingTransactions } from './hooks/useLendingTransactions';
@@ -23,7 +24,7 @@ import { buildWhatsAppReminderMessage, openWhatsAppApp, openWhatsAppChat } from 
 import { validateWhatsAppMobileNumber } from './utils/validationHelper';
 import styles from './styles/BorrowLend.module.scss';
 
-function BorrowLend() {
+function BorrowLend({ aiEnabled = false }) {
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [formState, setFormState] = useState(null);
     const [transactionToDelete, setTransactionToDelete] = useState(null);
@@ -449,6 +450,7 @@ function BorrowLend() {
                         />
                     ) : (
                         <BorrowLendDashboard
+                            aiEnabled={aiEnabled}
                             people={people}
                             totalLent={getTotalGiven()}
                             totalBorrowed={getTotalTaken()}
@@ -470,6 +472,7 @@ function BorrowLend() {
                             <AddTransactionForm
                                 key={formState.type}
                                 initialType={formState.type}
+                                aiEnabled={aiEnabled}
                                 contactPeople={people}
                                 onAddTransaction={handleAddTransaction}
                                 onCancel={closeForm}
@@ -556,5 +559,9 @@ function BorrowLend() {
         </Container>
     );
 }
+
+BorrowLend.propTypes = {
+    aiEnabled: PropTypes.bool,
+};
 
 export default BorrowLend;
