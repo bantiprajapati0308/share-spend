@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Col, Container, Modal, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useLendingTransactions } from './hooks/useLendingTransactions';
@@ -23,7 +24,7 @@ import { buildWhatsAppReminderMessage, openWhatsAppApp, openWhatsAppChat } from 
 import { validateWhatsAppMobileNumber } from './utils/validationHelper';
 import styles from './styles/BorrowLend.module.scss';
 
-function BorrowLend() {
+function BorrowLend({ aiEnabled = false }) {
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [formState, setFormState] = useState(null);
     const [transactionToDelete, setTransactionToDelete] = useState(null);
@@ -209,6 +210,7 @@ function BorrowLend() {
                 ...transaction,
                 draftId: `${Date.now()}-${index}`,
                 amount: transaction.amount == null ? '' : String(transaction.amount),
+                time: transaction.time || '',
                 personName: transaction.personMatch?.status === 'exact'
                     ? transaction.personMatch.matchedName
                     : transaction.personName || '',
@@ -242,6 +244,7 @@ function BorrowLend() {
                 amount: Number(draft.amount),
                 type: ledgerType,
                 date: draft.date,
+                time: draft.time,
                 dueDate: ['lend', 'borrow'].includes(action) ? draft.dueDate || null : null,
                 description: draft.description || '',
             };
@@ -255,6 +258,7 @@ function BorrowLend() {
                         personName: transaction.personName,
                         repaymentAmount: transaction.amount,
                         date: transaction.date,
+                        time: transaction.time,
                         description: transaction.description,
                         type: ledgerType,
                     });
@@ -267,6 +271,7 @@ function BorrowLend() {
                             personName: transaction.personName,
                             amount: transaction.amount,
                             date: transaction.date,
+                            time: transaction.time,
                             dueDate: transaction.dueDate,
                             description: transaction.description,
                         });
@@ -449,6 +454,7 @@ function BorrowLend() {
                         />
                     ) : (
                         <BorrowLendDashboard
+                            aiEnabled={aiEnabled}
                             people={people}
                             totalLent={getTotalGiven()}
                             totalBorrowed={getTotalTaken()}
@@ -470,6 +476,7 @@ function BorrowLend() {
                             <AddTransactionForm
                                 key={formState.type}
                                 initialType={formState.type}
+                                aiEnabled={aiEnabled}
                                 contactPeople={people}
                                 onAddTransaction={handleAddTransaction}
                                 onCancel={closeForm}
@@ -556,5 +563,9 @@ function BorrowLend() {
         </Container>
     );
 }
+
+BorrowLend.propTypes = {
+    aiEnabled: PropTypes.bool,
+};
 
 export default BorrowLend;

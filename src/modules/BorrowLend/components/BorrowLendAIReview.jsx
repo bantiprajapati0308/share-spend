@@ -35,6 +35,7 @@ function BorrowLendAIReview({ drafts, warnings, people, saving, onChange, onRemo
         draft.personName?.trim()
         && Number(draft.amount) > 0
         && draft.date
+        && draft.time
         && new Date(`${draft.date}T00:00:00`) <= new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00`)
         && draft.syncToDailySpend !== null
         && (!draft.dueDate || new Date(`${draft.dueDate}T00:00:00`) >= new Date(`${draft.date}T00:00:00`))
@@ -69,6 +70,7 @@ function BorrowLendAIReview({ drafts, warnings, people, saving, onChange, onRemo
                                 <label>Person name<input value={draft.personName || ''} onChange={(event) => update(index, { personName: event.target.value, matchConfirmed: true })} placeholder="Person name" /></label>
                                 <label>Amount (₹)<input type="number" min="0.01" step="0.01" value={draft.amount ?? ''} onChange={(event) => update(index, { amount: event.target.value })} /></label>
                                 <label>Date<input type="date" value={draft.date || ''} onChange={(event) => update(index, { date: event.target.value })} /></label>
+                                <label>Time<input type="time" step="1" value={(draft.time || '').slice(0, 5)} onChange={(event) => update(index, { time: event.target.value ? `${event.target.value}:00` : '' })} /></label>
                                 {['lend', 'borrow'].includes(draft.action) && <label>Due date (optional)<input type="date" value={draft.dueDate || ''} min={draft.date || undefined} onChange={(event) => update(index, { dueDate: event.target.value || null })} /></label>}
                                 <label className={styles.descriptionField}>Notes<input value={draft.description || ''} onChange={(event) => update(index, { description: event.target.value })} placeholder="Optional details" /></label>
                             </div>
@@ -98,7 +100,7 @@ function BorrowLendAIReview({ drafts, warnings, people, saving, onChange, onRemo
                 <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={saving}>Cancel</button>
                 <button type="button" className={styles.saveButton} onClick={onSave} disabled={!ready || saving}>{saving ? 'Saving…' : `Save ${drafts.length} transaction${drafts.length === 1 ? '' : 's'}`}</button>
             </footer>
-            {!ready && <p className={styles.validation}>Enter each name, valid amount and date; confirm suggested names and choose a Daily Spend option.</p>}
+            {!ready && <p className={styles.validation}>Enter each name, valid amount, date and time; confirm suggested names and choose a Daily Spend option.</p>}
         </section>
     );
 }

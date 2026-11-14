@@ -3,12 +3,20 @@ import PropTypes from 'prop-types';
 import { ExclamationTriangleFill, PencilSquare, Trash3, ExclamationCircleFill, CheckCircleFill, X } from 'react-bootstrap-icons';
 import { categoryForId, displayPaymentMethod, formatQuickAddDateTime, getFieldExplanation } from '../quickAddUtils';
 import AddExpenseForm from '../../components/AddExpenseForm';
+import PersonNameDropdown from '../../../../components/common/PersonNameDropdown';
+import { TRANSACTION_TYPES } from '../../../BorrowLend/constants/transactionTypes';
 import styles from '../QuickAdd.module.scss';
 
 const CONFIDENCE_WEIGHT = { high: 0, medium: 1, low: 2 };
 
 function QuickAddReviewCard({ transaction, index, categories, paymentMethods, onChange, onRemove }) {
     const category = categoryForId(categories, transaction.categoryId);
+    const categoryName = String(category?.name || '').trim().toLowerCase();
+    const personNameType = ['lent', 'repayment'].includes(categoryName)
+        ? TRANSACTION_TYPES.GAVE
+        : ['borrowed', 'borrowed pay'].includes(categoryName)
+            ? TRANSACTION_TYPES.TOOK
+            : null;
     const [isEditing, setIsEditing] = useState(false);
     const [activeHint, setActiveHint] = useState(null);
     const update = (changes) => onChange(index, changes);
@@ -20,7 +28,7 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
     const reviewFields = [
         { field: 'category', label: 'Category', value: `${category?.emoji || '📦'} ${category?.name || 'Uncategorized'}`, ...stateFor('category') },
         { field: 'amount', label: 'Amount', value: `₹${Number(transaction.amount || 0).toLocaleString('en-IN')}`, ...stateFor('amount') },
-        { field: 'name', label: 'Expense name', value: transaction.name || 'Untitled expense', ...stateFor('name') },
+        { field: 'name', label: personNameType ? 'Person name' : 'Expense name', value: transaction.name || (personNameType ? 'Select person' : 'Untitled expense'), ...stateFor('name') },
         { field: 'date', label: 'Date & time', value: formatQuickAddDateTime(transaction), ...dateState },
     ];
     const summaryBadges = [
@@ -81,6 +89,18 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
                     <span>{item.label}</span>
                     {item.field === 'category' && categoryNeedsReview
                         ? <div className={styles.reviewFieldControl}><select value={transaction.categoryId || ''} onChange={(event) => update({ categoryId: event.target.value || null, categoryConfidence: 'high', categoryStatus: 'confirmed' })}><option value="">Choose category</option>{availableCategories.map((option) => <option key={option.id} value={option.id}>{option.emoji} {option.name}</option>)}</select><button type="button" className={styles.reviewConfirmButton} disabled={!transaction.categoryId} onClick={() => confirmField('category')} aria-label="Accept suggested category" title="Accept suggested category"><CheckCircleFill size={16} /></button></div>
+                        : item.field === 'name' && personNameType
+                            ? <PersonNameDropdown
+                                value={transaction.name || ''}
+                                onChange={(name) => update({
+                                    name,
+                                    nameConfidence: 'high',
+                                    nameStatus: 'confirmed',
+                                })}
+                                type={personNameType}
+                                placeholder="Select person"
+                                className={styles.personNameDropdown}
+                            />
                         : <strong>{item.value}</strong>}
                 </div>)}
             </div>

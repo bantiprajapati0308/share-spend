@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
-import { formatLedgerDate, getTransactionLabel } from '../utils/ledgerViewModel';
+import { formatLedgerDate, formatLedgerTime, getTransactionLabel } from '../utils/ledgerViewModel';
 import styles from '../styles/BorrowLendDetailsModal.module.scss';
 
 function BorrowLendDetailsModal({ transaction, show, onHide, formatAmount }) {
@@ -17,6 +17,7 @@ function BorrowLendDetailsModal({ transaction, show, onHide, formatAmount }) {
                     <div><span>Type</span><strong>{getTransactionLabel(transaction)}</strong></div>
                     <div><span>Amount</span><strong>{formatAmount(transaction.amount)}</strong></div>
                     <div><span>Date</span><strong>{formatLedgerDate(transaction.date)}</strong></div>
+                    {transaction.time && <div><span>Time</span><strong>{formatLedgerTime(transaction.time)}</strong></div>}
                     <div><span>Due Date</span><strong>{formatLedgerDate(transaction.dueDate)}</strong></div>
                     {transaction.description && (
                         <div><span>Notes</span><strong>{transaction.description}</strong></div>

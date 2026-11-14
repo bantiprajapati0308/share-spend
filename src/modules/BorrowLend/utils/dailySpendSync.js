@@ -45,6 +45,7 @@ export const buildDailySpendTransactionFromBorrowLend = ({
     personName,
     amount,
     date,
+    time,
     dueDate = null,
     description = '',
 }) => {
@@ -59,7 +60,7 @@ export const buildDailySpendTransactionFromBorrowLend = ({
         categoryName: category.categoryName,
         category: category.categoryName,
         categoryIcon: category.categoryIcon,
-        date,
+        date: time ? `${date}T${time}` : date,
         notes: description,
         paymentMethodId: null,
         ...(['lend', 'borrow'].includes(kind) && dueDate ? { dueDate } : {}),

@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Calendar2, HouseDoor, Magic, Search } from 'react-bootstrap-icons';
 import { useState } from 'react';
 import AIInputComposer from '../../../components/common/AIInputComposer';
+import AIUnlockCard from '../../../components/common/AIUnlockCard';
 import StatusBadge from './StatusBadge';
 import { getInitials } from '../utils/ledgerViewModel';
 import styles from '../styles/BorrowLendDashboard.module.scss';
@@ -14,6 +15,7 @@ function BorrowLendDashboard({
     onSelectPerson,
     onAIInput,
     aiBusy,
+    aiEnabled,
 }) {
     const [aiPrompt, setAiPrompt] = useState('');
     const remainingBalance = totalLent - totalBorrowed;
@@ -58,7 +60,7 @@ function BorrowLendDashboard({
                 </div>
             </section>
 
-            <section className={styles.aiQuickAdd} aria-label="AI Borrow/Lend quick add">
+            {aiEnabled ? <section className={styles.aiQuickAdd} aria-label="AI Borrow/Lend quick add">
                 <div className={styles.aiQuickAddHeading}><span><Magic size={14} /> AI QUICK ADD</span><p>Describe lending, borrowing, returns, or repayments.</p></div>
                 <AIInputComposer
                     value={aiPrompt}
@@ -69,6 +71,7 @@ function BorrowLendDashboard({
                     busy={aiBusy}
                 />
             </section>
+                : <section className={styles.aiQuickAdd}><AIUnlockCard /></section>}
 
             <section className={styles.peopleHeader}>
                 <h2>People ({people.length})</h2>
@@ -128,6 +131,11 @@ BorrowLendDashboard.propTypes = {
     onSelectPerson: PropTypes.func.isRequired,
     onAIInput: PropTypes.func.isRequired,
     aiBusy: PropTypes.bool.isRequired,
+    aiEnabled: PropTypes.bool,
+};
+
+BorrowLendDashboard.defaultProps = {
+    aiEnabled: false,
 };
 
 export default BorrowLendDashboard;

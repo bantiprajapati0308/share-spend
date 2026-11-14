@@ -81,7 +81,7 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
 
     return (
         <section className={styles.quickAddPanel}>
-            <div className={styles.quickAddHeader}><div><span className={styles.quickAddEyebrow}><Magic size={14} /> AI assisted</span><h3>Add transactions with AI</h3><p>Describe your spending in any language. Review, then save.</p></div>{status !== 'idle' && <button type="button" className={styles.clearButton} onClick={clearDraft}>Cancel</button>}</div>
+            <div className={styles.quickAddHeader}><div><span className={styles.quickAddEyebrow}><Magic size={14} /> AI assisted</span><h3>Add transactions with AI</h3><p>Type, record your voice, or attach a receipt image. Review everything before analyzing and saving.</p></div>{status !== 'idle' && <button type="button" className={styles.clearButton} onClick={clearDraft}>Cancel</button>}</div>
             {status !== 'review' && <>
                 <AIInputComposer
                     key={composerResetKey}

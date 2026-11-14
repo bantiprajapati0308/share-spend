@@ -1,7 +1,7 @@
 import { borrowLendApi } from '../../../services/api/borrowLendApi';
 import { TRANSACTION_TYPES } from '../constants/transactionTypes';
 
-export const addBorrowLendRecord = async ({ personName, amount, type, date, dueDate = null, description = '', payment_type = '', mobileNumber = '', email = '' }) => {
+export const addBorrowLendRecord = async ({ personName, amount, type, date, time, dueDate = null, description = '', payment_type = '', mobileNumber = '', email = '' }) => {
     const normalizedType = type || TRANSACTION_TYPES.GAVE;
     const normalizedPaymentType = payment_type || (normalizedType === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed');
     const insertDate = date || new Date().toISOString().split('T')[0];
@@ -11,6 +11,7 @@ export const addBorrowLendRecord = async ({ personName, amount, type, date, dueD
         amount,
         type: normalizedType,
         date: insertDate,
+        ...(time ? { time } : {}),
         dueDate: dueDate || null,
         description,
         payment_type: normalizedPaymentType,
@@ -21,16 +22,16 @@ export const addBorrowLendRecord = async ({ personName, amount, type, date, dueD
     return result.data;
 };
 
-export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, date, description = '', type }) => {
+export const applyBorrowLendRepayment = async ({ personName, repaymentAmount, date, time, description = '', type }) => {
     const result = await borrowLendApi.addRepayment({
         personName,
         repaymentAmount,
         date: date || new Date().toISOString().split('T')[0],
+        ...(time ? { time } : {}),
         description,
         type,
     });
     if (!result.success) throw new Error(result.error || 'Failed to add repayment');
     return result.data;
 };
-
 

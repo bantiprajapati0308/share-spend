@@ -15,6 +15,7 @@ const authMiddleware = async (req, res, next) => {
         const decoded = await auth.verifyIdToken(token);
         req.uid = decoded.uid;
         req.email = decoded.email || null;
+        req.emailVerified = decoded.email_verified === true;
         req.idToken = token; // raw token — used by send-verification endpoint
         next();
     } catch (err) {
