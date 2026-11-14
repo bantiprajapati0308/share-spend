@@ -1,4 +1,4 @@
-const { MAX_INPUT_LENGTH } = require('../../config/aiConfig');
+const { MAX_INPUT_LENGTH, DEFAULT_TIMEZONE } = require('../../config/aiConfig');
 const { generateJson } = require('./geminiClient');
 
 const BORROW_LEND_SCHEMA = {
@@ -27,15 +27,15 @@ const BORROW_LEND_SCHEMA = {
     additionalProperties: false,
 };
 
-const buildBorrowLendPrompt = ({ text, currentDate, currentTime, timezone, defaultAction, ledger }) => `Extract every distinct money transaction from the user's text and optional image. The image may be a payment screenshot, receipt, or handwritten note. Read English, Hindi, Hinglish, and Romanized Hindi. Return JSON only, matching the schema.
+const buildBorrowLendPrompt = ({ text, currentDate, currentTime, timezone = DEFAULT_TIMEZONE, defaultAction, ledger }) => `Extract every distinct money transaction from the user's text and optional image. The image may be a payment screenshot, receipt, or handwritten note. Read English, Hindi, Hinglish, and Romanized Hindi. Return JSON only, matching the schema.
 
 Map action by perspective: lend = user gave money and expects it back ("udhar diye", "maine paise diye"); borrow = user received money and must repay ("udhar liya", "maine udhar liya"); return = someone paid back money previously lent to the user ("paise lautaye", "returned my loan"); repay = user paid back money previously borrowed ("udhar chukaya", "maine wapas kiya"). Use ${defaultAction || 'the wording'} as context only when the action is not explicit. Do not confuse return with repay.
 
-Extract personName, amount, transaction date, transaction time, optional dueDate, and concise description. Keep separate payments separate. Use null for unreadable or missing names, amounts, or dates; date may default to ${currentDate} only when a transaction is clear. For a clear transaction with no time stated, always use the supplied current local time (${currentTime}) in HH:MM:SS; do not return a null time. Respect an explicitly stated time or relative time instead. For time-of-day phrases without a clock time, use morning 10:00:00, afternoon 14:00:00, evening 18:00:00, and night 22:00:00. The timezone is ${timezone || 'UTC'}. Never invent due dates. Do not create transactions for balances, totals, or unrelated text.
+Extract personName, amount, transaction date, transaction time, optional dueDate, and concise description. Keep separate payments separate. Use null for unreadable or missing names, amounts, or dates; date may default to ${currentDate} only when a transaction is clear. For a clear transaction with no time stated, always use the supplied current local time (${currentTime}) in HH:MM:SS; do not return a null time. Respect an explicitly stated time or relative time instead. For time-of-day phrases without a clock time, use morning 10:00:00, afternoon 14:00:00, evening 18:00:00, and night 22:00:00. The timezone is ${timezone}. Never invent due dates. Do not create transactions for balances, totals, or unrelated text.
 
 Current local date: ${currentDate}
 Current local time: ${currentTime}
-Timezone: ${timezone || 'UTC'}
+Timezone: ${timezone}
 
 Existing user ledger context (use only to understand likely names and history; never change existing records): ${JSON.stringify(ledger)}
 
@@ -71,12 +71,25 @@ async function parseBorrowLendInput({ text, image, defaultAction, ledger, curren
         error.code = 'INPUT_TOO_LARGE';
         throw error;
     }
-    const resolvedCurrentTime = currentTime || new Date().toISOString().slice(11, 19);
+    const resolvedTimezone = timezone || DEFAULT_TIMEZONE;
+    const currentParts = new Intl.DateTimeFormat('en', {
+        timeZone: resolvedTimezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const currentValues = Object.fromEntries(currentParts.map(({ type, value }) => [type, value]));
+    const resolvedCurrentDate = currentDate || `${currentValues.year}-${currentValues.month}-${currentValues.day}`;
+    const resolvedCurrentTime = currentTime || `${currentValues.hour}:${currentValues.minute}:${currentValues.second}`;
     const prompt = buildBorrowLendPrompt({
         text,
-        currentDate,
+        currentDate: resolvedCurrentDate,
         currentTime: resolvedCurrentTime,
-        timezone,
+        timezone: resolvedTimezone,
         defaultAction,
         ledger,
     });

@@ -41,6 +41,16 @@
     :global(.react-datepicker__time-list-item:hover) {
         background-color: rgba($primary-color, 0.1) !important;
     }
+
+    :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list) {
+        height: 200px !important;
+        max-height: 200px !important;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
 }
 
 @media (max-width: 380px) {
@@ -74,6 +84,35 @@
 
         :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box) {
             width: 76px;
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .wrapper {
+        :global(.react-datepicker) {
+            align-items: flex-start;
+        }
+
+        :global(.react-datepicker__time-container) {
+            align-self: flex-start;
+            height: 200px;
+        }
+
+        :global(.react-datepicker__time-container .react-datepicker__time) {
+            height: 200px;
+        }
+
+        :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box) {
+            height: 200px;
+            max-height: 200px;
+            overflow: hidden;
+        }
+
+        :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list) {
+            height: 200px !important;
+            max-height: 200px !important;
+            overflow-y: scroll !important;
         }
     }
 }

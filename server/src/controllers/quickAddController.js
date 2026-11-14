@@ -1,7 +1,7 @@
 const { ok, fail, badRequest } = require('../utils/response');
 const { parseText } = require('../services/ai/aiParserService');
 const { db } = require('../config/firebase');
-const UserRepository = require('../repositories/UserRepository');
+const { DEFAULT_TIMEZONE } = require('../config/aiConfig');
 
 const MAX_IMAGE_BYTES = 1.5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -57,15 +57,6 @@ async function getPaymentMethods() {
     }
 }
 
-async function getUserTimezone(uid) {
-    try {
-        const user = await UserRepository.getUserById(uid);
-        return user?.timezone || user?.timeZone || null;
-    } catch (e) {
-        return null;
-    }
-}
-
 async function getRecentTransactions(uid) {
     const snapshot = await db.collection('users')
         .doc(uid)
@@ -100,8 +91,9 @@ async function getRecentTransactions(uid) {
 }
 
 function getCurrentDateTime(timezone, now = new Date()) {
+    const resolvedTimezone = timezone || DEFAULT_TIMEZONE;
     const parts = new Intl.DateTimeFormat('en', {
-        timeZone: timezone || 'UTC',
+        timeZone: resolvedTimezone,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -141,12 +133,12 @@ const parse = async (req, res) => {
         const uid = req.uid; // set by auth middleware
 
         // Provide optional context to the AI — helps mapping but not required.
-        const [categories, paymentMethods, timezone, recentTransactions] = await Promise.all([
+        const [categories, paymentMethods, recentTransactions] = await Promise.all([
             getUserCategories(uid),
             getPaymentMethods(),
-            getUserTimezone(uid),
             getRecentTransactions(uid),
         ]);
+        const timezone = DEFAULT_TIMEZONE;
         const { currentDate, currentTime } = getCurrentDateTime(timezone);
 
         const parsed = await parseText(text, {
