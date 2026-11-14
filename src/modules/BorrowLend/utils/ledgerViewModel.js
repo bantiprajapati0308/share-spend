@@ -16,6 +16,16 @@ export const formatLedgerDate = (date) => {
     });
 };
 
+export const formatLedgerTime = (time) => {
+    if (!time || !/^\d{2}:\d{2}(:\d{2})?$/.test(time)) return '';
+    const [hours, minutes] = time.split(':').map(Number);
+    if (hours > 23 || minutes > 59) return '';
+    return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString('en-IN', {
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+};
+
 export const formatShortDateParts = (date) => {
     if (!date) return { day: '--', month: '---' };
     const value = new Date(date);

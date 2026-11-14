@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { ArrowUp, Image, MicFill, X } from 'react-bootstrap-icons';
+import { ArrowUp, Image, X } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from './AIInputComposer.module.scss';
+import VoiceTranscriber from './VoiceTranscriber';
 
 const MAX_IMAGE_BYTES = 1.5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -59,6 +60,7 @@ async function prepareImage(file) {
 function AIInputComposer({ value, onChange, onSubmit, placeholder, busy, disabled, resetKey }) {
     const [image, setImage] = useState(null);
     const [preparingImage, setPreparingImage] = useState(false);
+    const [voiceStatus, setVoiceStatus] = useState('');
     const inputRef = useRef(null);
     const textareaRef = useRef(null);
 
@@ -86,11 +88,15 @@ function AIInputComposer({ value, onChange, onSubmit, placeholder, busy, disable
     };
 
     const submit = () => {
-        if (disabled || busy || preparingImage || (!value.trim() && !image) || !onSubmit) return;
+        if (disabled || busy || preparingImage || voiceStatus || (!value.trim() && !image) || !onSubmit) return;
         onSubmit({
             text: value.trim(),
             image: image ? { data: image.data, mimeType: image.mimeType } : null,
         });
+    };
+
+    const handleTranscript = (transcript) => {
+        onChange(value.trim() ? `${value.trim()}\n${transcript}` : transcript);
     };
 
     const handleKeyDown = (event) => {
@@ -101,7 +107,7 @@ function AIInputComposer({ value, onChange, onSubmit, placeholder, busy, disable
     };
 
     return (
-        <div className={styles.promptBox} aria-busy={busy || preparingImage}>
+        <div className={styles.promptBox} aria-busy={busy || preparingImage || Boolean(voiceStatus)}>
             <input ref={inputRef} className={styles.hiddenFileInput} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={handleFileChange} aria-label="Choose receipt or payment image" />
             <textarea
                 ref={textareaRef}
@@ -111,16 +117,21 @@ function AIInputComposer({ value, onChange, onSubmit, placeholder, busy, disable
                 placeholder={placeholder}
                 rows="2"
                 aria-label="Describe the transaction"
-                disabled={disabled}
+                disabled={disabled || Boolean(voiceStatus)}
             />
             {image && <div className={styles.receiptPreview}><img src={image.previewUrl} alt="Selected transaction image preview" /><span title={image.name}>{image.name}</span><button type="button" onClick={() => setImage(null)} aria-label="Remove image" title="Remove image"><X size={15} /></button></div>}
             <div className={styles.promptActions}>
                 <div className={styles.promptTools}>
-                    <button type="button" className={styles.promptToolButton} disabled={disabled || busy || preparingImage} onClick={() => inputRef.current?.click()} title="Attach a receipt or payment screenshot" aria-label="Attach image"><Image size={17} /></button>
-                    <button type="button" className={styles.promptToolButton} disabled={disabled} title="For voice input, please use your keyboard microphone." aria-label="For voice input, please use your keyboard microphone" onClick={() => textareaRef.current?.focus()}><MicFill size={16} /></button>
+                    <button type="button" className={styles.promptToolButton} disabled={disabled || busy || preparingImage || Boolean(voiceStatus)} onClick={() => inputRef.current?.click()} title="Attach a receipt or payment screenshot" aria-label="Attach image"><Image size={17} /></button>
+                    <VoiceTranscriber
+                        disabled={disabled || busy || preparingImage}
+                        onTranscript={handleTranscript}
+                        onStateChange={setVoiceStatus}
+                    />
                 </div>
-                <button type="button" className={styles.promptSendButton} disabled={disabled || busy || preparingImage || (!value.trim() && !image) || !onSubmit} onClick={submit} aria-label="Submit transaction prompt" title={onSubmit ? 'Analyze transactions' : 'AI extraction will be connected here'}>{busy ? <span className={styles.spinner} /> : <ArrowUp size={19} />}</button>
+                <button type="button" className={styles.promptSendButton} disabled={disabled || busy || preparingImage || Boolean(voiceStatus) || (!value.trim() && !image) || !onSubmit} onClick={submit} aria-label="Submit transaction prompt" title={onSubmit ? 'Analyze transactions' : 'AI extraction will be connected here'}>{busy ? <span className={styles.spinner} /> : <ArrowUp size={19} />}</button>
             </div>
+            {voiceStatus && <div className={styles.audioStatus} role="status" aria-live="polite">{voiceStatus}</div>}
         </div>
     );
 }

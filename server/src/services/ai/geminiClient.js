@@ -2,23 +2,12 @@ const { MODEL } = require('../../config/aiConfig');
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-async function generateJson({ prompt, schema, image = null }) {
+async function generateContent(parts, generationConfig) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         const error = new Error('Gemini API key is not configured');
         error.code = 'NO_API_KEY';
         throw error;
-    }
-
-    const promptWithSchema = `${prompt}\n\nReturn only a valid JSON object matching this schema:\n${JSON.stringify(schema)}`;
-    const parts = [{ text: promptWithSchema }];
-    if (image) {
-        parts.push({
-            inlineData: {
-                mimeType: image.mimeType,
-                data: image.data,
-            },
-        });
     }
 
     const response = await fetch(`${GEMINI_API_URL}/${encodeURIComponent(MODEL)}:generateContent`, {
@@ -29,10 +18,7 @@ async function generateJson({ prompt, schema, image = null }) {
         },
         body: JSON.stringify({
             contents: [{ role: 'user', parts }],
-            generationConfig: {
-                responseMimeType: 'application/json',
-                temperature: 0.2,
-            },
+            generationConfig,
         }),
     });
 
@@ -69,4 +55,34 @@ async function generateJson({ prompt, schema, image = null }) {
     return { ...result, output_text: outputText };
 }
 
-module.exports = { generateJson };
+async function generateJson({ prompt, schema, image = null }) {
+    const promptWithSchema = `${prompt}\n\nReturn only a valid JSON object matching this schema:\n${JSON.stringify(schema)}`;
+    const parts = [{ text: promptWithSchema }];
+    if (image) {
+        parts.push({
+            inlineData: {
+                mimeType: image.mimeType,
+                data: image.data,
+            },
+        });
+    }
+
+    return generateContent(parts, {
+        responseMimeType: 'application/json',
+        temperature: 0.2,
+    });
+}
+
+async function generateText({ prompt, audio }) {
+    return generateContent([
+        { text: prompt },
+        {
+            inlineData: {
+                mimeType: audio.mimeType,
+                data: audio.data,
+            },
+        },
+    ], { temperature: 0.1 });
+}
+
+module.exports = { generateJson, generateText };

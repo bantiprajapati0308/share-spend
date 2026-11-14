@@ -71,7 +71,7 @@ Inference and confidence rules:
 - For any of those four Borrow/Lend categories, set the transaction "name" to the person's name explicitly mentioned in the current text/image, not a generic label such as "Borrowed", "Repayment", or "Loan". Exclude relationship/action words and pronouns from the name, preserve the person's full name when present, and keep the purpose or other context in "note". If no person is identified in the current input, use null for name rather than guessing from recent transaction history. The review form will provide the appropriate existing-person dropdown for these categories.
 - An explicitly stated payment method in the current text or image always overrides historical habits, inferred preferences, and category-based assumptions. Match it to the supplied PaymentMethods list and set paymentMethodConfidence to "high". Never claim it conflicts with a user's habits or categories. If the explicit method has no matching list entry, return null for paymentMethod and explain that it is unavailable in warnings; do not substitute another method.
 - Use dateConfidence "high" when the user gives an explicit or relative date (for example, 2026-01-10, today, aaj, yesterday, kal, parso). If no date is mentioned, use the supplied currentDate (${currentDate}) and dateConfidence "medium".
-- Use timeConfidence "high" for an explicit clock time or precise relative duration ("30 minutes ago"). Use timeConfidence "medium" when applying a time-of-day default from the Time rules, including "aaj subah". Never lower confidence or add warnings because a time-of-day phrase is earlier than the current local time. If no time or time-of-day phrase is mentioned, return null for both time and timeConfidence.
+- Use timeConfidence "high" for an explicit clock time or precise relative duration ("30 minutes ago"). Use timeConfidence "medium" when applying a time-of-day default from the Time rules, including "aaj subah". If no time or time-of-day phrase is mentioned, use the supplied current local time (${currentTime || 'not provided'}) as the transaction time in HH:MM:SS and set timeConfidence to "medium". Never return a null time for a clear transaction when the current local time is supplied. Never lower confidence or add warnings because a time-of-day phrase is earlier than the current local time.
 - For ordinary expenses or income, keep name minimal: only the concise item, merchant, or income name (for example, "Momos", "Petrol", or "Salary"). Put descriptive context such as people, vehicle, purpose, or place in note. The Borrow/Lend category rule above takes precedence and requires the person's name in name.
 
 Recent user transactions are context only to help interpret the wording and entry style of the current input. Use them only to understand the user's naming, category, notes, and payment-method conventions. The current text and attached image are the sole source of transaction facts: never reuse or infer an amount, date, time, item, merchant, category, or payment method from history when it is not supported by the current input. Never create transactions from history or let it override the current input, especially when the current input explicitly states a payment method.
@@ -116,7 +116,7 @@ function validateParsedResponse(obj) {
 }
 
 // Complete optional inference metadata before strict validation.
-function completeInferredFields(parsed, currentDate) {
+function completeInferredFields(parsed, currentDate, currentTime) {
     if (!parsed || !Array.isArray(parsed.transactions)) return;
 
     for (const transaction of parsed.transactions) {
@@ -136,8 +136,11 @@ function completeInferredFields(parsed, currentDate) {
             transaction.dateConfidence = 'medium';
         }
 
-        if (transaction.timeConfidence === undefined) {
-            transaction.timeConfidence = transaction.time ? 'medium' : null;
+        if (!transaction.time) {
+            transaction.time = currentTime;
+            transaction.timeConfidence = 'medium';
+        } else if (transaction.timeConfidence === undefined) {
+            transaction.timeConfidence = 'medium';
         }
         if (!['high', 'medium', 'low'].includes(transaction.timeConfidence)) {
             transaction.timeConfidence = null;
@@ -168,6 +171,7 @@ async function parseText(text, options = {}) {
     }
 
     const currentDate = options.currentDate || new Date().toISOString().slice(0, 10);
+    const currentTime = options.currentTime || new Date().toISOString().slice(11, 19);
     const prompt = buildPrompt(text, currentDate, options);
 
     let interaction;
@@ -203,7 +207,7 @@ async function parseText(text, options = {}) {
         parsed = null;
     }
 
-    completeInferredFields(parsed, currentDate);
+    completeInferredFields(parsed, currentDate, currentTime);
 
     if (!parsed || !validateParsedResponse(parsed)) {
         const err = new Error('AI produced invalid or unexpected structured output');

@@ -210,6 +210,7 @@ function BorrowLend({ aiEnabled = false }) {
                 ...transaction,
                 draftId: `${Date.now()}-${index}`,
                 amount: transaction.amount == null ? '' : String(transaction.amount),
+                time: transaction.time || '',
                 personName: transaction.personMatch?.status === 'exact'
                     ? transaction.personMatch.matchedName
                     : transaction.personName || '',
@@ -243,6 +244,7 @@ function BorrowLend({ aiEnabled = false }) {
                 amount: Number(draft.amount),
                 type: ledgerType,
                 date: draft.date,
+                time: draft.time,
                 dueDate: ['lend', 'borrow'].includes(action) ? draft.dueDate || null : null,
                 description: draft.description || '',
             };
@@ -256,6 +258,7 @@ function BorrowLend({ aiEnabled = false }) {
                         personName: transaction.personName,
                         repaymentAmount: transaction.amount,
                         date: transaction.date,
+                        time: transaction.time,
                         description: transaction.description,
                         type: ledgerType,
                     });
@@ -268,6 +271,7 @@ function BorrowLend({ aiEnabled = false }) {
                             personName: transaction.personName,
                             amount: transaction.amount,
                             date: transaction.date,
+                            time: transaction.time,
                             dueDate: transaction.dueDate,
                             description: transaction.description,
                         });

@@ -19,6 +19,7 @@ const expandTransactionsFromRecords = (records) => {
                 type: record.type,
                 amount: Number(entry.amount || 0),
                 date: entry.insert_date || '',
+                time: entry.time || '',
                 dueDate: entry.due_date || null,
                 description: entry.description || '',
                 paymentType: entry.payment_type || (record.type === TRANSACTION_TYPES.GAVE ? 'Lent' : 'Borrowed'),

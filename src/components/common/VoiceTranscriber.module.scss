@@ -1,0 +1,34 @@
+@use '../../assets/scss/variables' as *;
+
+.voiceButton {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: $radius-lg;
+    color: $text-secondary;
+    background: transparent;
+
+    &:hover:not(:disabled) {
+        color: $primary-700;
+        background: $primary-50;
+    }
+
+    &:disabled {
+        color: $neutral-300;
+        cursor: not-allowed;
+    }
+}
+
+.recordingButton {
+    color: $danger-700;
+    background: $danger-50;
+    animation: recordingPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes recordingPulse {
+    to {
+        box-shadow: 0 0 0 4px rgba($danger-500, .15);
+    }
+}
