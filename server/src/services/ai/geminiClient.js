@@ -73,16 +73,4 @@ async function generateJson({ prompt, schema, image = null }) {
     });
 }
 
-async function generateText({ prompt, audio }) {
-    return generateContent([
-        { text: prompt },
-        {
-            inlineData: {
-                mimeType: audio.mimeType,
-                data: audio.data,
-            },
-        },
-    ], { temperature: 0.1 });
-}
-
-module.exports = { generateJson, generateText };
+module.exports = { generateJson };
