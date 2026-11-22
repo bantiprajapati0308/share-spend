@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { InfoCircle, PencilSquare, Trash3, CheckCircleFill, X } from 'react-bootstrap-icons';
 import { categoryForId, displayPaymentMethod, formatQuickAddDateTime, getFieldExplanation } from '../quickAddUtils';
@@ -19,6 +19,7 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
             : null;
     const [isEditing, setIsEditing] = useState(false);
     const [activeHint, setActiveHint] = useState(null);
+    const activeHintRef = useRef(null);
     const update = (changes) => onChange(index, changes);
     const stateFor = (field) => {
         const confidence = transaction[`${field}Confidence`] || 'high';
@@ -38,6 +39,15 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
     const categoryNeedsReview = summaryBadges.some((item) => item.field === 'category');
     const paymentNeedsReview = summaryBadges.some((item) => item.field === 'paymentMethod');
     const availableCategories = categories.filter((item) => item.isEnable && item.type === (transaction.type === 'income' ? 'income' : 'spend'));
+
+    useEffect(() => {
+        if (!activeHint) return undefined;
+        const handlePointerDown = (event) => {
+            if (!activeHintRef.current?.contains(event.target)) setActiveHint(null);
+        };
+        document.addEventListener('pointerdown', handlePointerDown);
+        return () => document.removeEventListener('pointerdown', handlePointerDown);
+    }, [activeHint]);
 
     const confirmField = (field) => {
         if (field === 'date') {
@@ -76,11 +86,16 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
                     {summaryBadges.map((badge) => {
                         const explanation = badge.field === 'date' ? 'Date or time was inferred from your input. Please review it.' : getFieldExplanation(badge.field, badge.confidence);
                         return (
-                            <span key={badge.field} className={`${styles.confidenceTooltipWrap} ${activeHint === badge.field ? styles.confidenceTooltipOpen : ''}`}>
+                            <span
+                                key={badge.field}
+                                ref={activeHint === badge.field ? activeHintRef : null}
+                                className={`${styles.confidenceTooltipWrap} ${activeHint === badge.field ? styles.confidenceTooltipOpen : ''}`}
+                            >
                                 <button
                                     type="button"
                                     className={`${styles.confidenceButton} ${styles[`confidenceButton${badge.confidence}`]}`}
                                     aria-label={`${badge.label}: ${explanation}`}
+                                    title={explanation}
                                     aria-expanded={activeHint === badge.field}
                                     onClick={() => setActiveHint(activeHint === badge.field ? null : badge.field)}
                                 >

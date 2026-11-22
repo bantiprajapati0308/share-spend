@@ -18,7 +18,8 @@
 .parseError { color:$danger-700; background:$danger-50; }
 .clearButton, .iconButton { border:0; background:transparent; color:$text-secondary; &:hover { color:$danger-600; } }
 .reviewSection { margin-top:.35rem; }
-.reviewHeading { display:flex; justify-content:space-between; align-items:center; h4 { margin:.45rem 0 .25rem; font-size:1.1rem; } }
+.reviewHeading { display:flex; justify-content:space-between; align-items:center; gap:.6rem; h4 { margin:.45rem 0 .25rem; font-size:1.1rem; } }
+.reviewHeadingActions { display:flex; align-items:center; gap:.35rem; }
 .foundPill { display:inline-flex; gap:.35rem; align-items:center; padding:.3rem .6rem; border-radius:$radius-full; color:$success-700; background:$success-100; font-size:$font-size-xs; font-weight:$font-weight-bold; }
 .reviewList { display:grid; gap:.45rem; margin-top:.55rem; }
 .reviewCard { position:relative; padding:.55rem .65rem; border:1px solid $neutral-200; border-radius:$radius-xl; background:#fff; box-shadow:$shadow-sm; }
@@ -38,11 +39,15 @@
 .reviewInfoButton { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:0; border-radius:50%; padding:0; color:$primary-700; background:$primary-50; &:hover { background:$primary-100; } }
 .reviewInfoTooltip, .confidencePopover { display:none; position:absolute; z-index:6; top:calc(100% + .35rem); right:0; width:max-content; max-width:min(300px, 80vw); padding:.5rem .65rem; border:1px solid $warning-200; border-radius:$radius-md; background:#fff; color:$text-primary; font-size:$font-size-xs; font-weight:normal; box-shadow:$shadow-md; }
 .reviewInfoTooltip { flex-direction:column; gap:.35rem; }
-.reviewInfoTooltipOpen .reviewInfoTooltip, .reviewInfoWrap:hover .reviewInfoTooltip, .reviewInfoWrap:focus-within .reviewInfoTooltip { display:flex; }
+.reviewInfoTooltipOpen .reviewInfoTooltip { display:flex; }
+.tokenUsageWrap { position:relative; display:inline-flex; align-items:center; }
+.tokenUsageButton { display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .55rem; border:1px solid $primary-100; border-radius:$radius-full; color:$primary-700; background:$primary-50; font-size:$font-size-xs; font-weight:$font-weight-semibold; white-space:nowrap; &:hover { background:$primary-100; } }
+.tokenUsageTooltip { display:none; position:absolute; z-index:6; top:calc(100% + .35rem); right:0; width:max-content; max-width:min(280px, 80vw); flex-direction:column; gap:.3rem; padding:.55rem .7rem; border:1px solid $primary-100; border-radius:$radius-md; color:$text-primary; background:#fff; font-size:$font-size-xs; box-shadow:$shadow-md; }
+.tokenUsageTooltipOpen .tokenUsageTooltip { display:flex; }
 .confidenceButton { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border:none; border-radius:50%; padding:0; }
 .confidenceButtonmedium { background:$warning-100; color:$warning-700; }
 .confidenceButtonlow { background:$danger-100; color:$danger-700; }
-.confidenceTooltipOpen .confidencePopover, .confidenceTooltipWrap:hover .confidencePopover, .confidenceTooltipWrap:focus-within .confidencePopover { display:block; }
+.confidenceTooltipOpen .confidencePopover { display:block; }
 .iconButton, .trashButton { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:1px solid $neutral-200; border-radius:$radius-lg; background:#fff; color:$text-secondary; }
 .trashButton { color:$danger-600; }
 .transactionNumber { display:grid; place-items:center; width:21px; height:21px; border-radius:50%; color:$primary-700; background:$primary-50; border:1px solid $primary-200; font-size:11px; font-weight:$font-weight-bold; }

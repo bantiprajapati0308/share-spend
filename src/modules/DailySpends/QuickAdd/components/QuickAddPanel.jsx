@@ -12,7 +12,7 @@ import styles from '../QuickAdd.module.scss';
 
 const examples = [
     { text: 'Spent ₹200 on fuel and ₹90 on snacks', icon: FuelPumpFill, tone: 'fuel' },
-    { text: 'Bought groceries for ₹500 in cash', icon: Cart3, tone: 'groceries' },
+    { text: 'weekly SIP of 250 via upi morning 8:00 AM', icon: Magic, tone: 'investment' },
     { text: 'Paid ₹1,200 for dinner with UPI', icon: ForkKnife, tone: 'dining' },
     { text: 'Coffee ₹150 at CCD', icon: CupHotFill, tone: 'coffee' },
     { text: 'Paid ₹800 for electricity bill online', icon: Magic, tone: 'bills' },
@@ -21,7 +21,7 @@ const examples = [
 
 function QuickAddPanel({ categories, onAddTransactionsBulk }) {
     const dispatch = useDispatch();
-    const { prompt, status, transactions, warnings, error } = useSelector((state) => state.quickAdd);
+    const { prompt, status, transactions, warnings, error, tokenUsage } = useSelector((state) => state.quickAdd);
     const paymentMethods = useSelector((state) => state.appConfig.paymentMethods);
     const [saving, setSaving] = useState(false);
     const [showMoreExamples, setShowMoreExamples] = useState(false);
@@ -99,6 +99,7 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
                     categories={categories}
                     paymentMethods={paymentMethods}
                     warnings={warnings}
+                    tokenUsage={tokenUsage}
                     onChange={updateTransaction}
                     onRemove={(index) => dispatch(removeQuickTransaction(index))}
                     onSave={saveTransactions}
