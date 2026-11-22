@@ -30,6 +30,13 @@ const quickAddSlice = createSlice({
             state.status = 'error';
             state.error = action.payload;
         },
+        cancelQuickAdd(state) {
+            state.status = 'idle';
+            state.transactions = [];
+            state.warnings = [];
+            state.missingFields = [];
+            state.error = null;
+        },
         updateQuickTransaction(state, action) {
             const { index, changes } = action.payload;
             if (state.transactions[index]) Object.assign(state.transactions[index], changes);
@@ -48,6 +55,7 @@ export const {
     parseStarted,
     parseSucceeded,
     parseFailed,
+    cancelQuickAdd,
     updateQuickTransaction,
     removeQuickTransaction,
     resetQuickAdd,

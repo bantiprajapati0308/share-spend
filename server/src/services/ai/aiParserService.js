@@ -66,7 +66,7 @@ Return explicit times as HH:MM:SS. Time-of-day defaults: morning 10:00, afternoo
 Time rules: Return explicit times in HH:MM:SS 24-hour format. If the user gives only a time-of-day phrase and no explicit time, use these defaults: morning/subah = 10:00:00, afternoon/dopahar = 14:00:00, evening/shaam/sham = 18:00:00, night/raat = 22:00:00.
 
 Inference and confidence rules:
-- For categoryId, use an exact category mentioned by the user with categoryConfidence "high". You may infer the closest matching category from UserCategories with categoryConfidence "medium" when the meaning is clear. For example, spending with Abhishek can map to a "Friend Spend" category if it exists, and eating momos can map to "Junk Food" if it exists. Return null for categoryId and categoryConfidence when there is no reasonable category match.
+- For categoryId, use an exact category mentioned by the user with categoryConfidence "high". You may infer the closest matching category from UserCategories with categoryConfidence "medium" when the meaning is clear. For example, spending with Abhishek can map to a "Friend Spend" category if it exists, and eating momos can map to "Junk Food" if it exists. If there is no reasonable category match, choose the first UserCategories entry matching the transaction type and set categoryConfidence to "low"; return null only if there is no category of the matching type.
 - Recognize the four Borrow/Lend system categories by their supplied category ID/name: "lent" / "Lent", "borrowed_pay" / "Borrowed Pay", "borrowed" / "Borrowed", and "repayment" / "Repayment". Use only a matching category actually present in UserCategories. Map money the user gives/lends to a person to the "Lent" expense category; money the user receives as a loan to "Borrowed" income; the user's payment back toward money they borrowed to "Borrowed Pay" expense; and money received back from someone who owed the user to "Repayment" income. Resolve direction from the full sentence in English, Hindi, or Hinglish (including "udhar", "liye/liya", "diye/diya", "wapas", "chukaya", "borrowed", "lent", "paid back", and "repaid"); do not classify unrelated purchases, gifts, or income as loans just because a person's name is mentioned.
 - For any of those four Borrow/Lend categories, set the transaction "name" to the person's name explicitly mentioned in the current text/image, not a generic label such as "Borrowed", "Repayment", or "Loan". Exclude relationship/action words and pronouns from the name, preserve the person's full name when present, and keep the purpose or other context in "note". If no person is identified in the current input, use null for name rather than guessing from recent transaction history. The review form will provide the appropriate existing-person dropdown for these categories.
 - An explicitly stated payment method in the current text or image always overrides historical habits, inferred preferences, and category-based assumptions. Match it to the supplied PaymentMethods list and set paymentMethodConfidence to "high". Never claim it conflicts with a user's habits or categories. If the explicit method has no matching list entry, return null for paymentMethod and explain that it is unavailable in warnings; do not substitute another method.
@@ -282,7 +282,21 @@ async function parseText(text, options = {}) {
                 tx.categoryId = null;
             }
         }
-        if (!tx.categoryId || !['high', 'medium', 'low'].includes(tx.categoryConfidence)) {
+        if (!tx.categoryId) {
+            const expectedType = tx.type === 'income' ? 'income' : 'spend';
+            const fallbackCategory = categories.find((category) => (
+                category
+                && category.id
+                && category.type === expectedType
+                && category.isEnable !== false
+            ));
+            if (fallbackCategory) {
+                tx.categoryId = fallbackCategory.id;
+                tx.categoryConfidence = 'low';
+            } else {
+                tx.categoryConfidence = null;
+            }
+        } else if (!['high', 'medium', 'low'].includes(tx.categoryConfidence)) {
             tx.categoryConfidence = null;
         }
 
