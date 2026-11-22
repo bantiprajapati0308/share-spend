@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { ExclamationTriangleFill, PencilSquare, Trash3, ExclamationCircleFill, CheckCircleFill, X } from 'react-bootstrap-icons';
+import { InfoCircle, PencilSquare, Trash3, CheckCircleFill, X } from 'react-bootstrap-icons';
 import { categoryForId, displayPaymentMethod, formatQuickAddDateTime, getFieldExplanation } from '../quickAddUtils';
 import AddExpenseForm from '../../components/AddExpenseForm';
 import PersonNameDropdown from '../../../../components/common/PersonNameDropdown';
@@ -19,6 +19,7 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
             : null;
     const [isEditing, setIsEditing] = useState(false);
     const [activeHint, setActiveHint] = useState(null);
+    const activeHintRef = useRef(null);
     const update = (changes) => onChange(index, changes);
     const stateFor = (field) => {
         const confidence = transaction[`${field}Confidence`] || 'high';
@@ -38,6 +39,15 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
     const categoryNeedsReview = summaryBadges.some((item) => item.field === 'category');
     const paymentNeedsReview = summaryBadges.some((item) => item.field === 'paymentMethod');
     const availableCategories = categories.filter((item) => item.isEnable && item.type === (transaction.type === 'income' ? 'income' : 'spend'));
+
+    useEffect(() => {
+        if (!activeHint) return undefined;
+        const handlePointerDown = (event) => {
+            if (!activeHintRef.current?.contains(event.target)) setActiveHint(null);
+        };
+        document.addEventListener('pointerdown', handlePointerDown);
+        return () => document.removeEventListener('pointerdown', handlePointerDown);
+    }, [activeHint]);
 
     const confirmField = (field) => {
         if (field === 'date') {
@@ -74,16 +84,32 @@ function QuickAddReviewCard({ transaction, index, categories, paymentMethods, on
                 <div className={styles.reviewMainInfo}><span className={styles.reviewType}>{transaction.type === 'income' ? 'Income' : 'Expense'} draft</span></div>
                 <div className={styles.reviewActions}>
                     {summaryBadges.map((badge) => {
-                        const Icon = badge.confidence === 'low' ? ExclamationCircleFill : ExclamationTriangleFill;
                         const explanation = badge.field === 'date' ? 'Date or time was inferred from your input. Please review it.' : getFieldExplanation(badge.field, badge.confidence);
-                        return <button key={badge.field} type="button" className={`${styles.confidenceButton} ${styles[`confidenceButton${badge.confidence}`]}`} aria-label={`${badge.label}: ${explanation}`} title={`${badge.label}: ${explanation}`} onClick={() => setActiveHint(activeHint === badge.field ? null : badge.field)}><Icon size={13} /></button>;
+                        return (
+                            <span
+                                key={badge.field}
+                                ref={activeHint === badge.field ? activeHintRef : null}
+                                className={`${styles.confidenceTooltipWrap} ${activeHint === badge.field ? styles.confidenceTooltipOpen : ''}`}
+                            >
+                                <button
+                                    type="button"
+                                    className={`${styles.confidenceButton} ${styles[`confidenceButton${badge.confidence}`]}`}
+                                    aria-label={`${badge.label}: ${explanation}`}
+                                    title={explanation}
+                                    aria-expanded={activeHint === badge.field}
+                                    onClick={() => setActiveHint(activeHint === badge.field ? null : badge.field)}
+                                >
+                                    <InfoCircle size={14} />
+                                </button>
+                                <span className={styles.confidencePopover} role="tooltip">{explanation}</span>
+                            </span>
+                        );
                     })}
                     <button type="button" className={styles.iconButton} aria-label={isEditing ? 'Close editor' : 'Edit transaction'} title={isEditing ? 'Close editor' : 'Review this transaction'} onClick={() => setIsEditing((editing) => !editing)}>{isEditing ? <X size={17} /> : <PencilSquare size={15} />}</button>
                     <button type="button" className={styles.trashButton} onClick={() => onRemove(index)} aria-label="Remove transaction"><Trash3 size={15} /></button>
                 </div>
             </div>
 
-            {activeHint && <div className={styles.confidencePopover} role="status">{summaryBadges.find((item) => item.field === activeHint)?.field === 'date' ? 'Date or time was inferred from your input. Please review it.' : getFieldExplanation(activeHint, summaryBadges.find((item) => item.field === activeHint)?.confidence)}</div>}
             <div className={styles.reviewValueGrid}>
                 {reviewFields.map((item) => <div className={styles.reviewValue} key={item.field}>
                     <span>{item.label}</span>

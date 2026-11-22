@@ -5,9 +5,9 @@
 .receiptPreview { display:flex; align-items:center; gap:.5rem; min-width:0; width:max-content; max-width:100%; padding:.3rem .4rem; border:1px solid $neutral-200; border-radius:$radius-md; background:$neutral-50; img { width:42px; height:42px; border-radius:4px; object-fit:cover; } span { overflow:hidden; max-width:220px; color:$text-secondary; font-size:$font-size-xs; text-overflow:ellipsis; white-space:nowrap; } button { display:grid; place-items:center; flex:0 0 26px; width:26px; height:26px; border:0; border-radius:50%; color:$text-secondary; background:transparent; &:hover { color:$danger-700; background:$danger-50; } } }
 .promptActions, .promptTools { display:flex; align-items:center; }
 .promptActions { justify-content:space-between; }
-.promptTools { gap:.3rem; }
+.promptTools { position:relative; gap:.3rem; }
 .promptToolButton { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:$radius-lg; color:$text-secondary; background:transparent; &:hover:not(:disabled) { color:$primary-700; background:$primary-50; } &:disabled { color:$neutral-300; cursor:not-allowed; } }
-.audioStatus { color:$primary-700; font-size:$font-size-xs; }
+.keyboardMicTooltip { position:absolute; z-index:1; bottom:calc(100% + .4rem); left:0; width:max-content; max-width: min(280px, 80vw); padding:.4rem .55rem; border-radius:$radius-md; color:#fff; background:$text-primary; font-size:$font-size-xs; box-shadow:0 2px 8px rgba(0,0,0,.15); }
 .promptSendButton { display:grid; place-items:center; width:34px; height:34px; border:0; border-radius:50%; color:#fff; background:$primary-600; transition:background .15s ease, transform .15s ease; &:hover:not(:disabled) { background:$primary-700; transform:translateY(-1px); } &:disabled { background:$neutral-300; cursor:not-allowed; } }
 .spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,.55); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }

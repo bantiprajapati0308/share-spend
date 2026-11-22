@@ -34,7 +34,7 @@ function validateParsedResponse(obj) {
     return true;
 }
 
-// GET user categories (names only) — optional context for the AI. Read-only.
+// Fetch active categories for server-side name/ID mapping.
 async function getUserCategories(uid) {
     try {
         const snap = await db.collection('users').doc(uid).collection('categories').where('isEnable', '==', true).get();
@@ -62,12 +62,11 @@ async function getRecentTransactions(uid) {
         .doc(uid)
         .collection('dailySpends')
         .orderBy('createdAt', 'desc')
-        .limit(100)
+        .limit(5)
         .get();
 
     return snapshot.docs
         .filter((doc) => doc.data().isCreditCardCompanion !== true)
-        .slice(0, 50)
         .map((doc) => {
             const transaction = doc.data();
             const textOrNull = (value, maxLength) => (
@@ -76,16 +75,9 @@ async function getRecentTransactions(uid) {
             return {
                 type: textOrNull(transaction.type, 20),
                 name: textOrNull(transaction.name, 100),
-                amount: typeof transaction.amount === 'number' && Number.isFinite(transaction.amount)
-                    ? transaction.amount
-                    : null,
-                category: textOrNull(
-                    transaction.categoryName || transaction.category || transaction.categoryId,
-                    100
-                ),
-                date: textOrNull(transaction.date, 40),
+                category: textOrNull(transaction.categoryName || transaction.category, 100),
+                categoryId: textOrNull(transaction.categoryId, 100),
                 paymentMethod: textOrNull(transaction.paymentMethodId, 50),
-                notes: textOrNull(transaction.notes, 300),
             };
         });
 }
@@ -138,6 +130,23 @@ const parse = async (req, res) => {
             getPaymentMethods(),
             getRecentTransactions(uid),
         ]);
+        const categoryNamesById = new Map(categories.map((category) => [category.id, category.name]));
+        const categoryNamesByName = new Map(
+            categories.map((category) => [String(category.name).toLowerCase(), category.name])
+        );
+        const paymentMethodLabels = new Map(paymentMethods.map((method) => [method.value, method.label]));
+        const promptHistory = recentTransactions.map(({ type, name, category, categoryId, paymentMethod }) => {
+            const categoryValue = category || categoryId;
+            const categoryName = typeof categoryValue === 'string'
+                ? categoryNamesById.get(categoryValue) || categoryNamesByName.get(categoryValue.toLowerCase()) || null
+                : null;
+            return {
+                type,
+                name,
+                category: categoryName,
+                paymentMethod: paymentMethodLabels.get(paymentMethod) || null,
+            };
+        });
         const timezone = DEFAULT_TIMEZONE;
         const { currentDate, currentTime } = getCurrentDateTime(timezone);
 
@@ -147,7 +156,7 @@ const parse = async (req, res) => {
             categories,
             paymentMethods,
             timezone,
-            recentTransactions,
+            recentTransactions: promptHistory,
             image: validatedImage,
         });
 

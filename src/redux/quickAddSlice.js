@@ -6,6 +6,7 @@ const initialState = {
     transactions: [],
     warnings: [],
     missingFields: [],
+    tokenUsage: null,
     error: null,
 };
 
@@ -19,16 +20,26 @@ const quickAddSlice = createSlice({
         parseStarted(state) {
             state.status = 'loading';
             state.error = null;
+            state.tokenUsage = null;
         },
         parseSucceeded(state, action) {
             state.status = 'review';
             state.transactions = action.payload.transactions;
             state.warnings = action.payload.warnings || [];
             state.missingFields = action.payload.missingFields || [];
+            state.tokenUsage = action.payload.tokenUsage || null;
         },
         parseFailed(state, action) {
             state.status = 'error';
             state.error = action.payload;
+        },
+        cancelQuickAdd(state) {
+            state.status = 'idle';
+            state.transactions = [];
+            state.warnings = [];
+            state.missingFields = [];
+            state.tokenUsage = null;
+            state.error = null;
         },
         updateQuickTransaction(state, action) {
             const { index, changes } = action.payload;
@@ -48,6 +59,7 @@ export const {
     parseStarted,
     parseSucceeded,
     parseFailed,
+    cancelQuickAdd,
     updateQuickTransaction,
     removeQuickTransaction,
     resetQuickAdd,

@@ -4,7 +4,7 @@ import { Cart3, ChevronRight, CupHotFill, FuelPumpFill, ForkKnife, Magic, XCircl
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { quickAddApi } from '../../../../services/api/quickAddApi';
-import { parseFailed, parseStarted, parseSucceeded, removeQuickTransaction, resetQuickAdd, setPrompt, updateQuickTransaction } from '../../../../redux/quickAddSlice';
+import { cancelQuickAdd, parseFailed, parseStarted, parseSucceeded, removeQuickTransaction, resetQuickAdd, setPrompt, updateQuickTransaction } from '../../../../redux/quickAddSlice';
 import AIInputComposer from '../../../../components/common/AIInputComposer';
 import { categoryForId, transactionPayload } from '../quickAddUtils';
 import QuickAddReview from './QuickAddReview';
@@ -12,7 +12,7 @@ import styles from '../QuickAdd.module.scss';
 
 const examples = [
     { text: 'Spent ₹200 on fuel and ₹90 on snacks', icon: FuelPumpFill, tone: 'fuel' },
-    { text: 'Bought groceries for ₹500 in cash', icon: Cart3, tone: 'groceries' },
+    { text: 'weekly SIP of 250 via upi morning 8:00 AM', icon: Magic, tone: 'investment' },
     { text: 'Paid ₹1,200 for dinner with UPI', icon: ForkKnife, tone: 'dining' },
     { text: 'Coffee ₹150 at CCD', icon: CupHotFill, tone: 'coffee' },
     { text: 'Paid ₹800 for electricity bill online', icon: Magic, tone: 'bills' },
@@ -21,11 +21,10 @@ const examples = [
 
 function QuickAddPanel({ categories, onAddTransactionsBulk }) {
     const dispatch = useDispatch();
-    const { prompt, status, transactions, warnings, error } = useSelector((state) => state.quickAdd);
+    const { prompt, status, transactions, warnings, error, tokenUsage } = useSelector((state) => state.quickAdd);
     const paymentMethods = useSelector((state) => state.appConfig.paymentMethods);
     const [saving, setSaving] = useState(false);
     const [showMoreExamples, setShowMoreExamples] = useState(false);
-    const [composerResetKey, setComposerResetKey] = useState(0);
     const parseRequestId = useRef(0);
 
     const parsePrompt = async ({ text, image }) => {
@@ -41,10 +40,9 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
         dispatch(parseSucceeded(response.data));
     };
 
-    const clearDraft = () => {
+    const cancelDraft = () => {
         parseRequestId.current += 1;
-        setComposerResetKey((key) => key + 1);
-        dispatch(resetQuickAdd());
+        dispatch(cancelQuickAdd());
     };
 
     const updateTransaction = (index, changes) => dispatch(updateQuickTransaction({ index, changes }));
@@ -81,11 +79,9 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
 
     return (
         <section className={styles.quickAddPanel}>
-            <div className={styles.quickAddHeader}><div><span className={styles.quickAddEyebrow}><Magic size={14} /> AI assisted</span><h3>Add transactions with AI</h3><p>Type, record your voice, or attach a receipt image. Review everything before analyzing and saving.</p></div>{status !== 'idle' && <button type="button" className={styles.clearButton} onClick={clearDraft}>Cancel</button>}</div>
+            <div className={styles.quickAddHeader}><div><span className={styles.quickAddEyebrow}><Magic size={14} /> AI assisted</span><h3>Add transactions with AI</h3><p>Type your transactions or attach a receipt image. Review everything before analyzing and saving.</p></div>{status !== 'idle' && <button type="button" className={styles.clearButton} onClick={cancelDraft}>Cancel</button>}</div>
             {status !== 'review' && <>
                 <AIInputComposer
-                    key={composerResetKey}
-                    resetKey={composerResetKey}
                     value={prompt}
                     onChange={(value) => dispatch(setPrompt(value))}
                     onSubmit={parsePrompt}
@@ -103,6 +99,7 @@ function QuickAddPanel({ categories, onAddTransactionsBulk }) {
                     categories={categories}
                     paymentMethods={paymentMethods}
                     warnings={warnings}
+                    tokenUsage={tokenUsage}
                     onChange={updateTransaction}
                     onRemove={(index) => dispatch(removeQuickTransaction(index))}
                     onSave={saveTransactions}

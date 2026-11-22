@@ -5,10 +5,7 @@ if (!process.env.GEMINI_API_KEY) {
     console.warn('[aiParserService] GEMINI_API_KEY not set; AI parsing will fail until provided.');
 }
 
-// JSON Schema for the QuickAddResponse (strict — no additional properties)
-// NOTE: currency removed; categoryId used instead of category.
-// Confidence values let the client distinguish explicit values from inferences.
-const QUICK_ADD_JSON_SCHEMA = {
+const QUICK_ADD_RESPONSE_SCHEMA = {
     type: 'object',
     properties: {
         transactions: {
@@ -18,7 +15,7 @@ const QUICK_ADD_JSON_SCHEMA = {
                 properties: {
                     type: { type: 'string', enum: ['expense', 'income'] },
                     amount: { anyOf: [{ type: 'number' }, { type: 'null' }] },
-                    categoryId: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+                    categoryName: { anyOf: [{ type: 'string' }, { type: 'null' }] },
                     categoryConfidence: { anyOf: [{ type: 'string', enum: ['high', 'medium', 'low'] }, { type: 'null' }] },
                     name: { anyOf: [{ type: 'string' }, { type: 'null' }] },
                     date: { anyOf: [{ type: 'string' }, { type: 'null' }] },
@@ -29,14 +26,17 @@ const QUICK_ADD_JSON_SCHEMA = {
                     paymentMethodConfidence: { anyOf: [{ type: 'string', enum: ['high', 'medium', 'low'] }, { type: 'null' }] },
                     note: { anyOf: [{ type: 'string' }, { type: 'null' }] },
                 },
-                additionalProperties: false,
+                required: [
+                    'type', 'amount', 'categoryName', 'categoryConfidence', 'name',
+                    'date', 'dateConfidence', 'time', 'timeConfidence', 'paymentMethod',
+                    'paymentMethodConfidence', 'note',
+                ],
             },
         },
         warnings: { type: 'array', items: { type: 'string' } },
         missingFields: { type: 'array', items: { type: 'string' } },
     },
     required: ['transactions', 'warnings', 'missingFields'],
-    additionalProperties: false,
 };
 
 function buildPrompt(text, currentDate, options = {}) {
@@ -47,47 +47,41 @@ function buildPrompt(text, currentDate, options = {}) {
         currentTime = null,
         recentTransactions = [],
     } = options;
-    // Provide closed lists for categories (id, name, emoji, type) and paymentMethods (value,label)
-    const catList = JSON.stringify(categories);
-    const pmList = JSON.stringify(paymentMethods);
-    const transactionHistory = JSON.stringify(recentTransactions);
+    const activeCategories = Array.isArray(categories) ? categories : [];
+    const validPaymentMethods = Array.isArray(paymentMethods) ? paymentMethods : [];
+    const history = Array.isArray(recentTransactions) ? recentTransactions : [];
+    const categoryNames = {
+        expense: activeCategories
+            .filter((category) => category?.isEnable === true && category.type === 'spend' && typeof category.name === 'string')
+            .map((category) => category.name.slice(0, 100)),
+        income: activeCategories
+            .filter((category) => category?.isEnable === true && category.type === 'income' && typeof category.name === 'string')
+            .map((category) => category.name.slice(0, 100)),
+    };
+    const catList = JSON.stringify(categoryNames);
+    const pmList = JSON.stringify(validPaymentMethods.map(({ value, label }) => ({ value, label })));
+    const transactionHistory = JSON.stringify(history.slice(0, 5).map((transaction) => ({
+        type: typeof transaction?.type === 'string' ? transaction.type.slice(0, 20) : null,
+        name: typeof transaction?.name === 'string' ? transaction.name.slice(0, 100) : null,
+        category: typeof transaction?.category === 'string' ? transaction.category.slice(0, 100) : null,
+        paymentMethod: typeof transaction?.paymentMethod === 'string' ? transaction.paymentMethod.slice(0, 50) : null,
+    })));
 
-    return `Extract financial transactions from the user's text and attached image, if present. Images may be receipts, payment screenshots, or handwriting. Read English, Hindi, Hinglish, and Romanized Hindi. Return only JSON matching the provided schema. Extract amount, date, time, payment method, concise name, and useful merchant/item notes. For itemized receipts, group items by best matching category and sum amounts within each category; keep separate payments separate. Do not duplicate a purchase described in both text and image. If no transaction is readable, return no transactions and explain in warnings. Never guess unreadable or missing values; use null.
+    return `Extract readable expenses or income from the user's text and optional receipt/image. Read English, Hindi, and Hinglish. Return only JSON matching the response schema. For itemized receipts, group items by category and total each group; do not duplicate text/image purchases. If no transaction is readable, return an empty transactions list and explain in warnings.
 
-Current local date: ${currentDate}
-Current local time: ${currentTime || 'not provided'}
-Timezone: ${timezone}
-Use this date, time, and timezone to resolve relative dates and times. For "abhi"/"right now"/"just now", use the current local date and time. For relative phrases such as "1 ghanta pehle", "30 min phle", "2 hours ago", or "15 minutes earlier", subtract the stated duration from the current local date and time, including changing the date when the subtraction crosses midnight. Return the resulting time in HH:MM:SS and date in YYYY-MM-DD. Mark date and time confidence high when a precise relative duration or "just now" is given. Do not use the server's receipt-processing time as the transaction time when the user gives a different time.
+Local date/time: ${currentDate} ${currentTime || 'not provided'} (${timezone}). Resolve relative dates/times using this local time. "Now"/"abhi" uses it; precise durations subtract from it. Explicit dates/times are high confidence. For "today morning/afternoon/evening/night" or "aaj subah/dopahar/shaam/raat", use today with 10:00/14:00/18:00/22:00 respectively and medium time confidence. Otherwise use the supplied local date/time with medium confidence. Return date YYYY-MM-DD and time HH:MM:SS.
 
-Do not treat a time-of-day phrase as a relative duration. When the user says "aaj subah"/"this morning", use currentDate as the date and the morning default below as the time, even if the current local time is later in the day. Do not question whether the transaction time is plausible, compare it with the current time, lower confidence, or add an ambiguity warning just because the mentioned time is earlier than now. Apply the same rule to "aaj dopahar"/"this afternoon", "aaj shaam"/"this evening", and "aaj raat"/"tonight", using the corresponding defaults below.
+Use only names in ActiveCategories and payment methods in PaymentMethods. Set categoryName to an exact category name: explicitly stated = high confidence; clear inference = medium. If uncertain, choose the first category in the matching expense/income list and mark low confidence; use null only if that list is empty. Return a payment method's value from its {value,label} entry. For lending/borrowing, map money the user gives to Lent expense, a loan received to Borrowed income, the user's repayment to Borrowed Pay expense, and money repaid to the user to Repayment income, when those categories exist. Resolve direction from the full English/Hindi/Hinglish sentence (e.g. udhar liya/diya, wapas, chukaya); don't classify gifts or unrelated income as loans. Use the explicitly named person's name, not a generic label. Keep ordinary transaction names concise; put extra context in note.
 
-Return explicit times as HH:MM:SS. Time-of-day defaults: morning 10:00, afternoon 14:00, evening 18:00, night 22:00. Use currentDate with medium date confidence when no date is visible or mentioned. Use only category IDs and payment-method values from the supplied lists. Categories explicitly stated are high confidence; clear category inferences are medium; no reasonable match is null. Explicit payment methods are high confidence, clear hints medium. If payment method is missing, use the Online Banking option only if it exists and mark it low confidence; otherwise return null. Keep names concise and put extra context in note.
+An explicitly stated payment method always wins. If missing, use Online Banking with low confidence only when available; otherwise use null. If an explicit method is unavailable, use null and explain in warnings. Never guess unreadable amounts or facts. Recent transactions are style context only; never copy their amounts, dates, times, names, categories, or methods as facts for this input.
 
-Time rules: Return explicit times in HH:MM:SS 24-hour format. If the user gives only a time-of-day phrase and no explicit time, use these defaults: morning/subah = 10:00:00, afternoon/dopahar = 14:00:00, evening/shaam/sham = 18:00:00, night/raat = 22:00:00.
-
-Inference and confidence rules:
-- For categoryId, use an exact category mentioned by the user with categoryConfidence "high". You may infer the closest matching category from UserCategories with categoryConfidence "medium" when the meaning is clear. For example, spending with Abhishek can map to a "Friend Spend" category if it exists, and eating momos can map to "Junk Food" if it exists. Return null for categoryId and categoryConfidence when there is no reasonable category match.
-- Recognize the four Borrow/Lend system categories by their supplied category ID/name: "lent" / "Lent", "borrowed_pay" / "Borrowed Pay", "borrowed" / "Borrowed", and "repayment" / "Repayment". Use only a matching category actually present in UserCategories. Map money the user gives/lends to a person to the "Lent" expense category; money the user receives as a loan to "Borrowed" income; the user's payment back toward money they borrowed to "Borrowed Pay" expense; and money received back from someone who owed the user to "Repayment" income. Resolve direction from the full sentence in English, Hindi, or Hinglish (including "udhar", "liye/liya", "diye/diya", "wapas", "chukaya", "borrowed", "lent", "paid back", and "repaid"); do not classify unrelated purchases, gifts, or income as loans just because a person's name is mentioned.
-- For any of those four Borrow/Lend categories, set the transaction "name" to the person's name explicitly mentioned in the current text/image, not a generic label such as "Borrowed", "Repayment", or "Loan". Exclude relationship/action words and pronouns from the name, preserve the person's full name when present, and keep the purpose or other context in "note". If no person is identified in the current input, use null for name rather than guessing from recent transaction history. The review form will provide the appropriate existing-person dropdown for these categories.
-- An explicitly stated payment method in the current text or image always overrides historical habits, inferred preferences, and category-based assumptions. Match it to the supplied PaymentMethods list and set paymentMethodConfidence to "high". Never claim it conflicts with a user's habits or categories. If the explicit method has no matching list entry, return null for paymentMethod and explain that it is unavailable in warnings; do not substitute another method.
-- Use dateConfidence "high" when the user gives an explicit or relative date (for example, 2026-01-10, today, aaj, yesterday, kal, parso). If no date is mentioned, use the supplied currentDate (${currentDate}) and dateConfidence "medium".
-- Use timeConfidence "high" for an explicit clock time or precise relative duration ("30 minutes ago"). Use timeConfidence "medium" when applying a time-of-day default from the Time rules, including "aaj subah". If no time or time-of-day phrase is mentioned, use the supplied current local time (${currentTime || 'not provided'}) as the transaction time in HH:MM:SS and set timeConfidence to "medium". Never return a null time for a clear transaction when the current local time is supplied. Never lower confidence or add warnings because a time-of-day phrase is earlier than the current local time.
-- For ordinary expenses or income, keep name minimal: only the concise item, merchant, or income name (for example, "Momos", "Petrol", or "Salary"). Put descriptive context such as people, vehicle, purpose, or place in note. The Borrow/Lend category rule above takes precedence and requires the person's name in name.
-
-Recent user transactions are context only to help interpret the wording and entry style of the current input. Use them only to understand the user's naming, category, notes, and payment-method conventions. The current text and attached image are the sole source of transaction facts: never reuse or infer an amount, date, time, item, merchant, category, or payment method from history when it is not supported by the current input. Never create transactions from history or let it override the current input, especially when the current input explicitly states a payment method.
-${transactionHistory}
-
-Closed lists (do not invent):
-UserCategories: ${catList}
+ActiveCategories: ${catList}
 PaymentMethods: ${pmList}
-
-Input:
-"""${text}"""
-
-Return JSON only.`;
+Recent transactions (type, name, category, payment method only): ${transactionHistory}
+Input: """${text}"""`;
 }
 
-// Validate the parsed object strictly according to the QUICK_ADD_JSON_SCHEMA
+// Validate the parsed object against the quick-add response shape.
 function validateParsedResponse(obj) {
     if (!obj || typeof obj !== 'object') return false;
     if (!Array.isArray(obj.transactions)) return false;
@@ -190,8 +184,9 @@ async function parseText(text, options = {}) {
     try {
         interaction = await generateJson({
             prompt,
-            schema: QUICK_ADD_JSON_SCHEMA,
+            schema: QUICK_ADD_RESPONSE_SCHEMA,
             image,
+            usageLabel: 'quick-add-transaction-extraction',
         });
     } catch (e) {
         // Log a concise, non-sensitive diagnostic for server logs
@@ -217,6 +212,16 @@ async function parseText(text, options = {}) {
         }
     } catch {
         parsed = null;
+    }
+
+    if (Array.isArray(parsed?.transactions)) {
+        parsed.transactions.forEach((transaction) => {
+            if (!transaction || typeof transaction !== 'object') return;
+            transaction.categoryId = typeof transaction.categoryName === 'string'
+                ? transaction.categoryName
+                : null;
+            delete transaction.categoryName;
+        });
     }
 
     completeInferredFields(parsed, currentDate, currentTime);
@@ -247,7 +252,8 @@ async function parseText(text, options = {}) {
     }
 
     // Post-process: enforce that categoryId and paymentMethod come from provided lists
-    const { categories = [], paymentMethods = [] } = options;
+    const { categories: suppliedCategories = [], paymentMethods = [] } = options;
+    const categories = suppliedCategories.filter((category) => category?.isEnable === true);
 
     // Build lookup maps
     const catById = new Map(categories.map(c => [c.id, c]));
@@ -282,7 +288,21 @@ async function parseText(text, options = {}) {
                 tx.categoryId = null;
             }
         }
-        if (!tx.categoryId || !['high', 'medium', 'low'].includes(tx.categoryConfidence)) {
+        if (!tx.categoryId) {
+            const expectedType = tx.type === 'income' ? 'income' : 'spend';
+            const fallbackCategory = categories.find((category) => (
+                category
+                && category.id
+                && category.type === expectedType
+                && category.isEnable === true
+            ));
+            if (fallbackCategory) {
+                tx.categoryId = fallbackCategory.id;
+                tx.categoryConfidence = 'low';
+            } else {
+                tx.categoryConfidence = null;
+            }
+        } else if (!['high', 'medium', 'low'].includes(tx.categoryConfidence)) {
             tx.categoryConfidence = null;
         }
 
@@ -332,6 +352,15 @@ async function parseText(text, options = {}) {
         err.code = 'INVALID_AI_OUTPUT';
         throw err;
     }
+
+    parsed.tokenUsage = {
+        inputTokens: Number.isFinite(interaction.usageMetadata?.promptTokenCount)
+            ? interaction.usageMetadata.promptTokenCount
+            : null,
+        outputTokens: Number.isFinite(interaction.usageMetadata?.candidatesTokenCount)
+            ? interaction.usageMetadata.candidatesTokenCount
+            : null,
+    };
 
     return parsed;
 }
